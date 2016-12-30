@@ -37,6 +37,7 @@ int main()
 	{
 		cout << err.what() << endl;
 	}
+	delete client;
 	_getch();
     return 0;
 }
