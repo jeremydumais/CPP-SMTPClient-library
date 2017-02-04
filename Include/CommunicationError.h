@@ -3,7 +3,7 @@
 
 #pragma once  
 
-#ifndef COMMUNICATIONERROR_EXPORTS  
+#ifdef SMTPCLIENT_EXPORTS  
 #define COMMUNICATIONERROR_API __declspec(dllexport)   
 #else  
 #define COMMUNICATIONERROR_API __declspec(dllimport)   
@@ -11,12 +11,13 @@
 
 namespace jed_utils
 {
-	class COMMUNICATIONERROR_API communication_error : public std::exception
+	class COMMUNICATIONERROR_API communication_error
 	{
 	public:
 		communication_error(const std::string err_msg);
+		~communication_error();
 		const char *what() const throw();
 	private:
-		std::string error_message;
+		char *error_message = NULL;
 	};
 }

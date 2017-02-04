@@ -18,46 +18,21 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Source\Attachment.cpp" />
-    <ClCompile Include="Source\AttachmentError.cpp" />
-    <ClCompile Include="Source\Base64.cpp" />
-    <ClCompile Include="Source\CommunicationError.cpp" />
-    <ClCompile Include="Source\HTMLMessage.cpp" />
-    <ClCompile Include="Source\Message.cpp" />
-    <ClCompile Include="Source\MessageAddress.cpp" />
-    <ClCompile Include="Source\PlainTextMessage.cpp" />
-    <ClCompile Include="Source\SMTPClient.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Include\Attachment.h" />
-    <ClInclude Include="Include\AttachmentError.h" />
-    <ClInclude Include="Include\Base64.h" />
-    <ClInclude Include="Include\CommunicationError.h" />
-    <ClInclude Include="Include\HTMLMessage.h" />
-    <ClInclude Include="Include\Message.h" />
-    <ClInclude Include="Include\MessageAddress.h" />
-    <ClInclude Include="Include\PlainTextMessage.h" />
-    <ClInclude Include="Include\SMTPClient.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="README.md" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D68C96C9-7744-469B-B776-4EBD062B7BF8}</ProjectGuid>
+    <ProjectGuid>{AD608EEF-85F1-4934-957D-3A421BCFB775}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>SMTPClient</RootNamespace>
+    <RootNamespace>SMTPClient_Test</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -112,12 +87,12 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>SMTPCLIENT_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\SkyDrive\Programmation\C++\SMTPClient\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -141,15 +116,13 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>SMTPCLIENT_EXPORTS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -169,6 +142,19 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Attachment_unittest.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MessageAddress_unittest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SMTPClient.vcxproj">
+      <Project>{d68c96c9-7744-469b-b776-4ebd062b7bf8}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

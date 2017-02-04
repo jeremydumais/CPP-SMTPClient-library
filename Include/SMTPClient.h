@@ -1,9 +1,19 @@
+#ifndef SMTPCLIENT_H
+#define SMTPCLIENT_H
+
 #include <string>
 #include "CommunicationError.h"
+#include "AttachmentError.h"
+#include "Attachment.h"
+#include "MessageAddress.h"
+#include "PlainTextMessage.h"
+#include "HTMLMessage.h"
+#include <vector>
+#include <sstream>
 
 #pragma once  
 
-#ifndef SMTPCLIENT_EXPORTS  
+#ifdef SMTPCLIENT_EXPORTS  
 #define SMTPCLIENT_API __declspec(dllexport)   
 #else  
 #define SMTPCLIENT_API __declspec(dllimport)   
@@ -15,18 +25,19 @@ namespace jed_utils
 	{
 	public:
 		smtp_client(const std::string server_name, const unsigned int port);
-		void send_mail(const std::string from,
-			const std::string to,
-			const std::string subject,
-			const std::string body);
-		const std::string get_server_reply();
+		~smtp_client();
+		void send_mail(message *msg);
+		const std::string get_server_reply() const;
 	protected:
-		std::string server_name;
+		char *server_name;
 		unsigned int port;
-		std::string server_reply;
-		void write_command(const unsigned int sock, 
-			const std::string str, 
-			const std::string arg, 
+		char *server_reply;
+		void write_command(const unsigned int sock,
+			const std::string str,
+			const std::string arg,
 			const bool ask_for_reply = true);
+		std::string create_attachments_text(const attachment *attachments, const unsigned int attachements_count);
 	};
 }
+
+#endif

@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMTPClient", "SMTPClient.vcxproj", "{D68C96C9-7744-469B-B776-4EBD062B7BF8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMTPClient_Test", "test\smtpclient_unittest\SMTPClient_Test.vcxproj", "{AD608EEF-85F1-4934-957D-3A421BCFB775}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{D68C96C9-7744-469B-B776-4EBD062B7BF8}.Release|x64.Build.0 = Release|x64
 		{D68C96C9-7744-469B-B776-4EBD062B7BF8}.Release|x86.ActiveCfg = Release|Win32
 		{D68C96C9-7744-469B-B776-4EBD062B7BF8}.Release|x86.Build.0 = Release|Win32
+		{AD608EEF-85F1-4934-957D-3A421BCFB775}.Debug|x64.ActiveCfg = Debug|x64
+		{AD608EEF-85F1-4934-957D-3A421BCFB775}.Debug|x64.Build.0 = Debug|x64
+		{AD608EEF-85F1-4934-957D-3A421BCFB775}.Debug|x86.ActiveCfg = Debug|Win32
+		{AD608EEF-85F1-4934-957D-3A421BCFB775}.Debug|x86.Build.0 = Debug|Win32
+		{AD608EEF-85F1-4934-957D-3A421BCFB775}.Release|x64.ActiveCfg = Release|x64
+		{AD608EEF-85F1-4934-957D-3A421BCFB775}.Release|x64.Build.0 = Release|x64
+		{AD608EEF-85F1-4934-957D-3A421BCFB775}.Release|x86.ActiveCfg = Release|Win32
+		{AD608EEF-85F1-4934-957D-3A421BCFB775}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
