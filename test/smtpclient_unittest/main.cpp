@@ -1,6 +1,7 @@
 // SMTPClient_Test.cpp : Defines the entry point for the console application.
 
 #include "../../Include/SMTPClient.h"
+
 #include <iostream>
 
 using namespace jed_utils;

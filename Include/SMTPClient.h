@@ -24,10 +24,10 @@ namespace jed_utils
 	class SMTPCLIENT_API smtp_client
 	{
 	public:
-		smtp_client(const std::string server_name, const unsigned int port);
+		smtp_client(const char *server_name, const unsigned int port);
 		~smtp_client();
 		void send_mail(message *msg);
-		const std::string get_server_reply() const;
+		const char *get_server_reply() const;
 	protected:
 		char *server_name;
 		unsigned int port;

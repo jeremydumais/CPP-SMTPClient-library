@@ -1,7 +1,7 @@
-#include <stdexcept>
-#include <string>
+#ifndef ATTACHMENTERROR_H
+#define ATTACHMENTERROR_H
 
-#pragma once  
+#include <stdexcept>
 
 #ifdef SMTPCLIENT_EXPORTS  
 #define ATTACHMENTERROR_API __declspec(dllexport)   
@@ -14,12 +14,12 @@ namespace jed_utils
 	class ATTACHMENTERROR_API attachment_error
 	{
 	public:
-		attachment_error(const std::string err_msg);
+		attachment_error(const char *err_msg);
 		~attachment_error();
 		const char *what() const throw();
 	private:
-		char *error_message = NULL;
+		char *error_message = nullptr;
 	};
 }
 
-#pragma once
+#endif

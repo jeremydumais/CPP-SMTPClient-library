@@ -3,16 +3,16 @@
 #include <ws2tcpip.h>
 #include <stdexcept>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
 namespace jed_utils
 {
-	smtp_client::smtp_client(const string server_name, const unsigned int port)
+	smtp_client::smtp_client(const char *server_name, const unsigned int port)
 	{
-		const std::string::size_type size_server_name = server_name.size();
-		this->server_name = new char[size_server_name + 1];
-		memcpy(this->server_name, server_name.c_str(), size_server_name + 1);
+		this->server_name = new char[strlen(server_name) + 1];
+		strcpy_s(this->server_name, strlen(server_name) + 1, server_name);
 
 		this->port = port;
 		server_reply = NULL;
@@ -54,7 +54,11 @@ namespace jed_utils
 		WORD wVersionRequested = MAKEWORD(2, 2);
 		int wsa_retVal = WSAStartup(wVersionRequested, &wsaData);
 		if (wsa_retVal != 0)
-			throw communication_error(string("Windows Sockets startup error : ") + to_string(wsa_retVal));
+		{
+			ostringstream error_stream;
+			error_stream << "Windows Sockets startup error : " << wsa_retVal;
+			throw communication_error(error_stream.str().c_str());
+		}
 
 		memset(&hints, 0, sizeof hints);
 		hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
@@ -64,7 +68,9 @@ namespace jed_utils
 		if (dwRetval != 0) 
 		{
 			WSACleanup();
-			throw communication_error(string("Windows Sockets getaddrinfo error : ") + to_string(dwRetval));
+			ostringstream error_stream;
+			error_stream << "Windows Sockets getaddrinfo error : " << dwRetval;
+			throw communication_error(error_stream.str().c_str());
 		}
 
 		sock = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
@@ -72,7 +78,9 @@ namespace jed_utils
 		if (wsa_retVal == SOCKET_ERROR) 
 		{
 			WSACleanup();
-			throw communication_error(string("Windows Sockets connect error : ") + to_string(WSAGetLastError()));
+			ostringstream error_stream;
+			error_stream << "Windows Sockets connect error : " << WSAGetLastError();
+			throw communication_error(error_stream.str().c_str());
 		}
 
 		write_command(sock, "HELO %s\r\n", msg->get_from().get_email_address());    
@@ -113,7 +121,9 @@ namespace jed_utils
 		if (wsa_retVal == SOCKET_ERROR)
 		{
 			WSACleanup();
-			throw communication_error(string("Windows Sockets connect error : " + to_string(WSAGetLastError())));
+			ostringstream error_stream;
+			error_stream << "Windows Sockets connect error : " << WSAGetLastError();
+			throw communication_error(error_stream.str().c_str());
 		}
 		WSACleanup();
 	}
@@ -133,7 +143,9 @@ namespace jed_utils
 			cout << "send failed: " << WSAGetLastError() << endl;
 			closesocket(sock);
 			WSACleanup();
-			throw communication_error(string("send command failed : " + to_string(WSAGetLastError())));
+			ostringstream error_stream;
+			error_stream << "send command failed : " << WSAGetLastError();
+			throw communication_error(error_stream.str().c_str());
 		}
 		if (ask_for_reply)
 		{
@@ -162,7 +174,7 @@ namespace jed_utils
 		}
 	}
 
-	const string smtp_client::get_server_reply() const
+	const char *smtp_client::get_server_reply() const
 	{
 		return this->server_reply;
 	}
@@ -173,10 +185,13 @@ namespace jed_utils
 		for (unsigned int index=0; index < attachements_count; index++)
 		{
 			retval += "\r\n--sep\r\n";
-			retval += "Content-Type: "+ (*(attachments + index)).get_mime_type() +"; file=\"" + (*(attachments + index)).get_name() + "\"\r\n";
-			retval += "Content-Disposition: Inline; filename=\"" + (*(attachments + index)).get_name() + "\"\r\n";
+			retval += "Content-Type: " + string((*(attachments + index)).get_mime_type()) + "; file=\"" + string((*(attachments + index)).get_name()) + "\"\r\n";
+			retval += "Content-Disposition: Inline; filename=\"" + string((*(attachments + index)).get_name()) + "\"\r\n";
 			retval += "Content-Transfer-Encoding: base64\r\n\r\n";
-			retval += (*(attachments + index)).get_base64_encoded_file();
+			const char *base64_file = attachments[index].get_base64_encoded_file();
+			retval += string(base64_file);
+			delete base64_file;
+
 		}
 		retval += "\r\n--sep--";
 		return retval;
