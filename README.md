@@ -11,6 +11,16 @@ void send_mail(message *msg);
 const char *get_server_reply() const;
 ```	
 
+###message_address class
+
+####Available methods
+```c++
+message_address(const char *email_address, const char *display_name = "");
+operator std::string() const;
+const char *get_email_address() const;
+const char *get_display_name() const;
+```	
+
 ###attachment class
 
 ####Available methods
