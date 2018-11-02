@@ -1,7 +1,7 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-#include <string>
+#include <cstring>
 #include "MessageAddress.h"
 #include "Attachment.h"
 #include <vector>

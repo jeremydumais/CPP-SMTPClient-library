@@ -1,185 +1,468 @@
+#include <gtest/gtest.h>
 #include "../../Include/Attachment.h"
-#include <assert.h>
+#include "Attachment.h"
 
 
 using namespace jed_utils;
 using namespace std;
 
-void test_attachement_constructor()
+TEST(Attachment_Constructor, FailEmptyParam)
 {
 	//Test with empty filename
 	try
 	{
 		attachment att1("", "");
-		assert(false);
-
+		FAIL();
 	}
-	catch (invalid_argument& err)
+	catch(invalid_argument) 
 	{
-		assert(strcmp(err.what(), "filename") == 0);
 	}
 }
 
-void test_attachment_getmimetype()
+TEST(Attachment_Constructor, ValidParam)
 {
-	//Images
 	attachment att1("test.png", "");
-	assert(_stricmp(att1.get_mime_type(), "image/png") == 0 && "png Image");
-	att1 = attachment("test.jpg", "");
-	assert(_stricmp(att1.get_mime_type(), "image/jpeg") == 0 && "jpg Image");
-	att1 = attachment("test.jpeg", "");
-	assert(_stricmp(att1.get_mime_type(), "image/jpeg") == 0 && "jpeg Image");
-	att1 = attachment("test.jpe", "");
-	assert(_stricmp(att1.get_mime_type(), "image/jpeg") == 0 && "jpe Image");
-	att1 = attachment("test.gif", "");
-	assert(_stricmp(att1.get_mime_type(), "image/gif") == 0 && "gif Image");
-	att1 = attachment("test.tif", "");
-	assert(_stricmp(att1.get_mime_type(), "image/tiff") == 0 && "tif Image");
-	att1 = attachment("test.tiff", "");
-	assert(_stricmp(att1.get_mime_type(), "image/tiff") == 0 && "tiff Image");
-	att1 = attachment("test.ico", "");
-	assert(_stricmp(att1.get_mime_type(), "image/x-icon") == 0 && "ico Image");
-	//Applications
-	att1 = attachment("test.xml", "");
-	assert(_stricmp(att1.get_mime_type(), "application/xml") == 0 && "xml Document");
-	att1 = attachment("test.xsl", "");
-	assert(_stricmp(att1.get_mime_type(), "application/xml") == 0 && "xsl Document");
-	att1 = attachment("test.xhtml", "");
-	assert(_stricmp(att1.get_mime_type(), "application/xhtml+xml") == 0 && "xhtml Document");	
-	att1 = attachment("test.xht", "");
-	assert(_stricmp(att1.get_mime_type(), "application/xhtml+xml") == 0 && "xht Document");
-	att1 = attachment("test.pdf", "");
-	assert(_stricmp(att1.get_mime_type(), "application/pdf") == 0 && "pdf Document");	
-	att1 = attachment("test.js", "");
-	assert(_stricmp(att1.get_mime_type(), "application/javascript") == 0 && "js Document");	
-	//Text
-	att1 = attachment("test.css", "");
-	assert(_stricmp(att1.get_mime_type(), "text/css") == 0 && "css File");
-	att1 = attachment("test.csv", "");
-	assert(_stricmp(att1.get_mime_type(), "text/csv") == 0 && "csv File");
-	att1 = attachment("test.html", "");
-	assert(_stricmp(att1.get_mime_type(), "text/html") == 0 && "html File");
-	att1 = attachment("test.htm", "");
-	assert(_stricmp(att1.get_mime_type(), "text/html") == 0 && "htm File");
-	att1 = attachment("test.txt", "");
-	assert(_stricmp(att1.get_mime_type(), "text/plain") == 0 && "txt File");
-	att1 = attachment("test.text", "");
-	assert(_stricmp(att1.get_mime_type(), "text/plain") == 0 && "text File");
-	att1 = attachment("test.conf", "");
-	assert(_stricmp(att1.get_mime_type(), "text/plain") == 0 && "conf File");
-	att1 = attachment("test.def", "");
-	assert(_stricmp(att1.get_mime_type(), "text/plain") == 0 && "def File");
-	att1 = attachment("test.list", "");
-	assert(_stricmp(att1.get_mime_type(), "text/plain") == 0 && "list File");
-	att1 = attachment("test.log", "");
-	assert(_stricmp(att1.get_mime_type(), "text/plain") == 0 && "log File");
-	att1 = attachment("test.in", "");
-	assert(_stricmp(att1.get_mime_type(), "text/plain") == 0 && "in File");
-	//Videos
-	att1 = attachment("test.mpeg", "");
-	assert(_stricmp(att1.get_mime_type(), "video/mpeg") == 0 && "mpeg File");
-	att1 = attachment("test.mpg", "");
-	assert(_stricmp(att1.get_mime_type(), "video/mpeg") == 0 && "mpg File");
-	att1 = attachment("test.mpe", "");
-	assert(_stricmp(att1.get_mime_type(), "video/mpeg") == 0 && "mpe File");
-	att1 = attachment("test.m1v", "");
-	assert(_stricmp(att1.get_mime_type(), "video/mpeg") == 0 && "m1v File");
-	att1 = attachment("test.m2v", "");
-	assert(_stricmp(att1.get_mime_type(), "video/mpeg") == 0 && "m2v File");
-	att1 = attachment("test.mp4", "");
-	assert(_stricmp(att1.get_mime_type(), "video/mp4") == 0 && "mp4 File");
-	att1 = attachment("test.mp4v", "");
-	assert(_stricmp(att1.get_mime_type(), "video/mp4") == 0 && "mp4v File");
-	att1 = attachment("test.mpg4", "");
-	assert(_stricmp(att1.get_mime_type(), "video/mp4") == 0 && "mpg4 File");
-	att1 = attachment("test.qt", "");
-	assert(_stricmp(att1.get_mime_type(), "video/quicktime") == 0 && "qt File");
-	att1 = attachment("test.mov", "");
-	assert(_stricmp(att1.get_mime_type(), "video/quicktime") == 0 && "mov File");	
-	att1 = attachment("test.wmv", "");
-	assert(_stricmp(att1.get_mime_type(), "video/x-ms-wmv") == 0 && "wmv File");		
-	att1 = attachment("test.avi", "");
-	assert(_stricmp(att1.get_mime_type(), "video/x-msvideo") == 0 && "avi File");	
-	att1 = attachment("test.flv", "");
-	assert(_stricmp(att1.get_mime_type(), "video/x-flv") == 0 && "flv File");
-	att1 = attachment("test.webm", "");
-	assert(_stricmp(att1.get_mime_type(), "video/webm") == 0 && "webm File");
-	//Archives
-	att1 = attachment("test.zip", "");
-	assert(_stricmp(att1.get_mime_type(), "application/zip") == 0 && "zip Archive");
-	att1 = attachment("test.rar", "");
-	assert(_stricmp(att1.get_mime_type(), "application/x-rar-compressed") == 0 && "rar Archive");
-	//Documents
-	att1 = attachment("test.odt", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.oasis.opendocument.text") == 0 && "odt Document");
-	att1 = attachment("test.ods", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.oasis.opendocument.spreadsheet") == 0 && "ods Document");
-	att1 = attachment("test.odp", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.oasis.opendocument.presentation") == 0 && "odp Document");
-	att1 = attachment("test.odg", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.oasis.opendocument.graphics") == 0 && "odg Document");
-	att1 = attachment("test.xls", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") == 0 && "xls Document");
-	att1 = attachment("test.xlm", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") == 0 && "xlm Document");
-	att1 = attachment("test.xla", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") == 0 && "xla Document");
-	att1 = attachment("test.xlc", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") == 0 && "xlc Document");
-	att1 = attachment("test.xlt", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") == 0 && "xlt Document");
-	att1 = attachment("test.xlw", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") == 0 && "xlw Document");
-	att1 = attachment("test.xlam", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel.addin.macroenabled.12") == 0 && "xlam Document");
-	att1 = attachment("test.xlsb", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel.sheet.binary.macroenabled.12") == 0 && "xlsb Document");
-	att1 = attachment("test.xlsm", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel.sheet.macroenabled.12") == 0 && "xlsm Document");
-	att1 = attachment("test.xltm", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel.template.macroenabled.12") == 0 && "xltm Document");
-	att1 = attachment("test.xlsx", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") == 0 && "xlsx Document");
-	att1 = attachment("test.xltx", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.spreadsheetml.template") == 0 && "xltx Document");
-	att1 = attachment("test.ppt", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint") == 0 && "ppt Document");
-	att1 = attachment("test.pps", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint") == 0 && "pps Document");
-	att1 = attachment("test.pot", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint") == 0 && "pot Document");
-	att1 = attachment("test.ppam", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint.addin.macroenabled.12") == 0 && "ppam Document");
-	att1 = attachment("test.pptm", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint.presentation.macroenabled.12") == 0 && "pptm Document");
-	att1 = attachment("test.sldm", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint.slide.macroenabled.12") == 0 && "sldm Document");
-	att1 = attachment("test.ppsm", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint.slideshow.macroenabled.12") == 0 && "ppsm Document");
-	att1 = attachment("test.potm", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint.template.macroenabled.12") == 0 && "potm Document");
-	att1 = attachment("test.pptx", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.presentationml.presentation") == 0 && "pptx Document");
-	att1 = attachment("test.sldx", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.presentationml.slide") == 0 && "sldx Document");
-	att1 = attachment("test.ppsx", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.presentationml.slideshow") == 0 && "ppsx Document");
-	att1 = attachment("test.potx", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.presentationml.template") == 0 && "potx Document");
-	att1 = attachment("test.doc", "");
-	assert(_stricmp(att1.get_mime_type(), "application/msword") == 0 && "doc Document");
-	att1 = attachment("test.dot", "");
-	assert(_stricmp(att1.get_mime_type(), "application/msword") == 0 && "dot Document");
-	att1 = attachment("test.docx", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document") == 0 && "docx Document");
-	att1 = attachment("test.dotx", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.wordprocessingml.template") == 0 && "dotx Document");
-	att1 = attachment("test.xul", "");
-	assert(_stricmp(att1.get_mime_type(), "application/vnd.mozilla.xul+xml") == 0 && "xul Document");
 }
 
-void attachment_unittest()
+TEST(Attachment_getmimetype_images, png)
 {
-	test_attachement_constructor();
-	test_attachment_getmimetype();
+	attachment att1("test.png", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "image/png"), 0);
+}
+
+TEST(Attachment_getmimetype_images, jpg)
+{
+	attachment att1("test.jpg", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "image/jpeg"), 0);
+}
+
+TEST(Attachment_getmimetype_images, jpeg)
+{
+	attachment att1("test.jpeg", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "image/jpeg"), 0);
+}
+TEST(Attachment_getmimetype_images, jpe)
+{
+	attachment att1("test.jpe", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "image/jpeg") , 0);
+}
+
+TEST(Attachment_getmimetype_images, gif)
+{
+	attachment att1("test.gif", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "image/gif") , 0);
+}
+
+TEST(Attachment_getmimetype_images, tif)
+{
+	attachment att1("test.tif", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "image/tiff") , 0);
+}
+
+TEST(Attachment_getmimetype_images, tiff)
+{
+	attachment att1("test.tiff", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "image/tiff") , 0);
+}
+
+TEST(Attachment_getmimetype_images, ico)
+{
+	attachment att1("test.ico", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "image/x-icon") , 0);
+}
+
+TEST(Attachment_getmimetype_applications, xml)
+{
+	attachment att1("test.xml", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/xml") , 0);
+}
+
+TEST(Attachment_getmimetype_applications, xsl)
+{
+	attachment att1("test.xsl", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/xml") , 0);
+}
+
+TEST(Attachment_getmimetype_applications, xhtml)
+{
+	attachment att1("test.xhtml", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/xhtml+xml") , 0);	
+}
+
+TEST(Attachment_getmimetype_applications, xht)
+{
+	attachment att1("test.xht", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/xhtml+xml") , 0);
+}
+TEST(Attachment_getmimetype_applications, pdf)
+{
+	attachment att1("test.pdf", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/pdf") , 0);	
+}
+
+TEST(Attachment_getmimetype_applications, js)
+{
+	attachment att1("test.js", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/javascript") , 0);	
+}
+
+TEST(Attachment_getmimetype_text, css)
+{
+	attachment att1("test.css", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "text/css") , 0);
+}
+
+TEST(Attachment_getmimetype_text, csv)
+{
+	attachment att1("test.csv", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "text/csv") , 0);
+}
+
+TEST(Attachment_getmimetype_text, html)
+{
+	attachment att1("test.html", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "text/html") , 0);
+}
+
+TEST(Attachment_getmimetype_text, htm)
+{
+	attachment att1("test.htm", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "text/html") , 0);
+}
+
+TEST(Attachment_getmimetype_text, txt)
+{
+	attachment att1("test.txt", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "text/plain") , 0);
+}
+
+TEST(Attachment_getmimetype_text, text)
+{
+	attachment att1("test.text", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "text/plain") , 0);
+}
+
+TEST(Attachment_getmimetype_text, conf)
+{
+	attachment att1("test.conf", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "text/plain") , 0);
+}
+
+TEST(Attachment_getmimetype_text, def)
+{
+	attachment att1("test.def", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "text/plain") , 0);
+}
+
+TEST(Attachment_getmimetype_text, list)
+{
+	attachment att1("test.list", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "text/plain") , 0);
+}
+
+TEST(Attachment_getmimetype_text, log)
+{
+	attachment att1("test.log", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "text/plain") , 0);
+}
+
+TEST(Attachment_getmimetype_text, in)
+{
+	attachment att1("test.in", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "text/plain") , 0);
+}
+
+TEST(Attachment_getmimetype_videos, mpeg)
+{
+	attachment att1("test.mpeg", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/mpeg") , 0);
+}
+
+TEST(Attachment_getmimetype_videos, mpg)
+{
+	attachment att1("test.mpg", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/mpeg") , 0);
+}
+
+TEST(Attachment_getmimetype_videos, mpe)
+{
+	attachment att1("test.mpe", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/mpeg") , 0);
+}
+
+TEST(Attachment_getmimetype_videos, m1v)
+{
+	attachment att1("test.m1v", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/mpeg") , 0);
+}
+
+TEST(Attachment_getmimetype_videos, m2v)
+{
+	attachment att1("test.m2v", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/mpeg") , 0);
+}
+
+TEST(Attachment_getmimetype_videos, mp4)
+{
+	attachment att1("test.mp4", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/mp4") , 0);
+}
+
+TEST(Attachment_getmimetype_videos, mp4v)
+{
+	attachment att1("test.mp4v", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/mp4") , 0);
+}
+
+TEST(Attachment_getmimetype_videos, mpg4)
+{
+	attachment att1("test.mpg4", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/mp4") , 0);
+}
+
+TEST(Attachment_getmimetype_videos, qt)
+{
+	attachment att1("test.qt", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/quicktime") , 0);
+}
+
+TEST(Attachment_getmimetype_videos, mov)
+{
+	attachment att1("test.mov", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/quicktime") , 0);	
+}
+
+TEST(Attachment_getmimetype_videos, wmv)
+{
+	attachment att1("test.wmv", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/x-ms-wmv") , 0);		
+}
+
+TEST(Attachment_getmimetype_videos, avi)
+{
+	attachment att1("test.avi", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/x-msvideo") , 0);	
+}
+
+TEST(Attachment_getmimetype_videos, flv)
+{
+	attachment att1("test.flv", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/x-flv") , 0);
+}
+
+TEST(Attachment_getmimetype_videos, webm)
+{
+	attachment att1("test.webm", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "video/webm") , 0);
+}
+
+TEST(Attachment_getmimetype_archives, zip)
+{
+	//Archives
+	attachment att1("test.zip", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/zip") , 0);
+}
+
+TEST(Attachment_getmimetype_archives, rar)
+{
+	attachment att1("test.rar", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/x-rar-compressed") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, odt)
+{
+	attachment att1("test.odt", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.oasis.opendocument.text") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, ods)
+{
+	attachment att1("test.ods", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.oasis.opendocument.spreadsheet") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, odp)
+{
+	attachment att1("test.odp", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.oasis.opendocument.presentation") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, odg)
+{
+	attachment att1("test.odg", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.oasis.opendocument.graphics") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xls)
+{
+	attachment att1("test.xls", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xlm)
+{
+	attachment att1("test.xlm", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xla)
+{
+	attachment att1("test.xla", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xlc)
+{
+	attachment att1("test.xlc", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xlt)
+{
+	attachment att1("test.xlt", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xlw)
+{
+	attachment att1("test.xlw", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xlam)
+{
+	attachment att1("test.xlam", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel.addin.macroenabled.12") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xlsb)
+{
+	attachment att1("test.xlsb", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel.sheet.binary.macroenabled.12") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xlsm)
+{
+	attachment att1("test.xlsm", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel.sheet.macroenabled.12") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xltm)
+{
+	attachment att1("test.xltm", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-excel.template.macroenabled.12") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xlsx)
+{
+	attachment att1("test.xlsx", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xltx)
+{
+	attachment att1("test.xltx", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.spreadsheetml.template") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, ppt)
+{
+	attachment att1("test.ppt", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, pps)
+{
+	attachment att1("test.pps", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, pot)
+{
+	attachment att1("test.pot", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, ppam)
+{
+	attachment att1("test.ppam", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint.addin.macroenabled.12") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, pptm)
+{
+	attachment att1("test.pptm", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint.presentation.macroenabled.12") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, sldm)
+{
+	attachment att1("test.sldm", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint.slide.macroenabled.12") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, ppsm)
+{
+	attachment att1("test.ppsm", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint.slideshow.macroenabled.12") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, potm)
+{
+	attachment att1("test.potm", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.ms-powerpoint.template.macroenabled.12") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, pptx)
+{
+	attachment att1("test.pptx", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.presentationml.presentation") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, sldx)
+{
+	attachment att1("test.sldx", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.presentationml.slide") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, ppsx)
+{
+	attachment att1("test.ppsx", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.presentationml.slideshow") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, potx)
+{
+	attachment att1("test.potx", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.presentationml.template") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, doc)
+{
+	attachment att1("test.doc", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/msword") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, dot)
+{
+	attachment att1("test.dot", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/msword") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, docx)
+{
+	attachment att1("test.docx", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, dotx)
+{
+	attachment att1("test.dotx", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.openxmlformats-officedocument.wordprocessingml.template") , 0);
+}
+
+TEST(Attachment_getmimetype_documents, xul)
+{
+	attachment att1("test.xul", "");
+	ASSERT_EQ(_stricmp(att1.get_mime_type(), "application/vnd.mozilla.xul+xml") , 0);
 }

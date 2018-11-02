@@ -1,7 +1,7 @@
 #ifndef ATTACHMENT_H
 #define ATTACHMENT_H
 
-#include <string>
+#include <cstring>
 #include <fstream>
 #include "Base64.h"
 #include "AttachmentError.h"

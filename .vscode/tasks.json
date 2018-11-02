@@ -1,0 +1,56 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-v",
+                "-std=c++11",
+                "-I",
+                "Include",
+                "-DSMTPCLIENT_EXPORTS",
+                "Source/Attachment.cpp",
+                "Source/AttachmentError.cpp",
+                "Source/Base64.cpp",
+                "Source/CommunicationError.cpp",
+                "-o",
+                "Release\\SMTPClient.o"
+            ], 
+            "group":{
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build tests",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g",
+                "-std=c++1y",
+                "-I",
+                "d:/Programmation/GoogleTest/googletest/include",
+                "-L",
+                "d:/Programmation/GoogleTest/googletest/lib",
+                "test/smtpclient_unittest/main.cpp",
+                "test/smtpclient_unittest/smtpclient_unittest.cpp",
+                "test/smtpclient_unittest/smtpclient_unittest.cpp",
+                "source/prime.cpp",
+                "source/divisor.cpp",
+                "-lgtest_main", 
+                "-lpthread",
+                "-o",
+                "tests.exe"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+
+}

@@ -1,4 +1,5 @@
 #include "../Include/MessageAddress.h"
+#include <stdexcept>
 
 using namespace std;
 

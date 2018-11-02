@@ -73,8 +73,8 @@ namespace jed_utils
 			throw communication_error(error_stream.str().c_str());
 		}
 
-		sock = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-		wsa_retVal = connect(sock, result->ai_addr, result->ai_addrlen);
+		sock = static_cast<unsigned int>(socket(result->ai_family, result->ai_socktype, result->ai_protocol));
+		wsa_retVal = connect(sock, result->ai_addr, static_cast<int>(result->ai_addrlen));
 		if (wsa_retVal == SOCKET_ERROR) 
 		{
 			WSACleanup();
@@ -92,7 +92,7 @@ namespace jed_utils
 		write_command(sock, "DATA\r\n", "");
 		// Mail headers
 		write_command(sock, "From: %s\r\n", msg->get_from());
-		for (unsigned int index = 0; index < msg->get_to_count(); index++)
+		for (size_t index = 0; index < msg->get_to_count(); index++)
 			write_command(sock, "To: %s\r\n", *(msg->get_to_ptr() + index), false);
 		write_command(sock, "Subject: %s\r\n", msg->get_subject(), false);
 		write_command(sock, "MIME-Version: 1.0\r\n", "", false);
@@ -102,9 +102,9 @@ namespace jed_utils
 		if (body_real.length() > 512)
 		{
 			//Split into chunk
-			for (unsigned int index_start = 0; index_start < body_real.length(); index_start += 512)
+			for (size_t index_start = 0; index_start < body_real.length(); index_start += 512)
 			{
-				int length = 512;
+				size_t length = 512;
 				if (index_start + 512 > body_real.length() - 1)
 					length = body_real.length() - index_start;
 				write_command(sock, body_real.substr(index_start, length), "", false);
@@ -138,7 +138,7 @@ namespace jed_utils
 			snprintf(buf, sizeof(buf), str.c_str());
 
 
-		int wsa_retVal = send(sock, buf, strlen(buf), 0);
+		int wsa_retVal = send(sock, buf, static_cast<int>(strlen(buf)), 0);
 		if (wsa_retVal == SOCKET_ERROR) {
 			cout << "send failed: " << WSAGetLastError() << endl;
 			closesocket(sock);
@@ -162,7 +162,7 @@ namespace jed_utils
 				}
 				else
 				{
-					unsigned int size_new_buf = strlen(server_reply) + strlen(outbuf) + 1;
+					size_t size_new_buf = strlen(server_reply) + strlen(outbuf) + 1;
 					char *server_reply_temp = new char[size_new_buf];
 					strcpy_s(server_reply_temp, strlen(server_reply) + 1, server_reply);
 					delete server_reply;

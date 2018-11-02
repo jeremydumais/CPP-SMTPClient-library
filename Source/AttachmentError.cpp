@@ -1,4 +1,5 @@
 #include "..\Include\AttachmentError.h"
+#include <cstring>
 
 namespace jed_utils
 {

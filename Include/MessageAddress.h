@@ -1,7 +1,7 @@
 #ifndef MESSAGEADDRESS_H
 #define MESSAGEADDRESS_H
 
-#include <string>
+#include <cstring>
 #include <sstream>
 
 #pragma once  
