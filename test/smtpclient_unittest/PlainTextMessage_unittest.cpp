@@ -25,6 +25,31 @@ public:
     PlaintextMessage *msg;
 };
 
+/*class CompleteMessageWithSimpleConstructor : public ::testing::Test
+{
+public:
+    CompleteMessageWithSimpleConstructor()
+    {
+        Attachment att[2] = { Attachment("C:\Temp\test.png", "test image.png"), Attachment("C:\Temp\test2.png", "test image2.png") };
+        msg = new PlaintextMessage(MessageAddress("myfromaddress@test.com", "Test Address Display"),
+        MessageAddress("youraddress@domain.com", "DisplayNameTo"),
+        "This is a test (Subject)",
+        "Hello\nHow are you?",
+        MessageAddress("myccaddress@domain.com", "myCCName"),
+        MessageAddress("mybccaddress@domain.com", "myBCCName"),
+        att, 2);
+        
+    }
+
+    ~CompleteMessageWithSimpleConstructor()
+    {
+        if (msg)
+            delete msg;
+    }
+
+    PlaintextMessage *msg;
+};*/
+
 TEST(plainTextMessage_SimpleConstructor, validParams)
 {
     PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),

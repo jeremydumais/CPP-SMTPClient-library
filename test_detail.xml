@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites tests="92" failures="0" disabled="0" errors="0" timestamp="2018-11-02T20:51:36" time="0.01" name="AllTests">
-  <testsuite name="MessageAddress_constructor" tests="2" failures="0" disabled="0" errors="0" time="0">
+<testsuites tests="92" failures="0" disabled="0" errors="0" timestamp="2018-11-03T06:56:48" time="0.015" name="AllTests">
+  <testsuite name="MessageAddress_constructor" tests="2" failures="0" disabled="0" errors="0" time="0.001">
     <testcase name="FailEmptyParam" status="run" time="0" classname="MessageAddress_constructor" />
     <testcase name="ValidParam" status="run" time="0" classname="MessageAddress_constructor" />
   </testsuite>
@@ -14,8 +14,8 @@
     <testcase name="FailEmptyParam" status="run" time="0" classname="Attachment_Constructor" />
     <testcase name="ValidParam" status="run" time="0" classname="Attachment_Constructor" />
   </testsuite>
-  <testsuite name="Attachment_getmimetype_images" tests="8" failures="0" disabled="0" errors="0" time="0.001">
-    <testcase name="png" status="run" time="0" classname="Attachment_getmimetype_images" />
+  <testsuite name="Attachment_getmimetype_images" tests="8" failures="0" disabled="0" errors="0" time="0.002">
+    <testcase name="png" status="run" time="0.001" classname="Attachment_getmimetype_images" />
     <testcase name="jpg" status="run" time="0" classname="Attachment_getmimetype_images" />
     <testcase name="jpeg" status="run" time="0" classname="Attachment_getmimetype_images" />
     <testcase name="jpe" status="run" time="0" classname="Attachment_getmimetype_images" />
@@ -25,14 +25,14 @@
     <testcase name="ico" status="run" time="0" classname="Attachment_getmimetype_images" />
   </testsuite>
   <testsuite name="Attachment_getmimetype_applications" tests="6" failures="0" disabled="0" errors="0" time="0.001">
-    <testcase name="xml" status="run" time="0" classname="Attachment_getmimetype_applications" />
+    <testcase name="xml" status="run" time="0.001" classname="Attachment_getmimetype_applications" />
     <testcase name="xsl" status="run" time="0" classname="Attachment_getmimetype_applications" />
     <testcase name="xhtml" status="run" time="0" classname="Attachment_getmimetype_applications" />
-    <testcase name="xht" status="run" time="0.001" classname="Attachment_getmimetype_applications" />
+    <testcase name="xht" status="run" time="0" classname="Attachment_getmimetype_applications" />
     <testcase name="pdf" status="run" time="0" classname="Attachment_getmimetype_applications" />
     <testcase name="js" status="run" time="0" classname="Attachment_getmimetype_applications" />
   </testsuite>
-  <testsuite name="Attachment_getmimetype_text" tests="11" failures="0" disabled="0" errors="0" time="0.001">
+  <testsuite name="Attachment_getmimetype_text" tests="11" failures="0" disabled="0" errors="0" time="0.002">
     <testcase name="css" status="run" time="0" classname="Attachment_getmimetype_text" />
     <testcase name="csv" status="run" time="0" classname="Attachment_getmimetype_text" />
     <testcase name="html" status="run" time="0" classname="Attachment_getmimetype_text" />
@@ -40,7 +40,7 @@
     <testcase name="txt" status="run" time="0" classname="Attachment_getmimetype_text" />
     <testcase name="text" status="run" time="0" classname="Attachment_getmimetype_text" />
     <testcase name="conf" status="run" time="0" classname="Attachment_getmimetype_text" />
-    <testcase name="def" status="run" time="0" classname="Attachment_getmimetype_text" />
+    <testcase name="def" status="run" time="0.001" classname="Attachment_getmimetype_text" />
     <testcase name="list" status="run" time="0" classname="Attachment_getmimetype_text" />
     <testcase name="log" status="run" time="0" classname="Attachment_getmimetype_text" />
     <testcase name="in" status="run" time="0" classname="Attachment_getmimetype_text" />
@@ -67,7 +67,7 @@
   </testsuite>
   <testsuite name="Attachment_getmimetype_documents" tests="33" failures="0" disabled="0" errors="0" time="0.003">
     <testcase name="odt" status="run" time="0" classname="Attachment_getmimetype_documents" />
-    <testcase name="ods" status="run" time="0" classname="Attachment_getmimetype_documents" />
+    <testcase name="ods" status="run" time="0.001" classname="Attachment_getmimetype_documents" />
     <testcase name="odp" status="run" time="0" classname="Attachment_getmimetype_documents" />
     <testcase name="odg" status="run" time="0" classname="Attachment_getmimetype_documents" />
     <testcase name="xls" status="run" time="0" classname="Attachment_getmimetype_documents" />
@@ -92,7 +92,7 @@
     <testcase name="potm" status="run" time="0" classname="Attachment_getmimetype_documents" />
     <testcase name="pptx" status="run" time="0" classname="Attachment_getmimetype_documents" />
     <testcase name="sldx" status="run" time="0" classname="Attachment_getmimetype_documents" />
-    <testcase name="ppsx" status="run" time="0.001" classname="Attachment_getmimetype_documents" />
+    <testcase name="ppsx" status="run" time="0" classname="Attachment_getmimetype_documents" />
     <testcase name="potx" status="run" time="0" classname="Attachment_getmimetype_documents" />
     <testcase name="doc" status="run" time="0" classname="Attachment_getmimetype_documents" />
     <testcase name="dot" status="run" time="0" classname="Attachment_getmimetype_documents" />
@@ -100,13 +100,13 @@
     <testcase name="dotx" status="run" time="0" classname="Attachment_getmimetype_documents" />
     <testcase name="xul" status="run" time="0" classname="Attachment_getmimetype_documents" />
   </testsuite>
-  <testsuite name="plainTextMessage_SimpleConstructor" tests="1" failures="0" disabled="0" errors="0" time="0">
+  <testsuite name="plainTextMessage_SimpleConstructor" tests="1" failures="0" disabled="0" errors="0" time="0.001">
     <testcase name="validParams" status="run" time="0" classname="plainTextMessage_SimpleConstructor" />
   </testsuite>
   <testsuite name="plainTextMessage_ExtendedConstructor" tests="1" failures="0" disabled="0" errors="0" time="0.001">
     <testcase name="validParams" status="run" time="0" classname="plainTextMessage_ExtendedConstructor" />
   </testsuite>
-  <testsuite name="SimpleMessage" tests="10" failures="0" disabled="0" errors="0" time="0">
+  <testsuite name="SimpleMessage" tests="10" failures="0" disabled="0" errors="0" time="0.001">
     <testcase name="getFromReturnValid" status="run" time="0" classname="SimpleMessage" />
     <testcase name="getToCountReturnValid" status="run" time="0" classname="SimpleMessage" />
     <testcase name="getToReturnValid" status="run" time="0" classname="SimpleMessage" />

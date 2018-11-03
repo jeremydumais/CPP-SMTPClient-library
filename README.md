@@ -6,9 +6,9 @@
 
 ####Available methods
 ```c++
-SmtpClient(const char *server_name, const unsigned int port);
-void send_mail(message *msg);
-const char *get_server_reply() const;
+SmtpClient(const char *pServerName, const unsigned int pPort);
+void sendMail(message *pMsg);
+const char *getServerReply() const;
 ```	
 
 ###MessageAddress class
@@ -36,22 +36,22 @@ const char *getMimeType() const;
 
 ####Available methods
 ```c++
-PlaintextMessage(message_address from,
-	message_address to,
+PlaintextMessage(MessageAddress from,
+	MessageAddress to,
 	const char *subject,
 	const char *body,
-	message_address *cc = nullptr,
-	message_address *bcc = nullptr,
+	MessageAddress *cc = nullptr,
+	MessageAddress *bcc = nullptr,
 	attachment attachments[] = nullptr,
 	const unsigned int attachments_size = 0);
-PlaintextMessage(message_address from,
-	message_address to[],
+PlaintextMessage(MessageAddress from,
+	MessageAddress to[],
 	const unsigned int to_size,
 	const char *subject,
 	const char *body,
-	message_address cc[] = nullptr,
+	MessageAddress cc[] = nullptr,
 	const unsigned int cc_size = 0,
-	message_address bcc[] = nullptr,
+	MessageAddress bcc[] = nullptr,
 	const unsigned int bcc_size = 0,
 	attachment attachments[] = nullptr,
 	const unsigned int attachments_size = 0);
@@ -73,22 +73,22 @@ const unsigned int getAttachmentsCount() const;
 
 ####Available methods
 ```c++
-HTMLMessage(message_address from,
-	message_address to,
+HTMLMessage(MessageAddress from,
+	MessageAddress to,
 	const char *subject,
 	const char *body,
-	message_address *cc = nullptr,
-	message_address *bcc = nullptr,
+	MessageAddress *cc = nullptr,
+	MessageAddress *bcc = nullptr,
 	attachment attachments[] = nullptr,
 	const unsigned int attachments_size = 0);
-HTMLMessage(message_address from,
-	message_address to[],
+HTMLMessage(MessageAddress from,
+	MessageAddress to[],
 	const unsigned int to_size,
 	const char *subject,
 	const char *body,
-	message_address cc[] = nullptr,
+	MessageAddress cc[] = nullptr,
 	const unsigned int cc_size = 0,
-	message_address bcc[] = nullptr,
+	MessageAddress bcc[] = nullptr,
 	const unsigned int bcc_size = 0,
 	attachment attachments[] = nullptr,
 	const unsigned int attachments_size = 0);
@@ -127,8 +127,8 @@ int main()
 			"This is a test (Subject)",
 			"Hello\nHow are you?");
 
-		client->send_mail(&msg);
-		cout << client->get_server_reply() << endl;
+		client->sendMail(&msg);
+		cout << client->getServerReply() << endl;
 		cout << "Operation completed!" << endl;
 	}
 	catch (CommunicationError &err)
@@ -172,8 +172,8 @@ int main()
 			"This is a test (Subject)",
 			"<html><body><h1>Hello,</h1><br/><br/>How are you?</body></html>", nullptr, 0, nullptr, 0, att1, ATTACHMENT_COUNT);
 
-		client->send_mail(&msg);
-		cout << client->get_server_reply() << endl;
+		client->sendMail(&msg);
+		cout << client->getServerReply() << endl;
 		cout << "Operation completed!" << endl;
 	}
 	catch (CommunicationError &err)

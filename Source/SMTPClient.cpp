@@ -9,23 +9,23 @@ using namespace std;
 
 namespace jed_utils
 {
-	SmtpClient::SmtpClient(const char *server_name, const unsigned int port)
+	SmtpClient::SmtpClient(const char *pServerName, const unsigned int pPort)
 	{
-		this->server_name = new char[strlen(server_name) + 1];
-		strcpy_s(this->server_name, strlen(server_name) + 1, server_name);
+		this->mServerName = new char[strlen(pServerName) + 1];
+		strcpy_s(this->mServerName, strlen(pServerName) + 1, pServerName);
 
-		this->port = port;
-		server_reply = NULL;
+		this->mPort = pPort;
+		mServerReply = NULL;
 	}
 
 	SmtpClient::~SmtpClient()
 	{
-		delete server_name;
-		if (server_reply != NULL)
-			delete server_reply;
+		delete mServerName;
+		if (mServerReply != NULL)
+			delete mServerReply;
 	}
 
-	void SmtpClient::send_mail(Message *msg)
+	void SmtpClient::sendMail(Message *pMsg)
 	{
 		DWORD dwRetval;
 		struct addrinfo *result = NULL;
@@ -33,20 +33,20 @@ namespace jed_utils
 		unsigned int sock = 0;
 		WSADATA wsaData;
 
-		if (server_reply != NULL)
+		if (mServerReply != NULL)
 		{
-			delete server_reply;
-			server_reply = NULL;
+			delete mServerReply;
+			mServerReply = NULL;
 		}
 
 		ostringstream body_ss;
-		body_ss << "--sep\r\nContent-Type: " << msg->getMimeType() << "; charset=UTF-8\r\n\r\n" << msg->getBody() << "\r\n";
+		body_ss << "--sep\r\nContent-Type: " << pMsg->getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg->getBody() << "\r\n";
 		string body_real = body_ss.str();
 
 		//If there's attachments, prepare the attachments text content
-		if (msg->getAttachmentsPtr() && msg->getAttachmentsCount() > 0)
+		if (pMsg->getAttachmentsPtr() && pMsg->getAttachmentsCount() > 0)
 		{
-			string attachments_text = create_attachments_text(msg->getAttachmentsPtr(), msg->getAttachmentsCount());
+			string attachments_text = createAttachmentsText(pMsg->getAttachmentsPtr(), pMsg->getAttachmentsCount());
 			body_real += attachments_text;
 		}
 
@@ -64,7 +64,7 @@ namespace jed_utils
 		hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
 		hints.ai_socktype = SOCK_STREAM;
 
-		dwRetval = getaddrinfo(this->server_name, "25", &hints, &result);
+		dwRetval = getaddrinfo(this->mServerName, "25", &hints, &result);
 		if (dwRetval != 0) 
 		{
 			WSACleanup();
@@ -83,21 +83,21 @@ namespace jed_utils
 			throw CommunicationError(error_stream.str().c_str());
 		}
 
-		write_command(sock, "HELO %s\r\n", msg->getFrom().getEmailAddress());    
-		write_command(sock, "MAIL FROM: %s\r\n", msg->getFrom().getEmailAddress());
+		writeCommand(sock, "HELO %s\r\n", pMsg->getFrom().getEmailAddress());    
+		writeCommand(sock, "MAIL FROM: %s\r\n", pMsg->getFrom().getEmailAddress());
 		//Send command for the recepients
-		for (unsigned int index=0; index < msg->getToCount(); index++)
-			write_command(sock, "RCPT TO: %s\r\n", (msg->getToPtr() + index)->getEmailAddress()); 
+		for (unsigned int index=0; index < pMsg->getToCount(); index++)
+			writeCommand(sock, "RCPT TO: %s\r\n", (pMsg->getToPtr() + index)->getEmailAddress()); 
 		// Data section
-		write_command(sock, "DATA\r\n", "");
+		writeCommand(sock, "DATA\r\n", "");
 		// Mail headers
-		write_command(sock, "From: %s\r\n", msg->getFrom());
-		for (size_t index = 0; index < msg->getToCount(); index++)
-			write_command(sock, "To: %s\r\n", *(msg->getToPtr() + index), false);
-		write_command(sock, "Subject: %s\r\n", msg->getSubject(), false);
-		write_command(sock, "MIME-Version: 1.0\r\n", "", false);
-		write_command(sock, "Content-Type: multipart/mixed; boundary=sep\r\n", "", false);
-		write_command(sock, "\r\n", "", false);
+		writeCommand(sock, "From: %s\r\n", pMsg->getFrom());
+		for (size_t index = 0; index < pMsg->getToCount(); index++)
+			writeCommand(sock, "To: %s\r\n", *(pMsg->getToPtr() + index), false);
+		writeCommand(sock, "Subject: %s\r\n", pMsg->getSubject(), false);
+		writeCommand(sock, "MIME-Version: 1.0\r\n", "", false);
+		writeCommand(sock, "Content-Type: multipart/mixed; boundary=sep\r\n", "", false);
+		writeCommand(sock, "\r\n", "", false);
 		// Body part
 		if (body_real.length() > 512)
 		{
@@ -107,15 +107,15 @@ namespace jed_utils
 				size_t length = 512;
 				if (index_start + 512 > body_real.length() - 1)
 					length = body_real.length() - index_start;
-				write_command(sock, body_real.substr(index_start, length), "", false);
+				writeCommand(sock, body_real.substr(index_start, length), "", false);
 			}
 		}
 		else
-			write_command(sock, "%s", body_real, false);
-		write_command(sock, "\r\n", "", false);
+			writeCommand(sock, "%s", body_real, false);
+		writeCommand(sock, "\r\n", "", false);
 		//End of data
-		write_command(sock, ".\r\n", "", false); 
-		write_command(sock, "QUIT\r\n", "", false);
+		writeCommand(sock, ".\r\n", "", false); 
+		writeCommand(sock, "QUIT\r\n", "", false);
 
 		wsa_retVal = closesocket(sock);
 		if (wsa_retVal == SOCKET_ERROR)
@@ -128,7 +128,7 @@ namespace jed_utils
 		WSACleanup();
 	}
 
-	void SmtpClient::write_command(const unsigned int sock, const string str, const string arg, const bool ask_for_reply)
+	void SmtpClient::writeCommand(const unsigned int sock, const string str, const string arg, const bool ask_for_reply)
 	{
 		char buf[4096];
 
@@ -155,40 +155,40 @@ namespace jed_utils
 			if (len > 0)
 			{
 				outbuf[len] = '\0';
-				if (server_reply == NULL)
+				if (mServerReply == NULL)
 				{
-					server_reply = new char[strlen(outbuf) + 1];
-					strcpy_s(this->server_reply, strlen(outbuf) + 1, outbuf);
+					mServerReply = new char[strlen(outbuf) + 1];
+					strcpy_s(this->mServerReply, strlen(outbuf) + 1, outbuf);
 				}
 				else
 				{
-					size_t size_new_buf = strlen(server_reply) + strlen(outbuf) + 1;
+					size_t size_new_buf = strlen(mServerReply) + strlen(outbuf) + 1;
 					char *server_reply_temp = new char[size_new_buf];
-					strcpy_s(server_reply_temp, strlen(server_reply) + 1, server_reply);
-					delete server_reply;
-					server_reply = server_reply_temp;
-					strcat_s(this->server_reply, size_new_buf, outbuf);
+					strcpy_s(server_reply_temp, strlen(mServerReply) + 1, mServerReply);
+					delete mServerReply;
+					mServerReply = server_reply_temp;
+					strcat_s(this->mServerReply, size_new_buf, outbuf);
 				}
 				
 			}
 		}
 	}
 
-	const char *SmtpClient::get_server_reply() const
+	const char *SmtpClient::getServerReply() const
 	{
-		return this->server_reply;
+		return this->mServerReply;
 	}
 
-	string SmtpClient::create_attachments_text(const Attachment *attachments, const unsigned int attachements_count)
+	string SmtpClient::createAttachmentsText(const Attachment *pAttachments, const unsigned int pAttachementsCount)
 	{
 		string retval = "";	
-		for (unsigned int index=0; index < attachements_count; index++)
+		for (unsigned int index=0; index < pAttachementsCount; index++)
 		{
 			retval += "\r\n--sep\r\n";
-			retval += "Content-Type: " + string((*(attachments + index)).getMimeType()) + "; file=\"" + string((*(attachments + index)).getName()) + "\"\r\n";
-			retval += "Content-Disposition: Inline; filename=\"" + string((*(attachments + index)).getName()) + "\"\r\n";
+			retval += "Content-Type: " + string((*(pAttachments + index)).getMimeType()) + "; file=\"" + string((*(pAttachments + index)).getName()) + "\"\r\n";
+			retval += "Content-Disposition: Inline; filename=\"" + string((*(pAttachments + index)).getName()) + "\"\r\n";
 			retval += "Content-Transfer-Encoding: base64\r\n\r\n";
-			const char *base64_file = attachments[index].getBase64EncodedFile();
+			const char *base64_file = pAttachments[index].getBase64EncodedFile();
 			retval += string(base64_file);
 			delete base64_file;
 
