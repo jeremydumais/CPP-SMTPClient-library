@@ -13,10 +13,10 @@ namespace jed_utils
 	CommunicationError::~CommunicationError()
 	{
 		if (mErrorMessage)
-		delete mErrorMessage;
+			delete mErrorMessage;
 	}
 
-	string CommunicationError::what() const throw()
+	const string &CommunicationError::what() const throw()
 	{
 		return *mErrorMessage;
 	}

@@ -6,25 +6,19 @@ using namespace std;
 
 namespace jed_utils
 {
-	MessageAddress::MessageAddress(const char *pEmailAddress, const char *pDisplayName)
+	MessageAddress::MessageAddress(const string &pEmailAddress, const string &pDisplayName)
 	{
-		if (strlen(pEmailAddress) == 0)
+		if (pEmailAddress.length() == 0)
 			throw invalid_argument("pEmailAddress");
 
-		this->mEmailAddress = new char[strlen(pEmailAddress) + 1];
-		strcpy_s(this->mEmailAddress, strlen(pEmailAddress) + 1, pEmailAddress);
-
-		this->mDisplayName = new char[strlen(pDisplayName) + 1];
-		strcpy_s(this->mDisplayName, strlen(pDisplayName) + 1, pDisplayName);
+		this->mEmailAddress = new string(pEmailAddress);
+		this->mDisplayName = new string(pDisplayName);
 	}
 
 	MessageAddress::MessageAddress(const MessageAddress &item)
 	{
-		mEmailAddress = new char[strlen(item.mEmailAddress) + 1];
-		memcpy(mEmailAddress, item.mEmailAddress, strlen(item.mEmailAddress) + 1);
-
-		mDisplayName = new char[strlen(item.mDisplayName) + 1];
-		memcpy(mDisplayName, item.mDisplayName, strlen(item.mDisplayName) + 1);
+		mEmailAddress = new string(*item.mEmailAddress);
+		mDisplayName = new string(*item.mDisplayName);
 	}
 
 	const MessageAddress& MessageAddress::operator=(const MessageAddress &msg_add)
@@ -33,25 +27,22 @@ namespace jed_utils
 		{
 			delete mEmailAddress;
 			delete mDisplayName;
-			mEmailAddress = new char[strlen(msg_add.mEmailAddress) + 1];
-			memcpy(mEmailAddress, msg_add.mEmailAddress, strlen(msg_add.mEmailAddress) + 1);
-
-			mDisplayName = new char[strlen(msg_add.mDisplayName) + 1];
-			memcpy(mDisplayName, msg_add.mDisplayName, strlen(msg_add.mDisplayName) + 1);
+			mEmailAddress = new string(*msg_add.mEmailAddress);
+			mDisplayName = new string(*msg_add.mDisplayName);
 		}
 		return *this;
 	}
 
 	bool MessageAddress::operator==(const MessageAddress &msg_comp) const
 	{
-		return (strcmp(mEmailAddress, msg_comp.mEmailAddress) == 0 && 
-			strcmp(mDisplayName, msg_comp.mDisplayName) == 0);
+		return (mEmailAddress->compare(*msg_comp.mEmailAddress) == 0 && 
+			mDisplayName->compare(*msg_comp.mDisplayName) == 0);
 	}
 
 	MessageAddress::operator string() const
 	{
 		ostringstream retval;
-		if (mDisplayName && strcmp(mDisplayName, "") == 0)
+		if (mDisplayName && mDisplayName->compare("") == 0)
 			retval << mEmailAddress;
 		else
 			retval << mDisplayName << " <" << mEmailAddress << ">";
@@ -60,17 +51,19 @@ namespace jed_utils
 
 	MessageAddress::~MessageAddress()
 	{
-		delete mEmailAddress;
-		delete mDisplayName;
+		if (mEmailAddress)
+			delete mEmailAddress;
+		if (mDisplayName)
+			delete mDisplayName;
 	}
 
-	const char *MessageAddress::getEmailAddress() const
+	const string &MessageAddress::getEmailAddress() const
 	{
-		return mEmailAddress;
+		return *mEmailAddress;
 	}
 
-	const char *MessageAddress::getDisplayName() const
+	const string &MessageAddress::getDisplayName() const
 	{
-		return mDisplayName;
+		return *mDisplayName;
 	}
 }

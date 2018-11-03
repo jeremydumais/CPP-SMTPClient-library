@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "../../Include/PlainTextMessage.h"
 #include <stdexcept>
+#include <vector>
 
 using namespace jed_utils;
 using namespace std;
@@ -25,19 +26,19 @@ public:
     PlaintextMessage *msg;
 };
 
-/*class CompleteMessageWithSimpleConstructor : public ::testing::Test
+class CompleteMessageWithSimpleConstructor : public ::testing::Test
 {
 public:
     CompleteMessageWithSimpleConstructor()
     {
-        Attachment att[2] = { Attachment("C:\Temp\test.png", "test image.png"), Attachment("C:\Temp\test2.png", "test image2.png") };
+        vector<Attachment> att = { Attachment("C:\\Temp\\test.png", "test image.png"), Attachment("C:\\Temp\\test2.png", "test image2.png") };
         msg = new PlaintextMessage(MessageAddress("myfromaddress@test.com", "Test Address Display"),
         MessageAddress("youraddress@domain.com", "DisplayNameTo"),
         "This is a test (Subject)",
         "Hello\nHow are you?",
-        MessageAddress("myccaddress@domain.com", "myCCName"),
-        MessageAddress("mybccaddress@domain.com", "myBCCName"),
-        att, 2);
+        vector<MessageAddress> { MessageAddress("myccaddress@domain.com", "myCCName") },
+        vector<MessageAddress> { MessageAddress("mybccaddress@domain.com", "myBCCName") },
+        att);
         
     }
 
@@ -48,7 +49,7 @@ public:
     }
 
     PlaintextMessage *msg;
-};*/
+};
 
 TEST(plainTextMessage_SimpleConstructor, validParams)
 {
@@ -60,9 +61,9 @@ TEST(plainTextMessage_SimpleConstructor, validParams)
 
 TEST(plainTextMessage_ExtendedConstructor, validParams)
 {
-    MessageAddress addr_to[1] = { MessageAddress("youraddress@domain.com") };
+    vector<MessageAddress> addr_to = { MessageAddress("youraddress@domain.com") };
     PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
-        addr_to, 1,
+        addr_to,
         "This is a test (Subject)",
         "Hello\nHow are you?");
 }
@@ -82,17 +83,17 @@ TEST_F(SimpleMessage, getToCountReturnValid)
 TEST_F(SimpleMessage, getToReturnValid)
 {
     ASSERT_EQ(msg->getToCount(), 1);
-    ASSERT_EQ(msg->getToPtr()[0], MessageAddress("youraddress@domain.com"));
+    ASSERT_EQ(msg->getTo()[0], MessageAddress("youraddress@domain.com"));
 }
 
 TEST_F(SimpleMessage, getSubjectReturnValid)
 {
-    ASSERT_EQ(_stricmp(msg->getSubject(), "This is a test (Subject)"), 0);
+    ASSERT_EQ(msg->getSubject().compare("This is a test (Subject)"), 0);
 }
 
 TEST_F(SimpleMessage, getBodyReturnValid)
 {
-    ASSERT_EQ(_stricmp(msg->getBody(), "Hello\nHow are you?"), 0);
+    ASSERT_EQ(msg->getBody().compare("Hello\nHow are you?"), 0);
 }
 
 TEST_F(SimpleMessage, getCcCountReturnValid)
@@ -102,7 +103,7 @@ TEST_F(SimpleMessage, getCcCountReturnValid)
 
 TEST_F(SimpleMessage, getCcReturnNull)
 {
-    ASSERT_EQ(msg->getCcPtr(), nullptr);
+    ASSERT_TRUE(msg->getCc().empty());
 }
 
 TEST_F(SimpleMessage, getAttachmentsCountReturn0)
@@ -112,12 +113,12 @@ TEST_F(SimpleMessage, getAttachmentsCountReturn0)
 
 TEST_F(SimpleMessage, getAttachmentsPtrReturnNull)
 {
-    ASSERT_EQ(msg->getAttachmentsPtr(), nullptr);
+    ASSERT_TRUE(msg->getAttachments().empty());
 }
 
 TEST_F(SimpleMessage, getMimeTypeReturnValidPlainText)
 {
-    ASSERT_EQ(_stricmp(msg->getMimeType(), "text/plain"), 0);
+    ASSERT_EQ(msg->getMimeType().compare("text/plain"), 0);
 }
 
 //End Simple Message fixture tests

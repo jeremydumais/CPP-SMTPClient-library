@@ -4,245 +4,202 @@ using namespace std;
 
 namespace jed_utils
 {
-	Message::Message(MessageAddress from,
-		MessageAddress to,
-		const char *subject,
-		const char *body,
-		MessageAddress *cc,
-		MessageAddress *bcc,
-		Attachment attachments[],
-		const unsigned int attachments_size):
-		mFrom(from)
+	Message::Message(const MessageAddress &pFrom,
+		const MessageAddress &pTo,
+		const string &pSubject,
+		const string &pBody,
+		const vector<MessageAddress> &pCc,
+		const vector<MessageAddress> &pBcc,
+		const vector<Attachment> &pAttachments):
+		mFrom(pFrom)
 	{
-		mToCount = 1;
-		this->mTo = new MessageAddress[mToCount];
-		this->mTo[0] = to;
+		mTo = new vector<MessageAddress>();
+		mTo->push_back(pTo);
+		mSubject = new string(pSubject);
+		mBody = new string(pBody);
 
-		this->mSubject = new char[strlen(subject) + 1];
-		strcpy_s(this->mSubject, strlen(subject) + 1, subject);
+		mCc = new vector<MessageAddress>();
+		for(auto &item : pCc)
+			mCc->push_back(item);
 
-		this->mBody = new char[strlen(body) + 1];
-		strcpy_s(this->mBody, strlen(body) + 1, body);
+		mBcc = new vector<MessageAddress>();
+		for(auto &item : pBcc)
+			mBcc->push_back(item);
 
-		if (cc)
-		{
-			mCcCount = 1;
-			this->mCc = new MessageAddress[mCcCount];
-			this->mCc[0] = *cc;
-		}
-
-		if (bcc)
-		{
-			mBccCount = 1;
-			this->mBcc = new MessageAddress[mCcCount];
-			this->mBcc[0] = *bcc;
-		}
-
-		if (attachments)
-		{
-			mAttachmentsCount = attachments_size;
-			this->mAttachments = new Attachment[mAttachmentsCount];
-			for (unsigned int index = 0; index < attachments_size; index++)
-				this->mAttachments[index] = attachments[index];
-		}
+		mAttachments = new vector<Attachment>();
+		for(auto &item : pAttachments)
+			mAttachments->push_back(item);
 	}
 
-	Message::Message(MessageAddress from,
-		MessageAddress to[],
-		const unsigned int to_size,
-		const char *subject,
-		const char *body,
-		MessageAddress cc[],
-		const unsigned int cc_size,
-		MessageAddress bcc[],
-		const unsigned int bcc_size,
-		Attachment attachments[],
-		const unsigned int attachments_size)
-		: mFrom(from)
+	Message::Message(const MessageAddress &pFrom,
+		const vector<MessageAddress> &pTo,
+		const string &pSubject,
+		const string &pBody,
+		const vector<MessageAddress> &pCc,
+		const vector<MessageAddress> &pBcc,
+		const vector<Attachment> &pAttachments)
+		: mFrom(pFrom)
 	{
-		mToCount = to_size;
-		this->mTo = new MessageAddress[mToCount];
-		for (unsigned int index = 0; index < to_size; index++)
-			this->mTo[index] = to[index];
+		mTo = new vector<MessageAddress>();
+		for (auto &item : pTo)
+			mTo->push_back(item);
 
-		this->mSubject = new char[strlen(subject) + 1];
-		strcpy_s(this->mSubject, strlen(subject) + 1, subject);
+		mSubject = new string(pSubject);
+		mBody = new string(pBody);
 
-		this->mBody = new char[strlen(body) + 1];
-		strcpy_s(this->mBody, strlen(body) + 1, body);
+		mCc = new vector<MessageAddress>();
+		for(auto &item : pCc)
+			mCc->push_back(item);
 
-		if (cc)
-		{
-			mCcCount = cc_size;
-			this->mCc = new MessageAddress[mCcCount];
-			for (unsigned int index = 0; index < cc_size; index++)
-				this->mCc[index] = cc[index];
-		}
+		mBcc = new vector<MessageAddress>();
+		for(auto &item : pBcc)
+			mBcc->push_back(item);
 
-		if (bcc)
-		{
-			mBccCount = bcc_size;
-			this->mBcc = new MessageAddress[mBccCount];
-			for (unsigned int index = 0; index < bcc_size; index++)
-				this->mBcc[index] = bcc[index];
-		}
-
-		if (attachments)
-		{
-			mAttachmentsCount = attachments_size;
-			this->mAttachments = new Attachment[mAttachmentsCount];
-			for (unsigned int index = 0; index < attachments_size; index++)
-				this->mAttachments[index] = attachments[index];
-		}
+		mAttachments = new vector<Attachment>();
+		for(auto &item : pAttachments)
+			mAttachments->push_back(item);
 	}
 
 	Message::Message(const Message &pItem)
 	{
 		mFrom = pItem.mFrom;
 
-		mToCount = pItem.mToCount;
-		mTo = new MessageAddress[mToCount];
-		copy(pItem.mTo, pItem.mTo + mToCount, mTo);
+		mTo = new vector<MessageAddress>();
+		for (auto &item : *pItem.mTo)
+			mTo->push_back(item);
 
-		mSubject = new char[strlen(pItem.mSubject) + 1];
-		memcpy(mSubject, pItem.mSubject, strlen(pItem.mSubject) + 1);
+		mSubject = new string(*pItem.mSubject);
+		mBody = new string(*pItem.mBody);
 
-		mBody = new char[strlen(pItem.mBody) + 1];
-		memcpy(mBody, pItem.mBody, strlen(pItem.mBody) + 1);
+		mCc = new vector<MessageAddress>();
+		for(auto &item : *pItem.mCc)
+			mCc->push_back(item);
 
-		mCcCount = pItem.mCcCount;
-		if (mCcCount > 0)
-		{
-			mCc = new MessageAddress[mCcCount];
-			copy(pItem.mCc, pItem.mCc + mCcCount, mCc);
-		}
+		mBcc = new vector<MessageAddress>();
+		for(auto &item : *pItem.mBcc)
+			mBcc->push_back(item);
 
-		mBccCount = pItem.mBccCount;
-		if (mBccCount > 0)
-		{
-			mBcc = new MessageAddress[mBccCount];
-			copy(pItem.mBcc, pItem.mBcc + mBccCount, mBcc);
-		}
-
-		mAttachmentsCount = pItem.mAttachmentsCount;
-		if (mAttachmentsCount > 0)
-		{
-			mAttachments = new Attachment[mAttachmentsCount];
-			copy(pItem.mAttachments, pItem.mAttachments + mAttachmentsCount, mAttachments);
-		}
+		mAttachments = new vector<Attachment>();
+		for(auto &item : *pItem.mAttachments)
+			mAttachments->push_back(item);
 	}
 
 	Message::~Message()
 	{
-		delete[] mTo;
+		if (mTo)
+		{
+			mTo->clear();
+			delete mTo;
+		}
 		delete mSubject;
 		delete mBody;
 		if (mCc)
-			delete[] mCc;
+		{
+			mCc->clear();
+			delete mCc;
+		}
 		if (mBcc)
-			delete[] mBcc;
+		{
+			mBcc->clear();
+			delete mBcc;
+		}
 		if (mAttachments)
-			delete[] mAttachments;
+		{
+			mAttachments->clear();
+			delete mAttachments;
+		}
 	}
 
 	const Message& Message::operator=(const Message &msg)
 	{
 		if (this != &msg)
 		{
-			delete[] mTo;
+			mTo->clear();
+			delete mTo;
 			delete mSubject;
 			delete mBody;
 			if (mCc)
 			{
-				delete[] mCc;
-				mCc = NULL;
+				mCc->clear();
+				delete mCc;
+				mCc = nullptr;
 			}
 			if (mBcc)
 			{
-				delete[] mBcc;
-				mBcc = NULL;
+				mBcc->clear();
+				delete mBcc;
+				mBcc = nullptr;
 			}
 
 			if (mAttachments)
 			{
-				delete[] mAttachments;
-				mAttachments = NULL;
+				mAttachments->clear();
+				delete mAttachments;
+				mAttachments = nullptr;
 			}
 
 			mFrom = msg.mFrom;
 
-			mToCount = msg.mToCount;
-			mTo = new MessageAddress[mToCount];
-			copy(msg.mTo, msg.mTo + mToCount, mTo);
+			mTo = new vector<MessageAddress>();
+			for (auto &item : *msg.mTo)
+				mTo->push_back(item);
 
-			mSubject = new char[strlen(msg.mSubject) + 1];
-			memcpy(mSubject, msg.mSubject, strlen(msg.mSubject) + 1);
+			mSubject = new string(*msg.mSubject);
+			mBody = new string(*msg.mBody);
 
-			mBody = new char[strlen(msg.mBody) + 1];
-			memcpy(mBody, msg.mBody, strlen(msg.mBody) + 1);
+			mCc = new vector<MessageAddress>();
+			for(auto &item : *msg.mCc)
+				mCc->push_back(item);
 
-			mCcCount = msg.mCcCount;
-			if (mCcCount > 0)
-			{
-				mCc = new MessageAddress[mCcCount];
-				copy(msg.mCc, msg.mCc + mCcCount, mCc);
-			}
+			mBcc = new vector<MessageAddress>();
+			for(auto &item : *msg.mBcc)
+				mBcc->push_back(item);
 
-			mBccCount = msg.mBccCount;
-			if (mBccCount > 0)
-			{
-				mBcc = new MessageAddress[mBccCount];
-				copy(msg.mBcc, msg.mBcc + mBccCount, mBcc);
-			}
-
-			mAttachmentsCount = msg.mAttachmentsCount;
-			if (mAttachmentsCount > 0)
-			{
-				mAttachments = new Attachment[mAttachmentsCount];
-				copy(msg.mAttachments, msg.mAttachments + mAttachmentsCount, mAttachments);
-			}
+			mAttachments = new vector<Attachment>();
+			for(auto &item : *msg.mAttachments)
+				mAttachments->push_back(item);
 		}
 		return *this;
 	}
 
-	const MessageAddress *Message::getToPtr() const
+	const vector<MessageAddress> &Message::getTo() const
 	{
-		return mTo;
+		return *mTo;
 	}
 
-	const unsigned int Message::getToCount() const
+	const size_t Message::getToCount() const
 	{
-		return mToCount;
+		return mTo->size();
 	}
 
-	const char *Message::getSubject() const
+	const string &Message::getSubject() const
 	{
-		return mSubject;
+		return *mSubject;
 	}
 
-	const char *Message::getBody() const
+	const string &Message::getBody() const
 	{
-		return mBody;
+		return *mBody;
 	}
 
-	const MessageAddress *Message::getCcPtr() const
+	const vector<MessageAddress> &Message::getCc() const
 	{
-		return mCc;
+		return *mCc;
 	}
 
-	const unsigned int Message::getCcCount() const
+	const size_t Message::getCcCount() const
 	{
-		return mCcCount;
+		return mCc->size();
 	}
 
-	const MessageAddress *Message::getBccPtr() const
+	const vector<MessageAddress> &Message::getBcc() const
 	{
-		return mBcc;
+		return *mBcc;
 	}
 
-	const unsigned int Message::getBccCount() const
+	const size_t Message::getBccCount() const
 	{
-		return mBccCount;
+		return mBcc->size();
 	}
 
 	const MessageAddress Message::getFrom() const
@@ -250,13 +207,13 @@ namespace jed_utils
 		return mFrom;
 	}
 
-	const Attachment *Message::getAttachmentsPtr() const
+	const vector<Attachment> &Message::getAttachments() const
 	{
-		return mAttachments;
+		return *mAttachments;
 	}
 
-	const unsigned int Message::getAttachmentsCount() const
+	const size_t Message::getAttachmentsCount() const
 	{
-		return mAttachmentsCount;
+		return mAttachments->size();
 	}
 }

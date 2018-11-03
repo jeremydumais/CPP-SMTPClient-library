@@ -10,7 +10,6 @@ namespace jed_utils
 		if (pFilename.length() == 0)
 			throw invalid_argument("filename");
 		this->mFilename = new string(pFilename);
-
 		this->mName = new string(pName);
 	}
 
@@ -35,16 +34,18 @@ namespace jed_utils
 
 	Attachment::~Attachment()
 	{
-		delete mFilename;
-		delete mName;
+		if (mFilename)
+			delete mFilename;
+		if (mName)
+			delete mName;
 	}
 
-	string Attachment::getName() const
+	const string &Attachment::getName() const
 	{
 		return *mName;
 	}
 
-	string Attachment::getFilename() const
+	const string &Attachment::getFilename() const
 	{
 		return *mFilename;
 	}

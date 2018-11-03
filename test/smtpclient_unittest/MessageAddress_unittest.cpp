@@ -24,14 +24,27 @@ TEST(MessageAddress_constructor, ValidParam)
 	MessageAddress msg_add("test@domain.com", "Test Address");
 }
 
+TEST(MessageAddress_constructor, EmptyEmailAddressThrowInvalidArgument)
+{
+	try
+	{
+		MessageAddress msg_add("", "Test Address");
+		FAIL();
+	}
+	catch(invalid_argument)
+	{
+
+	}
+}
+
 TEST(MessageAddress_get_email_address, validDomain)
 {
 	MessageAddress msg_add("test@domain.com", "Test Address");
-	assert(_stricmp(msg_add.getEmailAddress(), "test@domain.com") == 0);
+	ASSERT_EQ(msg_add.getEmailAddress().compare("test@domain.com"), 0);
 }
 
 TEST(MessageAddress_get_display_name, validDN)
 {
 	MessageAddress msg_add("test@domain.com", "Test Address");
-	assert(_stricmp(msg_add.getDisplayName(), "Test Address") == 0);
+	ASSERT_EQ(msg_add.getDisplayName().compare("Test Address"), 0);
 }

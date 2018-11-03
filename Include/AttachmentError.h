@@ -17,7 +17,7 @@ namespace jed_utils
 	public:
 		AttachmentError(const std::string &pErrMsg);
 		~AttachmentError();
-		std::string what() const throw();
+		const std::string &what() const throw();
 	private:
 		std::string *mErrorMessage = nullptr;
 	};

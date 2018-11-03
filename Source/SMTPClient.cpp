@@ -9,44 +9,43 @@ using namespace std;
 
 namespace jed_utils
 {
-	SmtpClient::SmtpClient(const char *pServerName, const unsigned int pPort)
+	SmtpClient::SmtpClient(const string &pServerName, const unsigned int pPort)
 	{
-		this->mServerName = new char[strlen(pServerName) + 1];
-		strcpy_s(this->mServerName, strlen(pServerName) + 1, pServerName);
-
+		this->mServerName = new string(pServerName);
 		this->mPort = pPort;
-		mServerReply = NULL;
+		mServerReply = nullptr;
 	}
 
 	SmtpClient::~SmtpClient()
 	{
-		delete mServerName;
-		if (mServerReply != NULL)
+		if (mServerName)
+			delete mServerName;
+		if (mServerReply)
 			delete mServerReply;
 	}
 
-	void SmtpClient::sendMail(Message *pMsg)
+	void SmtpClient::sendMail(const Message &pMsg)
 	{
 		DWORD dwRetval;
-		struct addrinfo *result = NULL;
+		struct addrinfo *result = nullptr;
 		struct addrinfo hints; 
 		unsigned int sock = 0;
 		WSADATA wsaData;
 
-		if (mServerReply != NULL)
+		if (mServerReply)
 		{
 			delete mServerReply;
-			mServerReply = NULL;
+			mServerReply = nullptr;
 		}
 
 		ostringstream body_ss;
-		body_ss << "--sep\r\nContent-Type: " << pMsg->getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg->getBody() << "\r\n";
+		body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
 		string body_real = body_ss.str();
 
 		//If there's attachments, prepare the attachments text content
-		if (pMsg->getAttachmentsPtr() && pMsg->getAttachmentsCount() > 0)
+		if (pMsg.getAttachmentsCount() > 0)
 		{
-			string attachments_text = createAttachmentsText(pMsg->getAttachmentsPtr(), pMsg->getAttachmentsCount());
+			string attachments_text = createAttachmentsText(pMsg.getAttachments());
 			body_real += attachments_text;
 		}
 
@@ -64,7 +63,7 @@ namespace jed_utils
 		hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
 		hints.ai_socktype = SOCK_STREAM;
 
-		dwRetval = getaddrinfo(this->mServerName, "25", &hints, &result);
+		dwRetval = getaddrinfo((*mServerName).c_str(), "25", &hints, &result);
 		if (dwRetval != 0) 
 		{
 			WSACleanup();
@@ -83,18 +82,18 @@ namespace jed_utils
 			throw CommunicationError(error_stream.str().c_str());
 		}
 
-		writeCommand(sock, "HELO %s\r\n", pMsg->getFrom().getEmailAddress());    
-		writeCommand(sock, "MAIL FROM: %s\r\n", pMsg->getFrom().getEmailAddress());
+		writeCommand(sock, "HELO %s\r\n", pMsg.getFrom().getEmailAddress());    
+		writeCommand(sock, "MAIL FROM: %s\r\n", pMsg.getFrom().getEmailAddress());
 		//Send command for the recepients
-		for (unsigned int index=0; index < pMsg->getToCount(); index++)
-			writeCommand(sock, "RCPT TO: %s\r\n", (pMsg->getToPtr() + index)->getEmailAddress()); 
+		for(auto &item : pMsg.getTo())
+			writeCommand(sock, "RCPT TO: %s\r\n", item.getEmailAddress());
 		// Data section
 		writeCommand(sock, "DATA\r\n", "");
 		// Mail headers
-		writeCommand(sock, "From: %s\r\n", pMsg->getFrom());
-		for (size_t index = 0; index < pMsg->getToCount(); index++)
-			writeCommand(sock, "To: %s\r\n", *(pMsg->getToPtr() + index), false);
-		writeCommand(sock, "Subject: %s\r\n", pMsg->getSubject(), false);
+		writeCommand(sock, "From: %s\r\n", pMsg.getFrom());
+		for(auto &item : pMsg.getTo())
+			writeCommand(sock, "To: %s\r\n", item, false);
+		writeCommand(sock, "Subject: %s\r\n", pMsg.getSubject(), false);
 		writeCommand(sock, "MIME-Version: 1.0\r\n", "", false);
 		writeCommand(sock, "Content-Type: multipart/mixed; boundary=sep\r\n", "", false);
 		writeCommand(sock, "\r\n", "", false);
@@ -128,68 +127,61 @@ namespace jed_utils
 		WSACleanup();
 	}
 
-	void SmtpClient::writeCommand(const unsigned int sock, const string str, const string arg, const bool ask_for_reply)
+	void SmtpClient::writeCommand(const unsigned int pSock, const string &pStr, const string &pArg, const bool pAskForReply)
 	{
 		char buf[4096];
 
-		if (arg != "")
-			snprintf(buf, sizeof(buf), str.c_str(), arg.c_str());
+		if (pArg != "")
+			snprintf(buf, sizeof(buf), pStr.c_str(), pArg.c_str());
 		else
-			snprintf(buf, sizeof(buf), str.c_str());
+			snprintf(buf, sizeof(buf), pStr.c_str());
 
 
-		int wsa_retVal = send(sock, buf, static_cast<int>(strlen(buf)), 0);
+		int wsa_retVal = send(pSock, buf, static_cast<int>(strlen(buf)), 0);
 		if (wsa_retVal == SOCKET_ERROR) {
 			cout << "send failed: " << WSAGetLastError() << endl;
-			closesocket(sock);
+			closesocket(pSock);
 			WSACleanup();
 			ostringstream error_stream;
 			error_stream << "send command failed : " << WSAGetLastError();
 			throw CommunicationError(error_stream.str().c_str());
 		}
-		if (ask_for_reply)
+		if (pAskForReply)
 		{
 			// read a reply from server
 			char outbuf[1024];
-			int len = recv(sock, outbuf, 1024, 0);
+			int len = recv(pSock, outbuf, 1024, 0);
 			if (len > 0)
 			{
 				outbuf[len] = '\0';
-				if (mServerReply == NULL)
+				if (mServerReply == nullptr)
 				{
-					mServerReply = new char[strlen(outbuf) + 1];
-					strcpy_s(this->mServerReply, strlen(outbuf) + 1, outbuf);
+					mServerReply = new string(outbuf);
 				}
 				else
 				{
-					size_t size_new_buf = strlen(mServerReply) + strlen(outbuf) + 1;
-					char *server_reply_temp = new char[size_new_buf];
-					strcpy_s(server_reply_temp, strlen(mServerReply) + 1, mServerReply);
-					delete mServerReply;
-					mServerReply = server_reply_temp;
-					strcat_s(this->mServerReply, size_new_buf, outbuf);
+					(*mServerReply) += string(outbuf);
 				}
 				
 			}
 		}
 	}
 
-	const char *SmtpClient::getServerReply() const
+	const string &SmtpClient::getServerReply() const
 	{
-		return this->mServerReply;
+		return *mServerReply;
 	}
 
-	string SmtpClient::createAttachmentsText(const Attachment *pAttachments, const unsigned int pAttachementsCount)
+	string SmtpClient::createAttachmentsText(const vector<Attachment> &pAttachments)
 	{
 		string retval = "";	
-		for (unsigned int index=0; index < pAttachementsCount; index++)
+		for (auto &item : pAttachments)
 		{
 			retval += "\r\n--sep\r\n";
-			retval += "Content-Type: " + string((*(pAttachments + index)).getMimeType()) + "; file=\"" + string((*(pAttachments + index)).getName()) + "\"\r\n";
-			retval += "Content-Disposition: Inline; filename=\"" + string((*(pAttachments + index)).getName()) + "\"\r\n";
+			retval += "Content-Type: " + item.getMimeType() + "; file=\"" + item.getName() + "\"\r\n";
+			retval += "Content-Disposition: Inline; filename=\"" + item.getName() + "\"\r\n";
 			retval += "Content-Transfer-Encoding: base64\r\n\r\n";
-			string base64_file = pAttachments[index].getBase64EncodedFile();
-			retval += base64_file;
+			retval += item.getBase64EncodedFile();;
 
 		}
 		retval += "\r\n--sep--";

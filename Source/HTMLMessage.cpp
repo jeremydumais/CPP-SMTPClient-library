@@ -4,34 +4,29 @@ using namespace std;
 
 namespace jed_utils
 {
-	HTMLMessage::HTMLMessage(MessageAddress from,
-		MessageAddress to,
-		const char *subject,
-		const char *body,
-		MessageAddress *cc,
-		MessageAddress *bcc,
-		Attachment attachments[],
-		const unsigned int attachments_size) :
-		Message(from, to, subject, body, cc, bcc, attachments, attachments_size)
+	HTMLMessage::HTMLMessage(const MessageAddress &pFrom,
+		const MessageAddress &pTo,
+		const string &pSubject,
+		const string &pBody,
+		const vector<MessageAddress> &pCc,
+		const vector<MessageAddress> &pBcc,
+		const vector<Attachment> &pAttachments) 
+		: Message(pFrom, pTo, pSubject, pBody, pCc, pBcc, pAttachments)
 	{
 	}
 
-	HTMLMessage::HTMLMessage(MessageAddress from,
-		MessageAddress to[],
-		const unsigned int to_size,
-		const char *subject,
-		const char *body,
-		MessageAddress cc[],
-		const unsigned int cc_size,
-		MessageAddress bcc[],
-		const unsigned int bcc_size,
-		Attachment attachments[],
-		const unsigned int attachments_size) :
-		Message(from, to, to_size, subject, body, cc, cc_size, bcc, bcc_size, attachments, attachments_size)
+	HTMLMessage::HTMLMessage(const MessageAddress &pFrom,
+		const vector<MessageAddress> &pTo,
+		const string &pSubject,
+		const string &pBody,
+		const vector<MessageAddress> &pCc,
+		const vector<MessageAddress> &pBcc,
+		const vector<Attachment> &pAttachments) 
+		: Message(pFrom, pTo, pSubject, pBody, pCc, pBcc, pAttachments)
 	{
 	}
 
-	const char *HTMLMessage::getMimeType()
+	const string HTMLMessage::getMimeType() const
 	{
 		return "text/html";
 	}

@@ -16,7 +16,7 @@ namespace jed_utils
 			delete mErrorMessage;
 	}
 
-	string AttachmentError::what() const throw()
+	const string &AttachmentError::what() const throw()
 	{
 		return *mErrorMessage;
 	}

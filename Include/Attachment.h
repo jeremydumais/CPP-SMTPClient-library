@@ -21,8 +21,8 @@ namespace jed_utils
 		Attachment(const Attachment &);
 		~Attachment();
 		const Attachment& operator=(const Attachment &pAtt);
-		std::string getName() const;
-		std::string getFilename() const;
+		const std::string &getName() const;
+		const std::string &getFilename() const;
 		std::string getBase64EncodedFile() const;
 		std::string getMimeType() const;
 		friend class Message;

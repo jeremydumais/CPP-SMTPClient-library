@@ -17,52 +17,43 @@ namespace jed_utils
 	class MESSAGE_API Message
 	{
 	public:
-		Message(MessageAddress from,
-			MessageAddress to,
-			const char *subject,
-			const char *body,
-			MessageAddress *cc = nullptr,
-			MessageAddress *bcc = nullptr,
-			Attachment attachments[] = nullptr,
-			const unsigned int attachments_size = 0);
-		Message(MessageAddress from,
-			MessageAddress to[],
-			const unsigned int to_size,
-			const char *subject,
-			const char *body,
-			MessageAddress cc[] = nullptr,
-			const unsigned int cc_size = 0,
-			MessageAddress bcc[] = nullptr,
-			const unsigned int bcc_size = 0,
-			Attachment attachments[] = nullptr,
-			const unsigned int attachments_size = 0);
+		Message(const MessageAddress &pFrom,
+			const MessageAddress &pTo,
+			const std::string &pSubject,
+			const std::string &pBody,
+			const std::vector<MessageAddress> &pCc = std::vector<MessageAddress>(),
+			const std::vector<MessageAddress> &pBcc = std::vector<MessageAddress>(),
+			const std::vector<Attachment> &pAttachments = std::vector<Attachment>());
+		Message(const MessageAddress &pFrom,
+			const std::vector<MessageAddress> &pTo,
+			const std::string &pSubject,
+			const std::string &pBody,
+			const std::vector<MessageAddress> &pCc = std::vector<MessageAddress>(),
+			const std::vector<MessageAddress> &pBcc = std::vector<MessageAddress>(),
+			const std::vector<Attachment> &pAttachments = std::vector<Attachment>());
 		Message(const Message &);
 		~Message();
-		const Message& operator=(const Message &msg);
-		virtual const char *getMimeType() = 0;
+		const Message &operator=(const Message &msg);
+		virtual const std::string getMimeType() const = 0;
 		const MessageAddress getFrom() const;
-		const MessageAddress *getToPtr() const;
-		const unsigned int getToCount() const;
-		const char *getSubject() const;
-		const char *getBody() const;
-		const MessageAddress *getCcPtr() const;
-		const unsigned int getCcCount() const;
-		const MessageAddress *getBccPtr() const;
-		const unsigned int getBccCount() const;
-		const Attachment *getAttachmentsPtr() const;
-		const unsigned int getAttachmentsCount() const;
+		const std::vector<MessageAddress> &getTo() const;
+		const size_t getToCount() const;
+		const std::string &getSubject() const;
+		const std::string &getBody() const;
+		const std::vector<MessageAddress> &getCc() const;
+		const size_t getCcCount() const;
+		const std::vector<MessageAddress> &getBcc() const;
+		const size_t getBccCount() const;
+		const std::vector<Attachment> &getAttachments() const;
+		const size_t getAttachmentsCount() const;
 	protected:
 		MessageAddress mFrom;
-		MessageAddress *mTo = nullptr;
-		unsigned int mToCount = 0;
-		MessageAddress *mCc = nullptr;
-		unsigned int mCcCount = 0;
-		MessageAddress *mBcc = nullptr;
-		unsigned int mBccCount = 0;
-		char *mSubject = nullptr;
-		char *mBody = nullptr;
-		Attachment *mAttachments = nullptr;
-		unsigned int mAttachmentsCount = 0;
+		std::vector<MessageAddress> *mTo = nullptr;
+		std::vector<MessageAddress> *mCc = nullptr;
+		std::vector<MessageAddress> *mBcc = nullptr;
+		std::string *mSubject = nullptr;
+		std::string *mBody = nullptr;
+		std::vector<Attachment> *mAttachments = nullptr;
 	};
 }
 

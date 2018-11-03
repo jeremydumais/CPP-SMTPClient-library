@@ -59,5 +59,6 @@
         "numeric": "cpp",
         "list": "cpp"
     },
-    "gtestExplorer.executable": "build/Debug/tests.exe"
+    "gtestExplorer.executable": "build/Debug/tests.exe",
+    "C_Cpp.configurationWarnings": "Disabled"
 }

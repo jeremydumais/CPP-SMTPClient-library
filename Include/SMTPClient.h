@@ -23,19 +23,19 @@ namespace jed_utils
 	class SMTPCLIENT_API SmtpClient
 	{
 	public:
-		SmtpClient(const char *pServerName, const unsigned int pPort);
+		SmtpClient(const std::string &pServerName, const unsigned int pPort);
 		~SmtpClient();
-		void sendMail(Message *pMsg);
-		const char *getServerReply() const;
+		void sendMail(const Message &pMsg);
+		const std::string &getServerReply() const;
 	protected:
-		char *mServerName;
+		std::string *mServerName;
 		unsigned int mPort;
-		char *mServerReply;
+		std::string *mServerReply;
 		void writeCommand(const unsigned int sock,
-			const std::string str,
-			const std::string arg,
+			const std::string &str,
+			const std::string &arg,
 			const bool ask_for_reply = true);
-		std::string createAttachmentsText(const Attachment *pAttachments, const unsigned int pAttachementsCount);
+		std::string createAttachmentsText(const std::vector<Attachment> &pAttachments);
 	};
 }
 
