@@ -188,9 +188,8 @@ namespace jed_utils
 			retval += "Content-Type: " + string((*(pAttachments + index)).getMimeType()) + "; file=\"" + string((*(pAttachments + index)).getName()) + "\"\r\n";
 			retval += "Content-Disposition: Inline; filename=\"" + string((*(pAttachments + index)).getName()) + "\"\r\n";
 			retval += "Content-Transfer-Encoding: base64\r\n\r\n";
-			const char *base64_file = pAttachments[index].getBase64EncodedFile();
-			retval += string(base64_file);
-			delete base64_file;
+			string base64_file = pAttachments[index].getBase64EncodedFile();
+			retval += base64_file;
 
 		}
 		retval += "\r\n--sep--";

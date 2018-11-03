@@ -1,21 +1,23 @@
 #include "..\Include\AttachmentError.h"
 #include <cstring>
 
+using namespace std;
+
 namespace jed_utils
 {
-	AttachmentError::AttachmentError(const char *pErrMsg)
+	AttachmentError::AttachmentError(const string &pErrMsg)
 	{
-		mErrorMessage = new char[strlen(pErrMsg) + 1];
-		strcpy_s(mErrorMessage, strlen(pErrMsg) + 1, pErrMsg);
+		mErrorMessage = new string(pErrMsg);
 	}
 
 	AttachmentError::~AttachmentError()
 	{
-		delete mErrorMessage;
+		if (mErrorMessage)
+			delete mErrorMessage;
 	}
 
-	const char *AttachmentError::what() const throw()
+	string AttachmentError::what() const throw()
 	{
-		return mErrorMessage;
+		return *mErrorMessage;
 	}
 }

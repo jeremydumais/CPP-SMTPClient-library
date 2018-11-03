@@ -9,7 +9,6 @@
 #include "PlainTextMessage.h"
 #include "HTMLMessage.h"
 #include <vector>
-#include <sstream>
 
 #pragma once  
 

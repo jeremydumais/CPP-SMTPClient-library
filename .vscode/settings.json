@@ -56,7 +56,8 @@
         "deque": "cpp",
         "unordered_map": "cpp",
         "functional": "cpp",
-        "numeric": "cpp"
+        "numeric": "cpp",
+        "list": "cpp"
     },
     "gtestExplorer.executable": "build/Debug/tests.exe"
 }

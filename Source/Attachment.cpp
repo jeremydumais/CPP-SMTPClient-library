@@ -5,24 +5,19 @@ using namespace std;
 
 namespace jed_utils
 {
-	Attachment::Attachment(const char *pFilename, const char *pName)
+	Attachment::Attachment(const string &pFilename, const string &pName)
 	{
-		if (strlen(pFilename) == 0)
+		if (pFilename.length() == 0)
 			throw invalid_argument("filename");
-		this->mFilename = new char[strlen(pFilename) + 1];
-		strcpy_s(this->mFilename, strlen(pFilename) + 1, pFilename);
+		this->mFilename = new string(pFilename);
 
-		this->mName = new char[strlen(pName) + 1];
-		strcpy_s(this->mName, strlen(pName) + 1, pName);
+		this->mName = new string(pName);
 	}
 
 	Attachment::Attachment(const Attachment &pItem)
 	{
-		mFilename = new char[strlen(pItem.mFilename) + 1];
-		memcpy(mFilename, pItem.mFilename, strlen(pItem.mFilename) + 1);
-
-		mName = new char[strlen(pItem.mName) + 1];
-		memcpy(mName, pItem.mName, strlen(pItem.mName) + 1);
+		mFilename = pItem.mFilename;
+		mName = pItem.mName;
 	}
 
 	const Attachment& Attachment::operator=(const Attachment &pAtt)
@@ -32,11 +27,8 @@ namespace jed_utils
 			delete mFilename;
 			delete mName;
 
-			mFilename = new char[strlen(pAtt.mFilename) + 1];
-			memcpy(mFilename, pAtt.mFilename, strlen(pAtt.mFilename) + 1);
-
-			mName = new char[strlen(pAtt.mName) + 1];
-			memcpy(mName, pAtt.mName, strlen(pAtt.mName) + 1);
+			mFilename = new string(*pAtt.mFilename);
+			mName = new string(*pAtt.mName);
 		}
 		return *this;
 	}
@@ -47,20 +39,20 @@ namespace jed_utils
 		delete mName;
 	}
 
-	const char *Attachment::getName() const
+	string Attachment::getName() const
 	{
-		return mName;
+		return *mName;
 	}
 
-	const char *Attachment::getFilename() const
+	string Attachment::getFilename() const
 	{
-		return mFilename;
+		return *mFilename;
 	}
 
-	const char *Attachment::getBase64EncodedFile() const
+	string Attachment::getBase64EncodedFile() const
 	{
 		//Open the file
-		ifstream in(mFilename, std::ios::in | std::ios::binary);
+		ifstream in(*mFilename, std::ios::in | std::ios::binary);
 		if (in)
 		{
 			std::string contents;
@@ -75,12 +67,12 @@ namespace jed_utils
 			return base64_file;
 		}
 		else
-			throw AttachmentError((string("Could not open file ") + string(mFilename)).c_str());
+			throw AttachmentError((string("Could not open file ") + string(*mFilename)).c_str());
 	}
 
-	const char *Attachment::getMimeType() const
+	string Attachment::getMimeType() const
 	{
-		string filename_str(mFilename);
+		string filename_str(*mFilename);
 		const string extension = toUppercase(filename_str.substr(filename_str.find_last_of(".") + 1));
 		//Images
 		if (extension == "PNG")

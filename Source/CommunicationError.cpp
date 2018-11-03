@@ -1,21 +1,23 @@
 #include "..\Include\CommunicationError.h"
 #include <cstring>
 
+using namespace std;
+
 namespace jed_utils
 {
-	CommunicationError::CommunicationError(const char *pErrMsg)
+	CommunicationError::CommunicationError(const string &pErrMsg)
 	{ 
-		error_message = new char[strlen(pErrMsg) + 1];
-		strcpy_s(error_message, strlen(pErrMsg) + 1, pErrMsg);
+		mErrorMessage = new string(pErrMsg);
 	}
 
 	CommunicationError::~CommunicationError()
 	{
-		delete error_message;
+		if (mErrorMessage)
+		delete mErrorMessage;
 	}
 
-	const char *CommunicationError::what() const throw()
+	string CommunicationError::what() const throw()
 	{
-		return error_message;
+		return *mErrorMessage;
 	}
 }

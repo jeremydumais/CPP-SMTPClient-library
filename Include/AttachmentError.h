@@ -2,6 +2,7 @@
 #define ATTACHMENTERROR_H
 
 #include <stdexcept>
+#include <string>
 
 #ifdef SMTPCLIENT_EXPORTS  
 #define ATTACHMENTERROR_API __declspec(dllexport)   
@@ -14,11 +15,11 @@ namespace jed_utils
 	class ATTACHMENTERROR_API AttachmentError
 	{
 	public:
-		AttachmentError(const char *pErrMsg);
+		AttachmentError(const std::string &pErrMsg);
 		~AttachmentError();
-		const char *what() const throw();
+		std::string what() const throw();
 	private:
-		char *mErrorMessage = nullptr;
+		std::string *mErrorMessage = nullptr;
 	};
 }
 
