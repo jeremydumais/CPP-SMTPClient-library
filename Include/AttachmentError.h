@@ -11,14 +11,14 @@
 
 namespace jed_utils
 {
-	class ATTACHMENTERROR_API attachment_error
+	class ATTACHMENTERROR_API AttachmentError
 	{
 	public:
-		attachment_error(const char *err_msg);
-		~attachment_error();
+		AttachmentError(const char *pErrMsg);
+		~AttachmentError();
 		const char *what() const throw();
 	private:
-		char *error_message = nullptr;
+		char *mErrorMessage = nullptr;
 	};
 }
 

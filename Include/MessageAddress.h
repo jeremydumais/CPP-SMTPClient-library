@@ -14,19 +14,20 @@
 
 namespace jed_utils
 {
-	class MESSAGEADDRESS_API message_address
+	class MESSAGEADDRESS_API MessageAddress
 	{
 	public:
-		message_address(const char *email_address, const char *display_name = "");
-		message_address(const message_address &);
-		~message_address();
-		const message_address& operator=(const message_address &msg_add);
+		MessageAddress(const char *email_address, const char *display_name = "");
+		MessageAddress(const MessageAddress &);
+		MessageAddress() {};
+		~MessageAddress();
+		const MessageAddress& operator=(const MessageAddress &msg_add);
+		bool operator==(const MessageAddress &msg_comp) const;
 		operator std::string() const;
 		const char *get_email_address() const;
 		const char *get_display_name() const;
 		friend class message;
-	private:
-		message_address() {};
+	private:	
 		char *email_address = nullptr;
 		char *display_name = nullptr;
 	};

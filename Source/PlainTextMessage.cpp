@@ -4,34 +4,34 @@ using namespace std;
 
 namespace jed_utils
 {
-	plaintext_message::plaintext_message(message_address from,
-		message_address to,
+	PlaintextMessage::PlaintextMessage(MessageAddress from,
+		MessageAddress to,
 		const char *subject,
 		const char *body,
-		message_address *cc,
-		message_address *bcc,
-		attachment attachments[],
+		MessageAddress *cc,
+		MessageAddress *bcc,
+		Attachment attachments[],
 		const unsigned int attachments_size) : 
-		message(from, to, subject, body, cc, bcc, attachments, attachments_size)
+		Message(from, to, subject, body, cc, bcc, attachments, attachments_size)
 	{
 	}
 
-	plaintext_message::plaintext_message(message_address from,
-		message_address to[],
+	PlaintextMessage::PlaintextMessage(MessageAddress from,
+		MessageAddress to[],
 		const unsigned int to_size,
 		const char *subject,
 		const char *body,
-		message_address cc[],
+		MessageAddress cc[],
 		const unsigned int cc_size,
-		message_address bcc[],
+		MessageAddress bcc[],
 		const unsigned int bcc_size,
-		attachment attachments[],
+		Attachment attachments[],
 		const unsigned int attachments_size) : 
-		message(from, to, to_size, subject, body, cc, cc_size, bcc, bcc_size, attachments, attachments_size)
+		Message(from, to, to_size, subject, body, cc, cc_size, bcc, bcc_size, attachments, attachments_size)
 	{
 	}
 
-	const char *plaintext_message::get_mimetype()
+	const char *PlaintextMessage::getMimeType()
 	{
 		return "text/plain";
 	}

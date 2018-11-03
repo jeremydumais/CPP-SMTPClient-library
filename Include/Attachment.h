@@ -14,23 +14,23 @@
 
 namespace jed_utils
 {
-	class ATTACHMENT_API attachment
+	class ATTACHMENT_API Attachment
 	{
 	public:
-		attachment(const char *filename, const char *name = "");
-		attachment(const attachment &);
-		~attachment();
-		const attachment& operator=(const attachment &att);
-		const char *get_name() const;
-		const char *get_filename() const;
-		const char *get_base64_encoded_file() const;
-		const char *get_mime_type() const;
-		friend class message;
+		Attachment(const char *pFilename, const char *pName = "");
+		Attachment(const Attachment &);
+		~Attachment();
+		const Attachment& operator=(const Attachment &pAtt);
+		const char *getName() const;
+		const char *getFilename() const;
+		const char *getBase64EncodedFile() const;
+		const char *getMimeType() const;
+		friend class Message;
 	private:
-		attachment() {};
-		char *name = nullptr;
-		char *filename = nullptr;
-		std::string to_uppercase(const std::string &value) const;
+		Attachment() {};
+		char *mName = nullptr;
+		char *mFilename = nullptr;
+		std::string toUppercase(const std::string &pValue) const;
 	};
 }
 

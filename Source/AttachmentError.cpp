@@ -3,19 +3,19 @@
 
 namespace jed_utils
 {
-	attachment_error::attachment_error(const char *err_msg)
+	AttachmentError::AttachmentError(const char *pErrMsg)
 	{
-		error_message = new char[strlen(err_msg) + 1];
-		strcpy_s(error_message, strlen(err_msg) + 1, err_msg);
+		mErrorMessage = new char[strlen(pErrMsg) + 1];
+		strcpy_s(mErrorMessage, strlen(pErrMsg) + 1, pErrMsg);
 	}
 
-	attachment_error::~attachment_error()
+	AttachmentError::~AttachmentError()
 	{
-		delete error_message;
+		delete mErrorMessage;
 	}
 
-	const char *attachment_error::what() const throw()
+	const char *AttachmentError::what() const throw()
 	{
-		return error_message;
+		return mErrorMessage;
 	}
 }

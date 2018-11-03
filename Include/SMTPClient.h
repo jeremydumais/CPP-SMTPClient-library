@@ -21,12 +21,12 @@
 
 namespace jed_utils
 {
-	class SMTPCLIENT_API smtp_client
+	class SMTPCLIENT_API SmtpClient
 	{
 	public:
-		smtp_client(const char *server_name, const unsigned int port);
-		~smtp_client();
-		void send_mail(message *msg);
+		SmtpClient(const char *server_name, const unsigned int port);
+		~SmtpClient();
+		void send_mail(Message *msg);
 		const char *get_server_reply() const;
 	protected:
 		char *server_name;
@@ -36,7 +36,7 @@ namespace jed_utils
 			const std::string str,
 			const std::string arg,
 			const bool ask_for_reply = true);
-		std::string create_attachments_text(const attachment *attachments, const unsigned int attachements_count);
+		std::string create_attachments_text(const Attachment *attachments, const unsigned int attachements_count);
 	};
 }
 

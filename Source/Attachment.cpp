@@ -5,62 +5,62 @@ using namespace std;
 
 namespace jed_utils
 {
-	attachment::attachment(const char *filename, const char *name)
+	Attachment::Attachment(const char *pFilename, const char *pName)
 	{
-		if (strlen(filename) == 0)
+		if (strlen(pFilename) == 0)
 			throw invalid_argument("filename");
-		this->filename = new char[strlen(filename) + 1];
-		strcpy_s(this->filename, strlen(filename) + 1, filename);
+		this->mFilename = new char[strlen(pFilename) + 1];
+		strcpy_s(this->mFilename, strlen(pFilename) + 1, pFilename);
 
-		this->name = new char[strlen(name) + 1];
-		strcpy_s(this->name, strlen(name) + 1, name);
+		this->mName = new char[strlen(pName) + 1];
+		strcpy_s(this->mName, strlen(pName) + 1, pName);
 	}
 
-	attachment::attachment(const attachment &item)
+	Attachment::Attachment(const Attachment &pItem)
 	{
-		filename = new char[strlen(item.filename) + 1];
-		memcpy(filename, item.filename, strlen(item.filename) + 1);
+		mFilename = new char[strlen(pItem.mFilename) + 1];
+		memcpy(mFilename, pItem.mFilename, strlen(pItem.mFilename) + 1);
 
-		name = new char[strlen(item.name) + 1];
-		memcpy(name, item.name, strlen(item.name) + 1);
+		mName = new char[strlen(pItem.mName) + 1];
+		memcpy(mName, pItem.mName, strlen(pItem.mName) + 1);
 	}
 
-	const attachment& attachment::operator=(const attachment &att)
+	const Attachment& Attachment::operator=(const Attachment &pAtt)
 	{
-		if (this != &att)
+		if (this != &pAtt)
 		{
-			delete filename;
-			delete name;
+			delete mFilename;
+			delete mName;
 
-			filename = new char[strlen(att.filename) + 1];
-			memcpy(filename, att.filename, strlen(att.filename) + 1);
+			mFilename = new char[strlen(pAtt.mFilename) + 1];
+			memcpy(mFilename, pAtt.mFilename, strlen(pAtt.mFilename) + 1);
 
-			name = new char[strlen(att.name) + 1];
-			memcpy(name, att.name, strlen(att.name) + 1);
+			mName = new char[strlen(pAtt.mName) + 1];
+			memcpy(mName, pAtt.mName, strlen(pAtt.mName) + 1);
 		}
 		return *this;
 	}
 
-	attachment::~attachment()
+	Attachment::~Attachment()
 	{
-		delete filename;
-		delete name;
+		delete mFilename;
+		delete mName;
 	}
 
-	const char *attachment::get_name() const
+	const char *Attachment::getName() const
 	{
-		return name;
+		return mName;
 	}
 
-	const char *attachment::get_filename() const
+	const char *Attachment::getFilename() const
 	{
-		return filename;
+		return mFilename;
 	}
 
-	const char *attachment::get_base64_encoded_file() const
+	const char *Attachment::getBase64EncodedFile() const
 	{
 		//Open the file
-		ifstream in(filename, std::ios::in | std::ios::binary);
+		ifstream in(mFilename, std::ios::in | std::ios::binary);
 		if (in)
 		{
 			std::string contents;
@@ -75,13 +75,13 @@ namespace jed_utils
 			return base64_file;
 		}
 		else
-			throw attachment_error((string("Could not open file ") + string(filename)).c_str());
+			throw AttachmentError((string("Could not open file ") + string(mFilename)).c_str());
 	}
 
-	const char *attachment::get_mime_type() const
+	const char *Attachment::getMimeType() const
 	{
-		string filename_str(filename);
-		const string extension = to_uppercase(filename_str.substr(filename_str.find_last_of(".") + 1));
+		string filename_str(mFilename);
+		const string extension = toUppercase(filename_str.substr(filename_str.find_last_of(".") + 1));
 		//Images
 		if (extension == "PNG")
 			return "image/png";
@@ -192,11 +192,11 @@ namespace jed_utils
 		return "";
 	}
 
-	string attachment::to_uppercase(const string &value) const
+	string Attachment::toUppercase(const string &pValue) const
 	{
 		string retval = "";
-		for (unsigned int c = 0; c < value.length(); c++)
-			retval += toupper(value[c]);
+		for (unsigned int c = 0; c < pValue.length(); c++)
+			retval += toupper(pValue[c]);
 
 		return retval;
 	}

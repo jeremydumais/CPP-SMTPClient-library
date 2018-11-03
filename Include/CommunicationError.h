@@ -11,11 +11,11 @@
 
 namespace jed_utils
 {
-	class COMMUNICATIONERROR_API communication_error
+	class COMMUNICATIONERROR_API CommunicationError
 	{
 	public:
-		communication_error(const char *err_msg);
-		~communication_error();
+		CommunicationError(const char *pErrMsg);
+		~CommunicationError();
 		const char *what() const throw();
 	private:
 		char *error_message = nullptr;

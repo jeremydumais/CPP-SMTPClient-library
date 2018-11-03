@@ -14,51 +14,55 @@
 
 namespace jed_utils
 {
-	class MESSAGE_API message
+	class MESSAGE_API Message
 	{
 	public:
-		message(message_address from,
-			message_address to,
+		Message(MessageAddress from,
+			MessageAddress to,
 			const char *subject,
 			const char *body,
-			message_address *cc = nullptr,
-			message_address *bcc = nullptr,
-			attachment attachments[] = nullptr,
+			MessageAddress *cc = nullptr,
+			MessageAddress *bcc = nullptr,
+			Attachment attachments[] = nullptr,
 			const unsigned int attachments_size = 0);
-		message(message_address from,
-			message_address to[],
+		Message(MessageAddress from,
+			MessageAddress to[],
 			const unsigned int to_size,
 			const char *subject,
 			const char *body,
-			message_address cc[] = nullptr,
+			MessageAddress cc[] = nullptr,
 			const unsigned int cc_size = 0,
-			message_address bcc[] = nullptr,
+			MessageAddress bcc[] = nullptr,
 			const unsigned int bcc_size = 0,
-			attachment attachments[] = nullptr,
+			Attachment attachments[] = nullptr,
 			const unsigned int attachments_size = 0);
-		message(const message &);
-		~message();
-		const message& operator=(const message &msg);
-		virtual const char *get_mimetype() = 0;
-		const message_address get_from() const;
-		const message_address *get_to_ptr() const;
-		const unsigned int get_to_count() const;
-		const char *get_subject() const;
-		const char *get_body() const;
-		const attachment *get_attachments_ptr() const;
-		const unsigned int get_attachments_count() const;
+		Message(const Message &);
+		~Message();
+		const Message& operator=(const Message &msg);
+		virtual const char *getMimeType() = 0;
+		const MessageAddress getFrom() const;
+		const MessageAddress *getToPtr() const;
+		const unsigned int getToCount() const;
+		const char *getSubject() const;
+		const char *getBody() const;
+		const MessageAddress *getCcPtr() const;
+		const unsigned int getCcCount() const;
+		const MessageAddress *getBccPtr() const;
+		const unsigned int getBccCount() const;
+		const Attachment *getAttachmentsPtr() const;
+		const unsigned int getAttachmentsCount() const;
 	protected:
-		message_address from;
-		message_address *to = nullptr;
-		unsigned int to_count = 0;
-		message_address *cc = nullptr;
-		unsigned int cc_count = 0;
-		message_address *bcc = nullptr;
-		unsigned int bcc_count = 0;
-		char *subject = nullptr;
-		char *body = nullptr;
-		attachment *attachments = nullptr;
-		unsigned int attachments_count = 0;
+		MessageAddress mFrom;
+		MessageAddress *mTo = nullptr;
+		unsigned int mToCount = 0;
+		MessageAddress *mCc = nullptr;
+		unsigned int mCcCount = 0;
+		MessageAddress *mBcc = nullptr;
+		unsigned int mBccCount = 0;
+		char *mSubject = nullptr;
+		char *mBody = nullptr;
+		Attachment *mAttachments = nullptr;
+		unsigned int mAttachmentsCount = 0;
 	};
 }
 

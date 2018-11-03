@@ -1,11 +1,12 @@
 #include "../Include/MessageAddress.h"
 #include <stdexcept>
+#include <cstring>
 
 using namespace std;
 
 namespace jed_utils
 {
-	message_address::message_address(const char *email_address, const char *display_name)
+	MessageAddress::MessageAddress(const char *email_address, const char *display_name)
 	{
 		if (strlen(email_address) == 0)
 			throw invalid_argument("email_address");
@@ -17,7 +18,7 @@ namespace jed_utils
 		strcpy_s(this->display_name, strlen(display_name) + 1, display_name);
 	}
 
-	message_address::message_address(const message_address &item)
+	MessageAddress::MessageAddress(const MessageAddress &item)
 	{
 		email_address = new char[strlen(item.email_address) + 1];
 		memcpy(email_address, item.email_address, strlen(item.email_address) + 1);
@@ -26,7 +27,7 @@ namespace jed_utils
 		memcpy(display_name, item.display_name, strlen(item.display_name) + 1);
 	}
 
-	const message_address& message_address::operator=(const message_address &msg_add)
+	const MessageAddress& MessageAddress::operator=(const MessageAddress &msg_add)
 	{
 		if (this != &msg_add)
 		{
@@ -41,7 +42,13 @@ namespace jed_utils
 		return *this;
 	}
 
-	message_address::operator string() const
+	bool MessageAddress::operator==(const MessageAddress &msg_comp) const
+	{
+		return (strcmp(email_address, msg_comp.email_address) == 0 && 
+			strcmp(display_name, msg_comp.display_name) == 0);
+	}
+
+	MessageAddress::operator string() const
 	{
 		ostringstream retval;
 		if (display_name && strcmp(display_name, "") == 0)
@@ -51,18 +58,18 @@ namespace jed_utils
 		return retval.str();
 	}
 
-	message_address::~message_address()
+	MessageAddress::~MessageAddress()
 	{
 		delete email_address;
 		delete display_name;
 	}
 
-	const char *message_address::get_email_address() const
+	const char *MessageAddress::get_email_address() const
 	{
 		return email_address;
 	}
 
-	const char *message_address::get_display_name() const
+	const char *MessageAddress::get_display_name() const
 	{
 		return display_name;
 	}

@@ -11,11 +11,11 @@ set(PROJECT_PATH    "${CMAKE_CURRENT_SOURCE_DIR}")
 set(INCLUDE_PATH    "${PROJECT_PATH}/Include")
 set(SRC_PATH        "${PROJECT_PATH}/Source")
 set(TEST_SRC_PATH   "${PROJECT_PATH}/test/smtpclient_unittest")
+set(VCPKG_ROOT_PATH "C:/Users/jerem/vcpkg/installed/x86-windows")
 
-
-set(GTEST_INCLUDE_DIR   "C:/Users/jerem/vcpkg/installed/x64-windows/include")
-set(GTEST_LIBRARY   "C:/Users/jerem/vcpkg/installed/x64-windows/debug/lib/manual-link/gtestd.lib")
-set(GTEST_MAIN_LIBRARY   "C:/Users/jerem/vcpkg/installed/x64-windows/debug/lib/manual-link/gtest_maind.lib")
+set(GTEST_INCLUDE_DIR   "${VCPKG_ROOT_PATH}/include")
+set(GTEST_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtestd.lib")
+set(GTEST_MAIN_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtest_maind.lib")
 
 # Set CMake build-type. If it not supplied by the user, the default built type is "Release".
 if(((NOT CMAKE_BUILD_TYPE)
@@ -51,6 +51,7 @@ add_executable(tests ${INCLUDE_PATH}
 ${TEST_SRC_PATH}/main.cpp
 ${TEST_SRC_PATH}/MessageAddress_unittest.cpp
 ${TEST_SRC_PATH}/Attachment_unittest.cpp
+${TEST_SRC_PATH}/PlainTextMessage_unittest.cpp
 )
 
 target_link_libraries(tests ${PROJECT_NAME} ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY})
