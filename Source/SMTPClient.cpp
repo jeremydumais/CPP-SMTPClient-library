@@ -83,11 +83,11 @@ namespace jed_utils
 			throw CommunicationError(error_stream.str().c_str());
 		}
 
-		write_command(sock, "HELO %s\r\n", msg->getFrom().get_email_address());    
-		write_command(sock, "MAIL FROM: %s\r\n", msg->getFrom().get_email_address());
+		write_command(sock, "HELO %s\r\n", msg->getFrom().getEmailAddress());    
+		write_command(sock, "MAIL FROM: %s\r\n", msg->getFrom().getEmailAddress());
 		//Send command for the recepients
 		for (unsigned int index=0; index < msg->getToCount(); index++)
-			write_command(sock, "RCPT TO: %s\r\n", (msg->getToPtr() + index)->get_email_address()); 
+			write_command(sock, "RCPT TO: %s\r\n", (msg->getToPtr() + index)->getEmailAddress()); 
 		// Data section
 		write_command(sock, "DATA\r\n", "");
 		// Mail headers

@@ -27,11 +27,11 @@ TEST(MessageAddress_constructor, ValidParam)
 TEST(MessageAddress_get_email_address, validDomain)
 {
 	MessageAddress msg_add("test@domain.com", "Test Address");
-	assert(_stricmp(msg_add.get_email_address(), "test@domain.com") == 0);
+	assert(_stricmp(msg_add.getEmailAddress(), "test@domain.com") == 0);
 }
 
 TEST(MessageAddress_get_display_name, validDN)
 {
 	MessageAddress msg_add("test@domain.com", "Test Address");
-	assert(_stricmp(msg_add.get_display_name(), "Test Address") == 0);
+	assert(_stricmp(msg_add.getDisplayName(), "Test Address") == 0);
 }

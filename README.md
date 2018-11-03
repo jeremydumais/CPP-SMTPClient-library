@@ -2,41 +2,41 @@
 
 ##Jed# C++ SMTP Client Library is a simple SMTP client library built in C++.
 
-###smtp_client class
+###SmtpClient class
 
 ####Available methods
 ```c++
-smtp_client(const char *server_name, const unsigned int port);
+SmtpClient(const char *server_name, const unsigned int port);
 void send_mail(message *msg);
 const char *get_server_reply() const;
 ```	
 
-###message_address class
+###MessageAddress class
 
 ####Available methods
 ```c++
-message_address(const char *email_address, const char *display_name = "");
+MessageAddress(const char *pEmailAddress, const char *pDisplayName = "");
 operator std::string() const;
-const char *get_email_address() const;
-const char *get_display_name() const;
+const char *getEmailAddress() const;
+const char *getDisplayName() const;
 ```	
 
-###attachment class
+###Attachment class
 
 ####Available methods
 ```c++
-attachment(const char *filename, const char *name = "");
-const char *get_name() const;
-const char *get_filename() const;
-const char *get_base64_encoded_file() const;
-const char *get_mime_type() const;
+Attachment(const char *pFilename, const char *pName = "");
+const char *getName() const;
+const char *getFilename() const;
+const char *getBase64EncodedFile() const;
+const char *getMimeType() const;
 ```	
 
-###plaintext_message class
+###PlaintextMessage class
 
 ####Available methods
 ```c++
-plaintext_message(message_address from,
+PlaintextMessage(message_address from,
 	message_address to,
 	const char *subject,
 	const char *body,
@@ -44,7 +44,7 @@ plaintext_message(message_address from,
 	message_address *bcc = nullptr,
 	attachment attachments[] = nullptr,
 	const unsigned int attachments_size = 0);
-plaintext_message(message_address from,
+PlaintextMessage(message_address from,
 	message_address to[],
 	const unsigned int to_size,
 	const char *subject,
@@ -55,21 +55,25 @@ plaintext_message(message_address from,
 	const unsigned int bcc_size = 0,
 	attachment attachments[] = nullptr,
 	const unsigned int attachments_size = 0);
-const char *get_mimetype();
-const message_address get_from() const;
-const message_address *get_to_ptr() const;
-const unsigned int get_to_count() const;
-const char *get_subject() const;
-const char *get_body() const;
-const attachment *get_attachments_ptr() const;
-const unsigned int get_attachments_count() const;
+const char *getMimeType();
+const MessageAddress getFrom() const;
+const MessageAddress *getToPtr() const;
+const unsigned int getToCount() const;
+const MessageAddress *getCcPtr() const;
+const unsigned int getCcCount() const;
+const MessageAddress *getBccPtr() const;
+const unsigned int getBccCount() const;
+const char *getSubject() const;
+const char *getBody() const;
+const attachment *getAttachmentsPtr() const;
+const unsigned int getAttachmentsCount() const;
 ```	
 
-###html_message class
+###HTMLMessage class
 
 ####Available methods
 ```c++
-html_message(message_address from,
+HTMLMessage(message_address from,
 	message_address to,
 	const char *subject,
 	const char *body,
@@ -77,7 +81,7 @@ html_message(message_address from,
 	message_address *bcc = nullptr,
 	attachment attachments[] = nullptr,
 	const unsigned int attachments_size = 0);
-html_message(message_address from,
+HTMLMessage(message_address from,
 	message_address to[],
 	const unsigned int to_size,
 	const char *subject,
@@ -88,14 +92,18 @@ html_message(message_address from,
 	const unsigned int bcc_size = 0,
 	attachment attachments[] = nullptr,
 	const unsigned int attachments_size = 0);
-const char *get_mimetype();
-const message_address get_from() const;
-const message_address *get_to_ptr() const;
-const unsigned int get_to_count() const;
-const char *get_subject() const;
-const char *get_body() const;
-const attachment *get_attachments_ptr() const;
-const unsigned int get_attachments_count() const;
+const char *getMimeType();
+const MessageAddress getFrom() const;
+const MessageAddress *getToPtr() const;
+const unsigned int getToCount() const;
+const MessageAddress *getCcPtr() const;
+const unsigned int getCcCount() const;
+const MessageAddress *getBccPtr() const;
+const unsigned int getBccCount() const;
+const char *getSubject() const;
+const char *getBody() const;
+const attachment *getAttachmentsPtr() const;
+const unsigned int getAttachmentsCount() const;
 ```	
 
 ####Here's some examples
@@ -111,11 +119,11 @@ using namespace std;
 
 int main()
 {
-	smtp_client *client = new smtp_client("<your smtp server address>", 25);
+	SmtpClient *client = new SmtpClient("<your smtp server address>", 25);
 	try
 	{
-		plaintext_message msg(message_address("myfromaddress@test.com", "Test Address Display"),
-			message_address("youraddress@domain.com")
+		PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
+			MessageAddress("youraddress@domain.com")
 			"This is a test (Subject)",
 			"Hello\nHow are you?");
 
@@ -123,11 +131,11 @@ int main()
 		cout << client->get_server_reply() << endl;
 		cout << "Operation completed!" << endl;
 	}
-	catch (communication_error &err)
+	catch (CommunicationError &err)
 	{
 		cerr << err.what() << endl;
 	}
-	catch (attachment_error &err)
+	catch (AttachmentError &err)
 	{
 		cerr << err.what() << endl;
 	}
@@ -147,19 +155,19 @@ using namespace std;
 
 int main()
 {
-	smtp_client *client = new smtp_client("<your smtp server address>", 25);
+	SmtpClient *client = new SmtpClient("<your smtp server address>", 25);
 	try
 	{
 		const int ATTACHMENT_COUNT = 1;
 		const int TOADDR_COUNT = 2;
 
-		attachment att1[ATTACHMENT_COUNT] = { attachment("C:\Temp\test.png", "test image.png") };
+		Attachment att1[ATTACHMENT_COUNT] = { Attachment("C:\Temp\test.png", "test image.png") };
 
-		message_address to_addr[TOADDR_COUNT] = { message_address("youraddress@domain.com"), 
-		message_address("youraddress2@domain.com")
+		MessageAddress to_addr[TOADDR_COUNT] = { MessageAddress("youraddress@domain.com"), 
+		MessageAddress("youraddress2@domain.com")
 		};
 
-		html_message msg(message_address("myfromaddress@test.com", "Test Address Display"),
+		HTMLMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
 			to_addr, TOADDR_COUNT,
 			"This is a test (Subject)",
 			"<html><body><h1>Hello,</h1><br/><br/>How are you?</body></html>", nullptr, 0, nullptr, 0, att1, ATTACHMENT_COUNT);
@@ -168,11 +176,11 @@ int main()
 		cout << client->get_server_reply() << endl;
 		cout << "Operation completed!" << endl;
 	}
-	catch (communication_error &err)
+	catch (CommunicationError &err)
 	{
 		cerr << err.what() << endl;
 	}
-	catch (attachment_error &err)
+	catch (AttachmentError &err)
 	{
 		cerr << err.what() << endl;
 	}
