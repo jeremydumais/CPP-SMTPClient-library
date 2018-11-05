@@ -11,8 +11,8 @@ namespace jed_utils
 {
 	SmtpClient::SmtpClient(const string &pServerName, const unsigned int pPort)
 	{
-		this->mServerName = new string(pServerName);
-		this->mPort = pPort;
+		mServerName = new string(pServerName);
+		mPort = pPort;
 		mServerReply = nullptr;
 	}
 
@@ -22,6 +22,24 @@ namespace jed_utils
 			delete mServerName;
 		if (mServerReply)
 			delete mServerReply;
+	}
+
+	SmtpClient::SmtpClient(const SmtpClient &pItem)
+	: mPort(pItem.mPort), mServerReply(nullptr)
+	{
+		mServerName = new string(*pItem.mServerName);
+	}
+
+	const SmtpClient &SmtpClient::operator=(const SmtpClient &pClient)
+	{
+		if (this != &pClient)
+		{
+			delete mServerName;
+			mServerName = new string(*pClient.mServerName);
+			mPort = pClient.mPort;
+			mServerReply = pClient.mServerReply;
+		}
+		return *this;
 	}
 
 	void SmtpClient::sendMail(const Message &pMsg)

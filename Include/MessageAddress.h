@@ -30,6 +30,7 @@ namespace jed_utils
 	private:	
 		std::string *mEmailAddress = nullptr;
 		std::string *mDisplayName = nullptr;
+		bool isEmailAddressValid(const std::string &pEmailAddress) const;
 	};
 }
 

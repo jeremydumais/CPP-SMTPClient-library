@@ -31,7 +31,7 @@ namespace jed_utils
 			const std::vector<MessageAddress> &pCc = std::vector<MessageAddress>(),
 			const std::vector<MessageAddress> &pBcc = std::vector<MessageAddress>(),
 			const std::vector<Attachment> &pAttachments = std::vector<Attachment>());
-		virtual const std::string getMimeType() const;
+		virtual const std::string getMimeType() const override;
 	};
 }
 

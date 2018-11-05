@@ -11,7 +11,7 @@ set(PROJECT_PATH    "${CMAKE_CURRENT_SOURCE_DIR}")
 set(INCLUDE_PATH    "${PROJECT_PATH}/Include")
 set(SRC_PATH        "${PROJECT_PATH}/Source")
 set(TEST_SRC_PATH   "${PROJECT_PATH}/test/smtpclient_unittest")
-set(VCPKG_ROOT_PATH "C:/Users/jerem/vcpkg/installed/x86-windows")
+set(VCPKG_ROOT_PATH "C:/Users/jdumais/documents/vcpkg/installed/x86-windows")
 
 set(GTEST_INCLUDE_DIR   "${VCPKG_ROOT_PATH}/include")
 set(GTEST_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtestd.lib")
@@ -43,6 +43,7 @@ add_library(${PROJECT_NAME} ${INCLUDE_PATH}
     ${SRC_PATH}/MessageAddress.cpp
     ${SRC_PATH}/PlainTextMessage.cpp
     ${SRC_PATH}/SMTPClient.cpp
+    ${SRC_PATH}/StringUtils.cpp
     )
 
 enable_testing()
@@ -52,6 +53,7 @@ ${TEST_SRC_PATH}/main.cpp
 ${TEST_SRC_PATH}/MessageAddress_unittest.cpp
 ${TEST_SRC_PATH}/Attachment_unittest.cpp
 ${TEST_SRC_PATH}/PlainTextMessage_unittest.cpp
+${TEST_SRC_PATH}/StringUtils_unittest.cpp
 )
 
 target_link_libraries(tests ${PROJECT_NAME} ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY})

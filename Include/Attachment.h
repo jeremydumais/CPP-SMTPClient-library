@@ -20,7 +20,7 @@ namespace jed_utils
 		Attachment(const std::string &pFilename, const std::string &pName = "");
 		Attachment(const Attachment &);
 		~Attachment();
-		const Attachment& operator=(const Attachment &pAtt);
+		const Attachment &operator=(const Attachment &pAtt);
 		const std::string &getName() const;
 		const std::string &getFilename() const;
 		std::string getBase64EncodedFile() const;

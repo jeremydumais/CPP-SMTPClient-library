@@ -1,4 +1,5 @@
-#include "../Include/Attachment.h"
+#include "Attachment.h"
+#include "StringUtils.h"
 #include <iostream>
 
 using namespace std;
@@ -7,7 +8,7 @@ namespace jed_utils
 {
 	Attachment::Attachment(const string &pFilename, const string &pName)
 	{
-		if (pFilename.length() == 0)
+		if (pFilename.length() == 0 || StringUtils::trim(pFilename).length() == 0)
 			throw invalid_argument("filename");
 		this->mFilename = new string(pFilename);
 		this->mName = new string(pName);
@@ -15,8 +16,8 @@ namespace jed_utils
 
 	Attachment::Attachment(const Attachment &pItem)
 	{
-		mFilename = pItem.mFilename;
-		mName = pItem.mName;
+		mFilename = new string(*pItem.mFilename);
+		mName = new string(*pItem.mName);
 	}
 
 	const Attachment& Attachment::operator=(const Attachment &pAtt)

@@ -57,8 +57,9 @@
         "unordered_map": "cpp",
         "functional": "cpp",
         "numeric": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "memory": "cpp"
     },
-    "gtestExplorer.executable": "build/Debug/tests.exe",
+    "gtestExplorer.executable": "build/tests.exe",
     "C_Cpp.configurationWarnings": "Disabled"
 }

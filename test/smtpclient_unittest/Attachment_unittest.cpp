@@ -4,12 +4,25 @@
 using namespace jed_utils;
 using namespace std;
 
-TEST(Attachment_Constructor, FailEmptyParam)
+TEST(Attachment_Constructor, FailEmptyFileName)
 {
 	//Test with empty filename
 	try
 	{
 		Attachment att1("", "");
+		FAIL();
+	}
+	catch(invalid_argument) 
+	{
+	}
+}
+
+TEST(Attachment_Constructor, FailWhiteSpaceFileName)
+{
+	//Test with empty filename
+	try
+	{
+		Attachment att1("   ", "");
 		FAIL();
 	}
 	catch(invalid_argument) 

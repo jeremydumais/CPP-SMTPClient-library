@@ -15,8 +15,10 @@ namespace jed_utils
 	class COMMUNICATIONERROR_API CommunicationError
 	{
 	public:
-		CommunicationError(const std::string &pErrMsg);
+		explicit CommunicationError(const std::string &pErrMsg);
 		~CommunicationError();
+		CommunicationError(const CommunicationError &);
+		const CommunicationError &operator=(const CommunicationError &pErrMsg);
 		const std::string &what() const throw();
 	private:
 		std::string *mErrorMessage = nullptr;

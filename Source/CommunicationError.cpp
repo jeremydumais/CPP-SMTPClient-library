@@ -16,6 +16,21 @@ namespace jed_utils
 			delete mErrorMessage;
 	}
 
+	CommunicationError::CommunicationError(const CommunicationError &pItem)
+	{
+		mErrorMessage = new string(*pItem.mErrorMessage);
+	}
+
+	const CommunicationError &CommunicationError::operator=(const CommunicationError &pErrMsg)
+	{
+		if (this != &pErrMsg)
+		{
+			delete mErrorMessage;
+			mErrorMessage = new string(*pErrMsg.mErrorMessage);
+		}
+		return *this;
+	}
+
 	const string &CommunicationError::what() const throw()
 	{
 		return *mErrorMessage;

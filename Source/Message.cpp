@@ -19,16 +19,13 @@ namespace jed_utils
 		mBody = new string(pBody);
 
 		mCc = new vector<MessageAddress>();
-		for(auto &item : pCc)
-			mCc->push_back(item);
+		copy(pCc.begin(), pCc.end(), mCc->begin());
 
 		mBcc = new vector<MessageAddress>();
-		for(auto &item : pBcc)
-			mBcc->push_back(item);
+		copy(pBcc.begin(), pBcc.end(), mBcc->begin());
 
 		mAttachments = new vector<Attachment>();
-		for(auto &item : pAttachments)
-			mAttachments->push_back(item);
+		copy(pAttachments.begin(), pAttachments.end(), mAttachments->begin());
 	}
 
 	Message::Message(const MessageAddress &pFrom,
@@ -41,47 +38,38 @@ namespace jed_utils
 		: mFrom(pFrom)
 	{
 		mTo = new vector<MessageAddress>();
-		for (auto &item : pTo)
-			mTo->push_back(item);
+		copy(pTo.begin(), pTo.end(), mTo->begin());
 
 		mSubject = new string(pSubject);
 		mBody = new string(pBody);
 
 		mCc = new vector<MessageAddress>();
-		for(auto &item : pCc)
-			mCc->push_back(item);
+		copy(pCc.begin(), pCc.end(), mCc->begin());
 
 		mBcc = new vector<MessageAddress>();
-		for(auto &item : pBcc)
-			mBcc->push_back(item);
+		copy(pBcc.begin(), pBcc.end(), mBcc->begin());
 
 		mAttachments = new vector<Attachment>();
-		for(auto &item : pAttachments)
-			mAttachments->push_back(item);
+		copy(pAttachments.begin(), pAttachments.end(), mAttachments->begin());
 	}
 
 	Message::Message(const Message &pItem)
+	: mFrom(pItem.mFrom)
 	{
-		mFrom = pItem.mFrom;
-
 		mTo = new vector<MessageAddress>();
-		for (auto &item : *pItem.mTo)
-			mTo->push_back(item);
+		copy(pItem.mTo->begin(), pItem.mTo->end(), mTo->begin());
 
 		mSubject = new string(*pItem.mSubject);
 		mBody = new string(*pItem.mBody);
 
 		mCc = new vector<MessageAddress>();
-		for(auto &item : *pItem.mCc)
-			mCc->push_back(item);
+		copy(pItem.mCc->begin(), pItem.mCc->end(), mCc->begin());
 
 		mBcc = new vector<MessageAddress>();
-		for(auto &item : *pItem.mBcc)
-			mBcc->push_back(item);
+		copy(pItem.mBcc->begin(), pItem.mBcc->end(), mBcc->begin());
 
 		mAttachments = new vector<Attachment>();
-		for(auto &item : *pItem.mAttachments)
-			mAttachments->push_back(item);
+		copy(pItem.mAttachments->begin(), pItem.mAttachments->end(), mAttachments->begin());
 	}
 
 	Message::~Message()
@@ -141,23 +129,19 @@ namespace jed_utils
 			mFrom = msg.mFrom;
 
 			mTo = new vector<MessageAddress>();
-			for (auto &item : *msg.mTo)
-				mTo->push_back(item);
+			copy(msg.mTo->begin(), msg.mTo->end(), mTo->begin());
 
 			mSubject = new string(*msg.mSubject);
 			mBody = new string(*msg.mBody);
 
 			mCc = new vector<MessageAddress>();
-			for(auto &item : *msg.mCc)
-				mCc->push_back(item);
+			copy(msg.mCc->begin(), msg.mCc->end(), mCc->begin());
 
 			mBcc = new vector<MessageAddress>();
-			for(auto &item : *msg.mBcc)
-				mBcc->push_back(item);
+			copy(msg.mBcc->begin(), msg.mBcc->end(), mBcc->begin());
 
 			mAttachments = new vector<Attachment>();
-			for(auto &item : *msg.mAttachments)
-				mAttachments->push_back(item);
+			copy(msg.mAttachments->begin(), msg.mAttachments->end(), mAttachments->begin());
 		}
 		return *this;
 	}

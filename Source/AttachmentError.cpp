@@ -1,4 +1,4 @@
-#include "..\Include\AttachmentError.h"
+#include "AttachmentError.h"
 #include <cstring>
 
 using namespace std;
@@ -15,6 +15,22 @@ namespace jed_utils
 		if (mErrorMessage)
 			delete mErrorMessage;
 	}
+
+	AttachmentError::AttachmentError(const AttachmentError &pItem)
+	{
+		mErrorMessage = new string(*pItem.mErrorMessage);
+	}
+
+	const AttachmentError &AttachmentError::operator=(const AttachmentError &pAttErr)
+	{
+		if (this != &pAttErr)
+		{
+			delete mErrorMessage;
+			mErrorMessage = new string(*pAttErr.mErrorMessage);
+		}
+		return *this;
+	}
+
 
 	const string &AttachmentError::what() const throw()
 	{

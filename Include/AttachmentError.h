@@ -15,8 +15,10 @@ namespace jed_utils
 	class ATTACHMENTERROR_API AttachmentError
 	{
 	public:
-		AttachmentError(const std::string &pErrMsg);
+		explicit AttachmentError(const std::string &pErrMsg);
 		~AttachmentError();
+		AttachmentError(const AttachmentError &);
+		const AttachmentError &operator=(const AttachmentError &pAttErr);
 		const std::string &what() const throw();
 	private:
 		std::string *mErrorMessage = nullptr;

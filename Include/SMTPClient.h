@@ -25,6 +25,8 @@ namespace jed_utils
 	public:
 		SmtpClient(const std::string &pServerName, const unsigned int pPort);
 		~SmtpClient();
+		SmtpClient(const SmtpClient &);
+		const SmtpClient &operator=(const SmtpClient &pClient);
 		void sendMail(const Message &pMsg);
 		const std::string &getServerReply() const;
 	protected:
