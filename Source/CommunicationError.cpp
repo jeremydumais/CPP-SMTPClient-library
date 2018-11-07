@@ -21,7 +21,7 @@ namespace jed_utils
 		mErrorMessage = new string(*pItem.mErrorMessage);
 	}
 
-	const CommunicationError &CommunicationError::operator=(const CommunicationError &pErrMsg)
+	CommunicationError &CommunicationError::operator=(const CommunicationError &pErrMsg)
 	{
 		if (this != &pErrMsg)
 		{

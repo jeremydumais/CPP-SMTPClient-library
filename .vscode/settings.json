@@ -60,6 +60,6 @@
         "list": "cpp",
         "memory": "cpp"
     },
-    "gtestExplorer.executable": "build/tests.exe",
+    "gtestExplorer.executable": "build/Debug/tests.exe",
     "C_Cpp.configurationWarnings": "Disabled"
 }

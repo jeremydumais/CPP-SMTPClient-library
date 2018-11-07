@@ -98,7 +98,7 @@ namespace jed_utils
 		}
 	}
 
-	const Message& Message::operator=(const Message &msg)
+	Message& Message::operator=(const Message &msg)
 	{
 		if (this != &msg)
 		{

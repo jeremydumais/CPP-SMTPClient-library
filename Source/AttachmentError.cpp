@@ -21,7 +21,7 @@ namespace jed_utils
 		mErrorMessage = new string(*pItem.mErrorMessage);
 	}
 
-	const AttachmentError &AttachmentError::operator=(const AttachmentError &pAttErr)
+	AttachmentError &AttachmentError::operator=(const AttachmentError &pAttErr)
 	{
 		if (this != &pAttErr)
 		{

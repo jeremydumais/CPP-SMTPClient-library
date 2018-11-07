@@ -27,7 +27,7 @@ namespace jed_utils
 		mDisplayName = new string(*item.mDisplayName);
 	}
 
-	const MessageAddress& MessageAddress::operator=(const MessageAddress &msg_add)
+	MessageAddress& MessageAddress::operator=(const MessageAddress &msg_add)
 	{
 		if (this != &msg_add)
 		{

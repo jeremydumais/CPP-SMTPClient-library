@@ -30,7 +30,7 @@ namespace jed_utils
 		mServerName = new string(*pItem.mServerName);
 	}
 
-	const SmtpClient &SmtpClient::operator=(const SmtpClient &pClient)
+	SmtpClient &SmtpClient::operator=(const SmtpClient &pClient)
 	{
 		if (this != &pClient)
 		{

@@ -33,7 +33,7 @@ namespace jed_utils
 			const std::vector<Attachment> &pAttachments = std::vector<Attachment>());
 		Message(const Message &);
 		~Message();
-		const Message &operator=(const Message &msg);
+		Message &operator=(const Message &msg);
 		virtual const std::string getMimeType() const = 0;
 		const MessageAddress getFrom() const;
 		const std::vector<MessageAddress> &getTo() const;

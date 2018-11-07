@@ -20,7 +20,7 @@ namespace jed_utils
 		mName = new string(*pItem.mName);
 	}
 
-	const Attachment& Attachment::operator=(const Attachment &pAtt)
+	Attachment& Attachment::operator=(const Attachment &pAtt)
 	{
 		if (this != &pAtt)
 		{

@@ -11,7 +11,7 @@ set(PROJECT_PATH    "${CMAKE_CURRENT_SOURCE_DIR}")
 set(INCLUDE_PATH    "${PROJECT_PATH}/Include")
 set(SRC_PATH        "${PROJECT_PATH}/Source")
 set(TEST_SRC_PATH   "${PROJECT_PATH}/test/smtpclient_unittest")
-set(VCPKG_ROOT_PATH "C:/Users/jdumais/documents/vcpkg/installed/x86-windows")
+set(VCPKG_ROOT_PATH "C:/Users/jerem/vcpkg/installed/x86-windows")
 
 set(GTEST_INCLUDE_DIR   "${VCPKG_ROOT_PATH}/include")
 set(GTEST_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtestd.lib")

@@ -18,7 +18,7 @@ namespace jed_utils
 		explicit CommunicationError(const std::string &pErrMsg);
 		~CommunicationError();
 		CommunicationError(const CommunicationError &);
-		const CommunicationError &operator=(const CommunicationError &pErrMsg);
+		CommunicationError &operator=(const CommunicationError &pErrMsg);
 		const std::string &what() const throw();
 	private:
 		std::string *mErrorMessage = nullptr;

@@ -21,7 +21,7 @@ namespace jed_utils
 		MessageAddress(const MessageAddress &);
 		MessageAddress() {};
 		~MessageAddress();
-		const MessageAddress &operator=(const MessageAddress &pMsgAdd);
+		MessageAddress &operator=(const MessageAddress &pMsgAdd);
 		bool operator==(const MessageAddress &pMsgComp) const;
 		operator std::string() const;
 		const std::string &getEmailAddress() const;
