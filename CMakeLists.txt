@@ -32,7 +32,7 @@ endif(((NOT CMAKE_BUILD_TYPE)
 include_directories(AFTER "${INCLUDE_PATH}")
 include_directories(${GTEST_INCLUDE_DIR})
 
-add_compile_definitions(SMTPCLIENT_EXPORTS)
+add_definitions(-DSMTPCLIENT_EXPORTS)
 add_library(${PROJECT_NAME} ${INCLUDE_PATH}
     ${SRC_PATH}/Attachment.cpp
     ${SRC_PATH}/AttachmentError.cpp
@@ -60,3 +60,26 @@ target_link_libraries(tests ${PROJECT_NAME} ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRAR
 add_test(AllTestsInMain tests)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_range_for)
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	target_compile_definitions(${PROJECT_NAME}
+		INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
+		INTERFACE _SCL_SECURE_NO_WARNINGS # disable security-paranoia warning
+		INTERFACE _CRT_SECURE_NO_WARNINGS)
+	#target_compile_options(PluginBase
+	#  INTERFACE "/W3" # waring level
+	#  INTERFACE "/WX") # warning as error
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") # gcc
+	# https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+	target_compile_options(${PROJECT_NAME}
+		PRIVATE "-Wfatal-errors" # stops on first error
+		"-Wall" # enables all the warnings about constructions
+		"-Wextra" # Print extra warning messages"
+		"-Werror" # Make all warnings into errors.
+		"-pedantic" # Issue all the warnings demanded by strict ISO C and ISO C++
+		"-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings
+		# http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
+		"-ftrack-macro-expansion=0"
+		"-fno-diagnostics-show-caret"
+		)
+endif()

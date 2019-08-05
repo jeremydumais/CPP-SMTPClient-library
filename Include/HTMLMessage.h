@@ -4,13 +4,15 @@
 #include <string>
 #include "Message.h"
 
-#pragma once  
-
-#ifdef SMTPCLIENT_EXPORTS  
-#define HTMLMESSAGE_API __declspec(dllexport)   
-#else  
-#define HTMLMESSAGE_API __declspec(dllimport)   
-#endif  
+#ifdef _WIN32
+	#ifdef SMTPCLIENT_EXPORTS  
+		#define HTMLMESSAGE_API __declspec(dllexport)   
+	#else  
+		#define HTMLMESSAGE_API __declspec(dllimport)   
+	#endif
+#else
+	#define HTMLMESSAGE_API
+#endif
 
 namespace jed_utils
 {

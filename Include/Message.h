@@ -6,11 +6,15 @@
 #include "Attachment.h"
 #include <vector>
 
-#ifdef SMTPCLIENT_EXPORTS  
-#define MESSAGE_API __declspec(dllexport)   
-#else  
-#define MESSAGE_API __declspec(dllimport)   
-#endif  
+#ifdef _WIN32
+	#ifdef SMTPCLIENT_EXPORTS  
+		#define MESSAGE_API __declspec(dllexport)   
+	#else  
+		#define MESSAGE_API __declspec(dllimport)   
+	#endif
+#else
+	#define MESSAGE_API
+#endif
 
 namespace jed_utils
 {
@@ -37,15 +41,15 @@ namespace jed_utils
 		virtual const std::string getMimeType() const = 0;
 		const MessageAddress getFrom() const;
 		const std::vector<MessageAddress> &getTo() const;
-		const size_t getToCount() const;
+		size_t getToCount() const;
 		const std::string &getSubject() const;
 		const std::string &getBody() const;
 		const std::vector<MessageAddress> &getCc() const;
-		const size_t getCcCount() const;
+		size_t getCcCount() const;
 		const std::vector<MessageAddress> &getBcc() const;
-		const size_t getBccCount() const;
+		size_t getBccCount() const;
 		const std::vector<Attachment> &getAttachments() const;
-		const size_t getAttachmentsCount() const;
+		size_t getAttachmentsCount() const;
 	protected:
 		MessageAddress mFrom;
 		std::vector<MessageAddress> *mTo = nullptr;

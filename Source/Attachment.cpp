@@ -65,7 +65,7 @@ namespace jed_utils
 			in.close();
 			string base64_result = base64_encode(reinterpret_cast<const unsigned char*>(contents.c_str()), contents.length());
 			char *base64_file = new char[base64_result.length() + 1];
-			strcpy_s(base64_file, base64_result.length() + 1, base64_result.c_str());
+			strncpy(base64_file, base64_result.c_str(), base64_result.length() + 1);
 			return base64_file;
 		}
 		else

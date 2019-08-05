@@ -4,11 +4,15 @@
 #include <stdexcept>
 #include <string>
 
-#ifdef SMTPCLIENT_EXPORTS  
-#define ATTACHMENTERROR_API __declspec(dllexport)   
-#else  
-#define ATTACHMENTERROR_API __declspec(dllimport)   
-#endif  
+#ifdef _WIN32
+	#ifdef SMTPCLIENT_EXPORTS  
+		#define ATTACHMENTERROR_API __declspec(dllexport)   
+	#else  
+		#define ATTACHMENTERROR_API __declspec(dllimport)   
+	#endif  
+#else
+	#define ATTACHMENTERROR_API
+#endif
 
 namespace jed_utils
 {

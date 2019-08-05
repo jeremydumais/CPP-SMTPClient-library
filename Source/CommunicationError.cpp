@@ -1,4 +1,4 @@
-#include "..\Include\CommunicationError.h"
+#include "CommunicationError.h"
 #include <cstring>
 
 using namespace std;

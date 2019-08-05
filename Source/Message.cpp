@@ -151,7 +151,7 @@ namespace jed_utils
 		return *mTo;
 	}
 
-	const size_t Message::getToCount() const
+	size_t Message::getToCount() const
 	{
 		return mTo->size();
 	}
@@ -171,7 +171,7 @@ namespace jed_utils
 		return *mCc;
 	}
 
-	const size_t Message::getCcCount() const
+	size_t Message::getCcCount() const
 	{
 		return mCc->size();
 	}
@@ -181,7 +181,7 @@ namespace jed_utils
 		return *mBcc;
 	}
 
-	const size_t Message::getBccCount() const
+	size_t Message::getBccCount() const
 	{
 		return mBcc->size();
 	}
@@ -196,7 +196,7 @@ namespace jed_utils
 		return *mAttachments;
 	}
 
-	const size_t Message::getAttachmentsCount() const
+	size_t Message::getAttachmentsCount() const
 	{
 		return mAttachments->size();
 	}
