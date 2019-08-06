@@ -1,9 +1,15 @@
 #include "SMTPClient.h"
-#include <WinSock2.h>
-#include <ws2tcpip.h>
+
+#ifdef _WIN32
+	#include <WinSock2.h>
+	#include <ws2tcpip.h>
+#else
+	#include <sys/socket.h>	
+#endif
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 using namespace std;
 
@@ -42,6 +48,9 @@ namespace jed_utils
 		return *this;
 	}
 
+
+	#ifdef _WIN32
+	//Windows version of sendMail method
 	void SmtpClient::sendMail(const Message &pMsg)
 	{
 		DWORD dwRetval;
@@ -145,6 +154,7 @@ namespace jed_utils
 		WSACleanup();
 	}
 
+	//Windows version of writeCommand method
 	void SmtpClient::writeCommand(const unsigned int pSock, const string &pStr, const string &pArg, const bool pAskForReply)
 	{
 		char buf[4096];
@@ -184,7 +194,25 @@ namespace jed_utils
 			}
 		}
 	}
+	
+	#else
 
+	//Linux version of sendMail method	
+	void SmtpClient::sendMail(const Message &pMsg)
+	{
+		//To be coded using socket
+		cout << pMsg.getSubject();
+	}
+
+	//Linux version of writeCommand method
+	void SmtpClient::writeCommand(const unsigned int pSock, const string &pStr, const string &pArg, const bool pAskForReply)
+	{
+		//To be coded using socket
+		cout << pSock << pStr << pArg << pAskForReply;
+	}
+
+	#endif
+	
 	const string &SmtpClient::getServerReply() const
 	{
 		return *mServerReply;

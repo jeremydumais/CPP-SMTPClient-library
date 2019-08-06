@@ -14,9 +14,15 @@ set(TEST_SRC_PATH   "${PROJECT_PATH}/test/smtpclient_unittest")
 set(VCPKG_ROOT_PATH "C:/Users/jerem/vcpkg/installed/x86-windows")
 
 set(GTEST_INCLUDE_DIR   "${VCPKG_ROOT_PATH}/include")
-set(GTEST_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtestd.lib")
-set(GTEST_MAIN_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtest_maind.lib")
-
+if (WIN32)
+	set(GTEST_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtestd.lib")
+	set(GTEST_MAIN_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtest_maind.lib")
+	set(PTHREAD		"")
+else()
+	set(GTEST_LIBRARY	"gtest")
+	set(GTEST_MAIN_LIBRARY	"gtest_main")
+	set(PTHREAD		"pthread")
+endif()
 # Set CMake build-type. If it not supplied by the user, the default built type is "Release".
 if(((NOT CMAKE_BUILD_TYPE)
       AND (NOT BUILD_COVERAGE_ANALYSIS))
@@ -56,7 +62,7 @@ ${TEST_SRC_PATH}/PlainTextMessage_unittest.cpp
 ${TEST_SRC_PATH}/StringUtils_unittest.cpp
 )
 
-target_link_libraries(tests ${PROJECT_NAME} ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY})
+target_link_libraries(tests ${PROJECT_NAME} ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} ${PTHREAD})
 add_test(AllTestsInMain tests)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_range_for)

@@ -10,13 +10,15 @@
 #include "HTMLMessage.h"
 #include <vector>
 
-#pragma once  
-
-#ifdef SMTPCLIENT_EXPORTS  
-#define SMTPCLIENT_API __declspec(dllexport)   
-#else  
-#define SMTPCLIENT_API __declspec(dllimport)   
-#endif  
+#ifdef _WIN32
+	#ifdef SMTPCLIENT_EXPORTS  
+		#define SMTPCLIENT_API __declspec(dllexport)   
+	#else  
+		#define SMTPCLIENT_API __declspec(dllimport)   
+	#endif  
+#else
+	#define SMTPCLIENT_API
+#endif
 
 namespace jed_utils
 {
