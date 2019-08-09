@@ -36,10 +36,10 @@ namespace jed_utils
 			const std::vector<MessageAddress> &pBcc = std::vector<MessageAddress>(),
 			const std::vector<Attachment> &pAttachments = std::vector<Attachment>());
 		Message(const Message &);
-		~Message();
+		virtual ~Message();
 		Message &operator=(const Message &msg);
 		virtual const std::string getMimeType() const = 0;
-		const MessageAddress getFrom() const;
+		const MessageAddress &getFrom() const;
 		const std::vector<MessageAddress> &getTo() const;
 		size_t getToCount() const;
 		const std::string &getSubject() const;
@@ -52,12 +52,12 @@ namespace jed_utils
 		size_t getAttachmentsCount() const;
 	protected:
 		MessageAddress mFrom;
-		std::vector<MessageAddress> *mTo = nullptr;
-		std::vector<MessageAddress> *mCc = nullptr;
-		std::vector<MessageAddress> *mBcc = nullptr;
-		std::string *mSubject = nullptr;
-		std::string *mBody = nullptr;
-		std::vector<Attachment> *mAttachments = nullptr;
+		std::vector<MessageAddress> mTo;
+		std::vector<MessageAddress> mCc;
+		std::vector<MessageAddress> mBcc;
+		std::string mSubject;
+		std::string mBody;
+		std::vector<Attachment> mAttachments;
 	};
 }
 

@@ -22,9 +22,11 @@ namespace jed_utils
 	{
 	public:
 		Attachment(const std::string &pFilename, const std::string &pName = "");
-		Attachment(const Attachment &);
+		/*Attachment(const Attachment &); //Copy constructor
 		~Attachment();
-		Attachment &operator=(const Attachment &pAtt);
+		Attachment &operator=(const Attachment &pAtt); //Copy assignment
+		Attachment(Attachment&&) noexcept; //Move constructor
+		Attachment& operator=(Attachment&&) noexcept; //Move assignement*/
 		const std::string &getName() const;
 		const std::string &getFilename() const;
 		std::string getBase64EncodedFile() const;
@@ -32,8 +34,8 @@ namespace jed_utils
 		friend class Message;
 	private:
 		Attachment() {};
-		std::string *mName = nullptr;
-		std::string *mFilename = nullptr;
+		std::string mName;
+		std::string mFilename;
 		std::string toUppercase(const std::string &pValue) const;
 	};
 }

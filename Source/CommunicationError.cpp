@@ -1,4 +1,4 @@
-#include "CommunicationError.h"
+#include "../Include/CommunicationError.h"
 #include <cstring>
 
 using namespace std;
@@ -6,33 +6,12 @@ using namespace std;
 namespace jed_utils
 {
 	CommunicationError::CommunicationError(const string &pErrMsg)
+        : mErrorMessage(pErrMsg)
 	{ 
-		mErrorMessage = new string(pErrMsg);
 	}
 
-	CommunicationError::~CommunicationError()
+	const string &CommunicationError::what() const 
 	{
-		if (mErrorMessage)
-			delete mErrorMessage;
-	}
-
-	CommunicationError::CommunicationError(const CommunicationError &pItem)
-	{
-		mErrorMessage = new string(*pItem.mErrorMessage);
-	}
-
-	CommunicationError &CommunicationError::operator=(const CommunicationError &pErrMsg)
-	{
-		if (this != &pErrMsg)
-		{
-			delete mErrorMessage;
-			mErrorMessage = new string(*pErrMsg.mErrorMessage);
-		}
-		return *this;
-	}
-
-	const string &CommunicationError::what() const throw()
-	{
-		return *mErrorMessage;
+		return mErrorMessage;
 	}
 }

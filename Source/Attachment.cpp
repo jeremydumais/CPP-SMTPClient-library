@@ -1,20 +1,23 @@
-#include "Attachment.h"
-#include "StringUtils.h"
+#include "../Include/Attachment.h"
+#include "../Include/StringUtils.h"
 #include <iostream>
+#include <string>
 
 using namespace std;
 
 namespace jed_utils
 {
 	Attachment::Attachment(const string &pFilename, const string &pName)
+		: mName(pName), mFilename(pFilename)
 	{
+        
 		if (pFilename.length() == 0 || StringUtils::trim(pFilename).length() == 0)
 			throw invalid_argument("filename");
-		this->mFilename = new string(pFilename);
-		this->mName = new string(pName);
+		/*this->mFilename = new string(pFilename);
+		this->mName = new string(pName);*/
 	}
 
-	Attachment::Attachment(const Attachment &pItem)
+	/*Attachment::Attachment(const Attachment &pItem)
 	{
 		mFilename = new string(*pItem.mFilename);
 		mName = new string(*pItem.mName);
@@ -41,20 +44,54 @@ namespace jed_utils
 			delete mName;
 	}
 
+	//Move constructor
+	Attachment::Attachment(Attachment&& other) noexcept
+		: m_command(other.m_command), 
+		m_arguments(other.m_arguments), 
+		m_pluginPtr(other.m_pluginPtr)
+		{
+			// Release the data pointer from the source object so that the destructor 
+			// does not free the memory multiple times.
+			other.m_command = nullptr;
+			other.m_arguments = nullptr;
+			other.m_pluginPtr = nullptr;
+		}
+
+	//Move assignement
+	Attachement& Attachment::operator=(Attachment&& other) noexcept
+	{
+		if (this != &other)
+		{
+			delete[] m_command;
+			delete[] m_arguments;
+			delete[] m_pluginPtr;
+			// Copy the data pointer and its length from the source object.
+			m_command = other.m_command;
+			m_arguments = other.m_arguments;
+			m_pluginPtr = other.m_pluginPtr;
+			// Release the data pointer from the source object so that
+			// the destructor does not free the memory multiple times.
+			other.m_command = nullptr;
+			other.m_arguments = nullptr;
+			other.m_pluginPtr = nullptr;
+		}
+		return *this;
+	}*/
+
 	const string &Attachment::getName() const
 	{
-		return *mName;
+		return mName;
 	}
 
 	const string &Attachment::getFilename() const
 	{
-		return *mFilename;
+		return mFilename;
 	}
 
 	string Attachment::getBase64EncodedFile() const
 	{
 		//Open the file
-		ifstream in(*mFilename, std::ios::in | std::ios::binary);
+		ifstream in(mFilename, std::ios::in | std::ios::binary);
 		if (in)
 		{
 			std::string contents;
@@ -69,12 +106,12 @@ namespace jed_utils
 			return base64_file;
 		}
 		else
-			throw AttachmentError((string("Could not open file ") + string(*mFilename)).c_str());
+			throw AttachmentError((string("Could not open file ") + mFilename).c_str());
 	}
 
 	string Attachment::getMimeType() const
 	{
-		string filename_str(*mFilename);
+		string filename_str { mFilename };
 		const string extension = toUppercase(filename_str.substr(filename_str.find_last_of(".") + 1));
 		//Images
 		if (extension == "PNG")
@@ -188,7 +225,7 @@ namespace jed_utils
 
 	string Attachment::toUppercase(const string &pValue) const
 	{
-		string retval = "";
+		string retval { "" };
 		for (unsigned int c = 0; c < pValue.length(); c++)
 			retval += toupper(pValue[c]);
 

@@ -20,12 +20,9 @@ namespace jed_utils
 	{
 	public:
 		explicit AttachmentError(const std::string &pErrMsg);
-		~AttachmentError();
-		AttachmentError(const AttachmentError &);
-		AttachmentError &operator=(const AttachmentError &pAttErr);
-		const std::string &what() const throw();
+		const std::string &what() const;
 	private:
-		std::string *mErrorMessage = nullptr;
+		std::string mErrorMessage;
 	};
 }
 

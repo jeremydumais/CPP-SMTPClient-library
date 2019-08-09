@@ -61,7 +61,7 @@ TEST(plainTextMessage_SimpleConstructor, validParams)
 
 TEST(plainTextMessage_ExtendedConstructor, validParams)
 {
-    vector<MessageAddress> addr_to = { MessageAddress("youraddress@domain.com") };
+    vector<MessageAddress> addr_to { MessageAddress("youraddress@domain.com") };
     PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
         addr_to,
         "This is a test (Subject)",
