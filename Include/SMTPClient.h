@@ -1,13 +1,13 @@
 #ifndef SMTPCLIENT_H
 #define SMTPCLIENT_H
 
-#include <string>
-#include "CommunicationError.h"
-#include "AttachmentError.h"
 #include "Attachment.h"
+#include "AttachmentError.h"
+#include "CommunicationError.h"
+#include "HTMLMessage.h"
 #include "MessageAddress.h"
 #include "PlainTextMessage.h"
-#include "HTMLMessage.h"
+#include <string>
 #include <vector>
 
 #ifdef _WIN32
@@ -25,22 +25,19 @@ namespace jed_utils
 	class SMTPCLIENT_API SmtpClient
 	{
 	public:
-		SmtpClient(const std::string &pServerName, const unsigned int pPort);
-		~SmtpClient();
-		SmtpClient(const SmtpClient &);
-		SmtpClient &operator=(const SmtpClient &pClient);
+		SmtpClient(const std::string &pServerName, unsigned int pPort);
 		void sendMail(const Message &pMsg);
 		const std::string &getServerReply() const;
 	protected:
-		std::string *mServerName;
+		std::string mServerName;
 		unsigned int mPort;
-		std::string *mServerReply;
-		void writeCommand(const unsigned int sock,
-			const std::string &str,
-			const std::string &arg,
-			const bool ask_for_reply = true);
+		std::string mServerReply;
+		void writeCommand(unsigned int pSock,
+			const std::string &pStr,
+			const std::string &pArg,
+			bool pAskForReply = true);
 		std::string createAttachmentsText(const std::vector<Attachment> &pAttachments);
 	};
-}
+} // namespace jed_utils
 
 #endif

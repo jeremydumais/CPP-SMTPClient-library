@@ -16,14 +16,14 @@
 
 namespace jed_utils
 {
-	class COMMUNICATIONERROR_API CommunicationError
+	class COMMUNICATIONERROR_API CommunicationError : std::exception
 	{
 	public:
 		explicit CommunicationError(const std::string &pErrMsg);
-		const std::string &what() const;
+		const char *what() const noexcept override;
 	private:
 		std::string mErrorMessage;
 	};
-}
+} // namespace jed_utils
 
 #endif

@@ -1,8 +1,8 @@
 #ifndef HTMLMESSAGE_H
 #define HTMLMESSAGE_H
 
-#include <string>
 #include "Message.h"
+#include <string>
 
 #ifdef _WIN32
 	#ifdef SMTPCLIENT_EXPORTS  
@@ -33,8 +33,8 @@ namespace jed_utils
 			const std::vector<MessageAddress> &pCc = std::vector<MessageAddress>(),
 			const std::vector<MessageAddress> &pBcc = std::vector<MessageAddress>(),
 			const std::vector<Attachment> &pAttachments = std::vector<Attachment>());
-		virtual const std::string getMimeType() const override;
+		const std::string getMimeType() const override;
 	};
-}
+} // namespace jed_utils
 
 #endif

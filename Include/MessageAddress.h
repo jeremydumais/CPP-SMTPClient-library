@@ -21,9 +21,9 @@ namespace jed_utils
 	class MESSAGEADDRESS_API MessageAddress
 	{
 	public:
-		MessageAddress(const std::string &pEmailAddress, const std::string &pDisplayName = "");
+		explicit MessageAddress(const std::string &pEmailAddress, const std::string &pDisplayName = "");
 		bool operator==(const MessageAddress &pMsgComp) const;
-		operator std::string() const;
+		explicit operator std::string() const;
 		const std::string &getEmailAddress() const;
 		const std::string &getDisplayName() const;
 		friend class message;
@@ -32,6 +32,6 @@ namespace jed_utils
 		std::string mDisplayName;
 		bool isEmailAddressValid(const std::string &pEmailAddress) const;
 	};
-}
+} // namespace jed_utils
 
 #endif

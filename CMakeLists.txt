@@ -1,10 +1,22 @@
 cmake_minimum_required(VERSION 2.9)
 
 project(SMTPClient C CXX)
-set (CMAKE_CXX_STANDARD 11)
 
 # Set project name
 set(PROJECT_NAME    "SMTPClient")
+set(PROJECT_UNITTEST_NAME   "SMTPClient_UnitTests")
+
+find_program(
+    CLANG_TIDY_EXE
+    NAMES "clang-tidy"
+    DOC "Path to clang-tidy executable"
+    )
+if(NOT CLANG_TIDY_EXE)
+    message(STATUS "clang-tidy not found.")
+else()
+    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+    set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;-line-filter=[{\"name\":\"Source/Base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];-checks=*,-llvm-header-guard,-google-build-using-namespace,-fuchsia-default-arguments,-modernize-pass-by-value,-fuchsia-overloaded-operator")
+endif()
 
 #set(CMAKE_BUILD_TYPE Debug)
 
@@ -13,10 +25,9 @@ set(PROJECT_PATH    "${CMAKE_CURRENT_SOURCE_DIR}")
 set(INCLUDE_PATH    "${PROJECT_PATH}/Include")
 set(SRC_PATH        "${PROJECT_PATH}/Source")
 set(TEST_SRC_PATH   "${PROJECT_PATH}/test/smtpclient_unittest")
-set(VCPKG_ROOT_PATH "C:/Users/jerem/vcpkg/installed/x86-windows")
-
-set(GTEST_INCLUDE_DIR   "${VCPKG_ROOT_PATH}/include")
 if (WIN32)
+    set(VCPKG_ROOT_PATH "C:/Users/jerem/vcpkg/installed/x86-windows")
+    set(GTEST_INCLUDE_DIR   "${VCPKG_ROOT_PATH}/include")
 	set(GTEST_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtestd.lib")
 	set(GTEST_MAIN_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtest_maind.lib")
 	set(PTHREAD		"")
@@ -25,6 +36,27 @@ else()
 	set(GTEST_MAIN_LIBRARY	"gtest_main")
 	set(PTHREAD		"pthread")
 endif()
+
+# c++14 required
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-std=c++14 HAS_CXX14_FLAG)
+check_cxx_compiler_flag(-std=c++17 HAS_CXX17_FLAG)
+check_cxx_compiler_flag(-std=c++2a HAS_CXX20_FLAG)
+
+#if(HAS_CXX20_FLAG)
+#    set(CMAKE_CXX_STANDARD 20)
+if(HAS_CXX17_FLAG)
+    set(CMAKE_CXX_STANDARD 17)
+elseif(HAS_CXX14_FLAG)
+    set(CMAKE_CXX_STANDARD 14)
+else()
+    message(FATAL_ERROR "${PROJECT_NAME} requires c++14")
+endif()
+
+if(NOT (DEFINED CMAKE_CXX_STANDARD) OR CMAKE_CXX_STANDARD STREQUAL "" OR CMAKE_CXX_STANDARD LESS 14)
+    message(FATAL_ERROR "${PROJECT_NAME} requires c++14")
+endif()
+
 # Set CMake build-type. If it not supplied by the user, the default built type is "Release".
 if(((NOT CMAKE_BUILD_TYPE)
       AND (NOT BUILD_COVERAGE_ANALYSIS))
@@ -54,21 +86,6 @@ add_library(${PROJECT_NAME} ${INCLUDE_PATH}
     ${SRC_PATH}/StringUtils.cpp
     )
 
-enable_testing()
-find_package(GTest REQUIRED)
-add_executable(tests ${INCLUDE_PATH}
-${TEST_SRC_PATH}/main.cpp
-${TEST_SRC_PATH}/MessageAddress_unittest.cpp
-${TEST_SRC_PATH}/Attachment_unittest.cpp
-${TEST_SRC_PATH}/PlainTextMessage_unittest.cpp
-${TEST_SRC_PATH}/StringUtils_unittest.cpp
-)
-
-target_link_libraries(tests ${PROJECT_NAME} ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} ${PTHREAD})
-add_test(AllTestsInMain tests)
-
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_range_for)
-
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	target_compile_definitions(${PROJECT_NAME}
 		INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
@@ -90,3 +107,22 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") # gcc
 		"-fno-diagnostics-show-caret"
 		)
 endif()
+
+#Run clang-tidy on project
+if(CLANG_TIDY_EXE)
+  set_target_properties(${PROJECT_NAME} PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
+endif()
+
+enable_testing()
+find_package(GTest REQUIRED)
+add_executable(${PROJECT_UNITTEST_NAME} ${INCLUDE_PATH}
+${TEST_SRC_PATH}/main.cpp
+${TEST_SRC_PATH}/MessageAddress_unittest.cpp
+${TEST_SRC_PATH}/Attachment_unittest.cpp
+${TEST_SRC_PATH}/PlainTextMessage_unittest.cpp
+${TEST_SRC_PATH}/StringUtils_unittest.cpp
+)
+
+target_link_libraries(${PROJECT_UNITTEST_NAME} ${PROJECT_NAME} ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} ${PTHREAD})
+add_test(AllTestsInMain ${PROJECT_UNITTEST_NAME})
+

@@ -1,17 +1,15 @@
 #include "../Include/AttachmentError.h"
 #include <cstring>
 
+using namespace jed_utils;
 using namespace std;
 
-namespace jed_utils
+AttachmentError::AttachmentError(const string &pErrMsg)
+    : mErrorMessage(pErrMsg)
 {
-	AttachmentError::AttachmentError(const string &pErrMsg)
-        : mErrorMessage(pErrMsg)
-	{
-	}
+}
 
-	const string &AttachmentError::what() const 
-	{
-		return mErrorMessage;
-	}
+const char *AttachmentError::what() const noexcept 
+{
+    return mErrorMessage.c_str();
 }
