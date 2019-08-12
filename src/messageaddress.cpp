@@ -1,5 +1,5 @@
-#include "../Include/MessageAddress.h"
-#include "../Include/StringUtils.h"
+#include "messageaddress.h"
+#include "stringutils.h"
 #include <regex>
 #include <stdexcept>
 #include <string>

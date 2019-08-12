@@ -1,9 +1,9 @@
-#include "../Include/PlainTextMessage.h"
+#include "htmlmessage.h"
 
 using namespace std;
 using namespace jed_utils;
 
-PlaintextMessage::PlaintextMessage(const MessageAddress &pFrom,
+HTMLMessage::HTMLMessage(const MessageAddress &pFrom,
         const MessageAddress &pTo,
         const string &pSubject,
         const string &pBody,
@@ -14,7 +14,7 @@ PlaintextMessage::PlaintextMessage(const MessageAddress &pFrom,
 {
 }
 
-PlaintextMessage::PlaintextMessage(const MessageAddress &pFrom,
+HTMLMessage::HTMLMessage(const MessageAddress &pFrom,
         const vector<MessageAddress> &pTo,
         const string &pSubject,
         const string &pBody,
@@ -25,8 +25,8 @@ PlaintextMessage::PlaintextMessage(const MessageAddress &pFrom,
 {
 }
 
-const string PlaintextMessage::getMimeType() const
+const string HTMLMessage::getMimeType() const
 {
-    return "text/plain";
+    return "text/html";
 }
 

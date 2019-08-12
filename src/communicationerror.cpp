@@ -1,4 +1,4 @@
-#include "../Include/CommunicationError.h"
+#include "communicationerror.h"
 #include <cstring>
 
 using namespace jed_utils;

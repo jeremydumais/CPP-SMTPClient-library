@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../../Include/PlainTextMessage.h"
+#include "../../src/plaintextmessage.h"
 #include <stdexcept>
 #include <vector>
 

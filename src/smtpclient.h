@@ -1,12 +1,12 @@
 #ifndef SMTPCLIENT_H
 #define SMTPCLIENT_H
 
-#include "Attachment.h"
-#include "AttachmentError.h"
-#include "CommunicationError.h"
-#include "HTMLMessage.h"
-#include "MessageAddress.h"
-#include "PlainTextMessage.h"
+#include "attachment.h"
+#include "attachmenterror.h"
+#include "communicationerror.h"
+#include "htmlmessage.h"
+#include "messageaddress.h"
+#include "plaintextmessage.h"
 #include <string>
 #include <vector>
 

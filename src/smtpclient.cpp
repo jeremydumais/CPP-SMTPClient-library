@@ -1,4 +1,4 @@
-#include "../Include/SMTPClient.h"
+#include "smtpclient.h"
 
 #include <iostream>
 #include <sstream>

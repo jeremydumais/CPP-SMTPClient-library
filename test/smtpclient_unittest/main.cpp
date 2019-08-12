@@ -1,5 +1,5 @@
 // SMTPClient_Test.cpp : Defines the entry point for the console application.
-#include "../../Include/SMTPClient.h"
+#include "../../src/smtpclient.h"
 #include <gtest/gtest.h>
 
 #include <iostream>

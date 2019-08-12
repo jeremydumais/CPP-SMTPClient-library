@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../../Include/MessageAddress.h"
+#include "../../src/messageaddress.h"
 #include <stdexcept>
 
 using namespace jed_utils;

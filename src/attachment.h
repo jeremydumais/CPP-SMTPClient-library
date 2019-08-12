@@ -1,8 +1,8 @@
 #ifndef ATTACHMENT_H
 #define ATTACHMENT_H
 
-#include "AttachmentError.h"
-#include "Base64.h"
+#include "attachmenterror.h"
+#include "base64.h"
 #include <cstring>
 #include <fstream>
 

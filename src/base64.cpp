@@ -25,7 +25,7 @@ Ren� Nyffenegger rene.nyffenegger@adp-gmbh.ch
 
 */
 
-#include "../Include/Base64.h"
+#include "base64.h"
 #include <iostream>
 
 using namespace jed_utils;

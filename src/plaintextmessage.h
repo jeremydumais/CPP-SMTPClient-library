@@ -1,32 +1,32 @@
-#ifndef HTMLMESSAGE_H
-#define HTMLMESSAGE_H
+#ifndef PLAINTEXTMESSAGE_H
+#define PLAINTEXTMESSAGE_H
 
-#include "Message.h"
+#include "message.h"
 #include <string>
 
 #ifdef _WIN32
 	#ifdef SMTPCLIENT_EXPORTS  
-		#define HTMLMESSAGE_API __declspec(dllexport)   
+		#define PLAINTEXTMESSAGE_API __declspec(dllexport)   
 	#else  
-		#define HTMLMESSAGE_API __declspec(dllimport)   
+		#define PLAINTEXTMESSAGE_API __declspec(dllimport)   
 	#endif
 #else
-	#define HTMLMESSAGE_API
+	#define PLAINTEXTMESSAGE_API
 #endif
 
 namespace jed_utils
 {
-	class HTMLMESSAGE_API HTMLMessage : public Message
+	class PLAINTEXTMESSAGE_API PlaintextMessage : public Message
 	{
 	public:
-		HTMLMessage(const MessageAddress &pFrom,
+		PlaintextMessage(const MessageAddress &pFrom,
 			const MessageAddress &pTo,
 			const std::string &pSubject,
 			const std::string &pBody,
 			const std::vector<MessageAddress> &pCc = std::vector<MessageAddress>(),
 			const std::vector<MessageAddress> &pBcc = std::vector<MessageAddress>(),
 			const std::vector<Attachment> &pAttachments = std::vector<Attachment>());
-		HTMLMessage(const MessageAddress &pFrom,
+		PlaintextMessage(const MessageAddress &pFrom,
 			const std::vector<MessageAddress> &pTo,
 			const std::string &pSubject,
 			const std::string &pBody,

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../../Include/Attachment.h"
+#include "../../src/attachment.h"
 
 using namespace jed_utils;
 using namespace std;

@@ -1,5 +1,5 @@
-#include "../Include/Attachment.h"
-#include "../Include/StringUtils.h"
+#include "attachment.h"
+#include "stringutils.h"
 #include <algorithm>
 #include <iostream>
 #include <string>

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../../Include/StringUtils.h"
+#include "../../src/stringutils.h"
 
 using namespace std;
 using namespace jed_utils;
