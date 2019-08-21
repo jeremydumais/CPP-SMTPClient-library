@@ -31,10 +31,8 @@ void SmtpClient::sendMail(const Message &pMsg)
     unsigned int sock = 0;
     WSADATA wsaData;
 
-    if (mServerReply)
-    {
-        delete mServerReply;
-        mServerReply = nullptr;
+    if (!mServerReply.empty()) {
+		mServerReply = "";
     }
 
     ostringstream body_ss;
@@ -42,8 +40,7 @@ void SmtpClient::sendMail(const Message &pMsg)
     string body_real = body_ss.str();
 
     //If there's attachments, prepare the attachments text content
-    if (pMsg.getAttachmentsCount() > 0)
-    {
+    if (pMsg.getAttachmentsCount() > 0) {
         string attachments_text = createAttachmentsText(pMsg.getAttachments());
         body_real += attachments_text;
     }
@@ -51,8 +48,7 @@ void SmtpClient::sendMail(const Message &pMsg)
     /* Windows Sockets version */
     WORD wVersionRequested = MAKEWORD(2, 2);
     int wsa_retVal = WSAStartup(wVersionRequested, &wsaData);
-    if (wsa_retVal != 0)
-    {
+    if (wsa_retVal != 0) {
         ostringstream error_stream;
         error_stream << "Windows Sockets startup error : " << wsa_retVal;
         throw CommunicationError(error_stream.str().c_str());
@@ -62,7 +58,7 @@ void SmtpClient::sendMail(const Message &pMsg)
     hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
     hints.ai_socktype = SOCK_STREAM;
 
-    dwRetval = getaddrinfo((*mServerName).c_str(), "25", &hints, &result);
+    dwRetval = getaddrinfo(mServerName.c_str(), "25", &hints, &result);
     if (dwRetval != 0) 
     {
         WSACleanup();
@@ -89,9 +85,9 @@ void SmtpClient::sendMail(const Message &pMsg)
     // Data section
     writeCommand(sock, "DATA\r\n", "");
     // Mail headers
-    writeCommand(sock, "From: %s\r\n", pMsg.getFrom());
+    writeCommand(sock, "From: %s\r\n", pMsg.getFrom().getEmailAddress());
     for(auto &item : pMsg.getTo())
-        writeCommand(sock, "To: %s\r\n", item, false);
+        writeCommand(sock, "To: %s\r\n", item.getEmailAddress(), false);
     writeCommand(sock, "Subject: %s\r\n", pMsg.getSubject(), false);
     writeCommand(sock, "MIME-Version: 1.0\r\n", "", false);
     writeCommand(sock, "Content-Type: multipart/mixed; boundary=sep\r\n", "", false);
@@ -154,15 +150,7 @@ void SmtpClient::writeCommand(unsigned int pSock, const string &pStr, const stri
         if (len > 0)
         {
             outbuf[len] = '\0';
-            if (mServerReply == nullptr)
-            {
-                mServerReply = new string(outbuf);
-            }
-            else
-            {
-                (*mServerReply) += string(outbuf);
-            }
-
+            mServerReply += string(outbuf);
         }
     }
 }

@@ -1,5 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+    CACHE STRING "")
+    message(" [INFO] VCPKG CMAKE_TOOLCHAIN_FILE = ${CMAKE_TOOLCHAIN_FILE}")
+endif()
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_PDB_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
 project(SMTPClient C CXX)
 
 # Set project name
@@ -25,11 +36,11 @@ set(PROJECT_PATH    "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SRC_PATH        "${PROJECT_PATH}/src")
 set(TEST_SRC_PATH   "${PROJECT_PATH}/test/smtpclient_unittest")
 if (WIN32)
-    set(VCPKG_ROOT_PATH "C:/Users/jerem/vcpkg/installed/x86-windows")
+	find_path(SYSTEM_INCLUDE_DIR gtest/gtest.h)
+	include_directories(${SYSTEM_INCLUDE_DIR})
     set(GTEST_INCLUDE_DIR   "${VCPKG_ROOT_PATH}/include")
-	set(GTEST_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtestd.lib")
-	set(GTEST_MAIN_LIBRARY   "${VCPKG_ROOT_PATH}/debug/lib/manual-link/gtest_maind.lib")
 	set(PTHREAD		"")
+	option(VCPKG_APPLOCAL_DEPS "Automatically copy dependencies into the output directory for executables." ON)
 else()
 	set(GTEST_LIBRARY	"gtest")
 	set(GTEST_MAIN_LIBRARY	"gtest_main")
@@ -42,18 +53,24 @@ check_cxx_compiler_flag(-std=c++14 HAS_CXX14_FLAG)
 check_cxx_compiler_flag(-std=c++17 HAS_CXX17_FLAG)
 check_cxx_compiler_flag(-std=c++2a HAS_CXX20_FLAG)
 
-#if(HAS_CXX20_FLAG)
-#    set(CMAKE_CXX_STANDARD 20)
-if(HAS_CXX17_FLAG)
-    set(CMAKE_CXX_STANDARD 17)
-elseif(HAS_CXX14_FLAG)
-    set(CMAKE_CXX_STANDARD 14)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC") # the quotes are needed here, maybe because "MSVC" seems to be a keyword
+	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19)
+		message(FATAL_ERROR "Visual Studio 2015 or newer is required.")
+	endif()
 else()
-    message(FATAL_ERROR "${PROJECT_NAME} requires c++14")
-endif()
+	#if(HAS_CXX20_FLAG)
+	#    set(CMAKE_CXX_STANDARD 20)
+	if(HAS_CXX17_FLAG)
+		set(CMAKE_CXX_STANDARD 17)
+	elseif(HAS_CXX14_FLAG)
+		set(CMAKE_CXX_STANDARD 14)
+	else()
+		message(FATAL_ERROR "${PROJECT_NAME} requires c++14")
+	endif()
 
-if(NOT (DEFINED CMAKE_CXX_STANDARD) OR CMAKE_CXX_STANDARD STREQUAL "" OR CMAKE_CXX_STANDARD LESS 14)
-    message(FATAL_ERROR "${PROJECT_NAME} requires c++14")
+	if(NOT (DEFINED CMAKE_CXX_STANDARD) OR CMAKE_CXX_STANDARD STREQUAL "" OR CMAKE_CXX_STANDARD LESS 14)
+		message(FATAL_ERROR "${PROJECT_NAME} requires c++14")
+	endif()
 endif()
 
 # Set CMake build-type. If it not supplied by the user, the default built type is "Release".
@@ -69,7 +86,7 @@ endif(((NOT CMAKE_BUILD_TYPE)
     OR (CMAKE_BUILD_TYPE STREQUAL "Release"))
 
 #include_directories(AFTER "${INCLUDE_PATH}")
-include_directories(${GTEST_INCLUDE_DIR})
+
 
 add_definitions(-DSMTPCLIENT_EXPORTS)
 add_library(${PROJECT_NAME} 
@@ -108,12 +125,15 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") # gcc
 endif()
 
 #Run clang-tidy on project
-if(CLANG_TIDY_EXE)
+if(CLANG_TIDY_EXE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set_target_properties(${PROJECT_NAME} PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
 endif()
 
 enable_testing()
+include_directories(${GTEST_INCLUDE_DIR})
+
 find_package(GTest REQUIRED)
+
 add_executable(${PROJECT_UNITTEST_NAME} ${INCLUDE_PATH}
 ${TEST_SRC_PATH}/main.cpp
 ${TEST_SRC_PATH}/messageaddress_unittest.cpp
