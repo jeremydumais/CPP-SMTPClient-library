@@ -1,11 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-  set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-    CACHE STRING "")
-    message(" [INFO] VCPKG CMAKE_TOOLCHAIN_FILE = ${CMAKE_TOOLCHAIN_FILE}")
-endif()
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_PDB_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -36,14 +30,9 @@ set(PROJECT_PATH    "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SRC_PATH        "${PROJECT_PATH}/src")
 set(TEST_SRC_PATH   "${PROJECT_PATH}/test/smtpclient_unittest")
 if (WIN32)
-	find_path(SYSTEM_INCLUDE_DIR gtest/gtest.h)
-	include_directories(${SYSTEM_INCLUDE_DIR})
-    set(GTEST_INCLUDE_DIR   "${VCPKG_ROOT_PATH}/include")
 	set(PTHREAD		"")
 	option(VCPKG_APPLOCAL_DEPS "Automatically copy dependencies into the output directory for executables." ON)
 else()
-	set(GTEST_LIBRARY	"gtest")
-	set(GTEST_MAIN_LIBRARY	"gtest_main")
 	set(PTHREAD		"pthread")
 endif()
 
@@ -84,9 +73,6 @@ elseif((CMAKE_BUILD_TYPE STREQUAL "Debug") OR (BUILD_COVERAGE_ANALYSIS))
 endif(((NOT CMAKE_BUILD_TYPE)
     AND (NOT BUILD_COVERAGE_ANALYSIS))
     OR (CMAKE_BUILD_TYPE STREQUAL "Release"))
-
-#include_directories(AFTER "${INCLUDE_PATH}")
-
 
 add_definitions(-DSMTPCLIENT_EXPORTS)
 add_library(${PROJECT_NAME} 
@@ -130,9 +116,31 @@ if(CLANG_TIDY_EXE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 enable_testing()
-include_directories(${GTEST_INCLUDE_DIR})
 
-find_package(GTest REQUIRED)
+# Download and unpack googletest at configure time
+configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+if(result)
+  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+if(result)
+  message(FATAL_ERROR "Build step for googletest failed: ${result}")
+endif()
+
+# Prevent overriding the parent project's compiler/linker
+# settings on Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+# Add googletest directly to our build. This defines
+# the gtest and gtest_main targets.
+add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
+                 ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+                 EXCLUDE_FROM_ALL)
 
 add_executable(${PROJECT_UNITTEST_NAME} ${INCLUDE_PATH}
 ${TEST_SRC_PATH}/main.cpp
@@ -142,7 +150,7 @@ ${TEST_SRC_PATH}/plaintextmessage_unittest.cpp
 ${TEST_SRC_PATH}/stringutils_unittest.cpp
 )
 
-target_link_libraries(${PROJECT_UNITTEST_NAME} ${PROJECT_NAME} ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} ${PTHREAD})
+target_link_libraries(${PROJECT_UNITTEST_NAME} ${PROJECT_NAME} gtest gtest_main ${PTHREAD})
 add_test(AllTestsInMain ${PROJECT_UNITTEST_NAME})
 
 install (TARGETS ${PROJECT_NAME} DESTINATION lib)
