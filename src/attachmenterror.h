@@ -19,10 +19,15 @@ namespace jed_utils
 	class ATTACHMENTERROR_API AttachmentError : std::exception
 	{
 	public:
-		explicit AttachmentError(const std::string &pErrMsg);
+		explicit AttachmentError(const char *pErrMsg);
+		~AttachmentError() override;
+		AttachmentError(const AttachmentError& other); //Copy constructor
+                AttachmentError& operator=(const AttachmentError& other); //Copy assignment
+		AttachmentError(AttachmentError&& other) noexcept; //Move constructor
+		AttachmentError& operator=(AttachmentError&& other) noexcept; //Move assignement
 		const char *what() const noexcept override;
 	private:
-		std::string mErrorMessage;
+		char *mErrorMessage;
 	};
 } // namespace jed_utils
 

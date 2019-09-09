@@ -21,16 +21,21 @@ namespace jed_utils
 	class ATTACHMENT_API Attachment
 	{
 	public:
-		explicit Attachment(const std::string &pFilename, const std::string &pName = "");
-		const std::string &getName() const;
-		const std::string &getFilename() const;
-		std::string getBase64EncodedFile() const;
-		std::string getMimeType() const;
+		explicit Attachment(const char *pFilename, const char *pName = "");
+		~Attachment();
+		Attachment(const Attachment& other); //Copy constructor
+                Attachment& operator=(const Attachment& other); //Copy assignment
+		Attachment(Attachment&& other) noexcept; //Move constructor
+		Attachment& operator=(Attachment&& other) noexcept; //Move assignement
+		const char *getName() const;
+		const char *getFilename() const;
+		const char *getBase64EncodedFile() const;
+		const char *getMimeType() const;
 		friend class Message;
 	private:
 		Attachment() = default;
-		std::string mName;
-		std::string mFilename;
+		char *mName;
+		char *mFilename;
 		std::string toUppercase(const std::string &pValue) const;
 	};
 } // namespace jed_utils

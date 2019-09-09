@@ -184,10 +184,10 @@ string SmtpClient::createAttachmentsText(const vector<Attachment> &pAttachments)
     for (auto &item : pAttachments)
     {
         retval += "\r\n--sep\r\n";
-        retval += "Content-Type: " + item.getMimeType() + "; file=\"" + item.getName() + "\"\r\n";
-        retval += "Content-Disposition: Inline; filename=\"" + item.getName() + "\"\r\n";
+        retval += "Content-Type: " + string(item.getMimeType()) + "; file=\"" + string(item.getName()) + "\"\r\n";
+        retval += "Content-Disposition: Inline; filename=\"" + string(item.getName()) + "\"\r\n";
         retval += "Content-Transfer-Encoding: base64\r\n\r\n";
-        retval += item.getBase64EncodedFile();;
+        retval += string(item.getBase64EncodedFile());
 
     }
     retval += "\r\n--sep--";
