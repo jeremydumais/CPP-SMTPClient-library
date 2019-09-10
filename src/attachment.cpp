@@ -2,8 +2,8 @@
 #include "stringutils.h"
 #include <algorithm>
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 
 using namespace std;
 using namespace jed_utils;

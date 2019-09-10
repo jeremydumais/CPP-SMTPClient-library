@@ -59,9 +59,6 @@ Message::Message(const MessageAddress &pFrom,
         for (unsigned int index = 0; index < mToCount; index++) {
             mTo[index] = new MessageAddress(pTo[index]);
         }
-        /*mToCount = 1;
-        mTo = new MessageAddress*[mToCount];
-        mTo[0] = new MessageAddress(pTo);*/
     }
 
     if (pCc != nullptr) {
@@ -70,9 +67,6 @@ Message::Message(const MessageAddress &pFrom,
         for (unsigned int index = 0; index < mCCCount; index++) {
             mCc[index] = new MessageAddress(pCc[index]);
         }
-       /* mCCCount = 1;
-        mCc = new MessageAddress*[mCCCount];
-        mCc[0] = new MessageAddress(*pCc);*/
     }
 
     if (pBcc != nullptr) {
@@ -81,9 +75,6 @@ Message::Message(const MessageAddress &pFrom,
         for (unsigned int index = 0; index < mBCCCount; index++) {
             mBcc[index] = new MessageAddress(pBcc[index]);
         }
-        /*mBCCCount = 1;
-        mBcc = new MessageAddress*[mBCCCount];
-        mBcc[0] = new MessageAddress(*pBcc);*/
     }
 
     if (mAttachments != nullptr)
@@ -266,7 +257,7 @@ Message& Message::operator=(const Message &other)
 
 //Move constructor
 Message::Message(Message &&other) noexcept
-    : mFrom(other.mFrom),
+    : mFrom(move(other.mFrom)),
     mTo(other.mTo),
     mToCount(other.mToCount),
     mCc(other.mCc),

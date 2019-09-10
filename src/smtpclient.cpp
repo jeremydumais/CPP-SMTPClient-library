@@ -14,12 +14,96 @@
 using namespace std;
 using namespace jed_utils;
 
-SmtpClient::SmtpClient(const string &pServerName, unsigned int pPort)
-    : mServerName(pServerName),
+SmtpClient::SmtpClient(const char *pServerName, unsigned int pPort)
+    : mServerName(nullptr),
       mPort(pPort),
       mServerReply(nullptr)
 {
+    size_t server_name_len = strlen(pServerName);
+	mServerName = new char[server_name_len + 1];
+	strncpy(mServerName, pServerName, server_name_len);
+    mServerName[server_name_len] = '\0';
 }
+
+SmtpClient::~SmtpClient()
+{
+    delete[] mServerName;
+    mServerName = nullptr;
+    delete[] mServerReply;
+    mServerReply = nullptr;
+}
+
+//Copy constructor
+SmtpClient::SmtpClient(const SmtpClient &other)
+    : mServerName(new char[strlen(other.mServerName) + 1]),
+      mPort(other.mPort),
+      mServerReply(nullptr)
+{
+    strncpy(mServerName, other.mServerName, strlen(other.mServerName) + 1);
+	mServerName[strlen(other.mServerName)] = '\0';
+
+    if (other.mServerReply != nullptr) {
+        mServerReply = new char[strlen(other.mServerReply) + 1];
+        strncpy(mServerReply, other.mServerReply, strlen(other.mServerReply) + 1);
+	    mServerReply[strlen(other.mServerReply)] = '\0';
+    }
+}
+
+//Copy assignment
+SmtpClient& SmtpClient::operator=(const SmtpClient &other)
+{
+    if (this != &other)
+	{
+        //mServerName
+        delete[] mServerName;
+        mServerName = new char[strlen(other.mServerName) + 1];
+        strncpy(mServerName, other.mServerName, strlen(other.mServerName) + 1);
+        mServerName[strlen(other.mServerName)] = '\0';
+        //mPort
+        mPort = other.mPort;
+        //mServerName
+        delete[] mServerReply;
+        mServerReply = nullptr;
+        if (other.mServerReply != nullptr) {
+            mServerReply = new char[strlen(other.mServerReply) + 1];
+            strncpy(mServerReply, other.mServerReply, strlen(other.mServerReply) + 1);
+            mServerReply[strlen(other.mServerReply)] = '\0';
+        }
+
+    }
+    return *this;
+}
+
+//Move constructor
+SmtpClient::SmtpClient(SmtpClient &&other) noexcept
+    : mServerName(other.mServerName),
+      mPort(other.mPort),
+      mServerReply(other.mServerReply)
+{
+    other.mServerName = nullptr;
+    other.mPort = 0;
+    other.mServerReply = nullptr;
+}
+
+//Move assignement
+SmtpClient& SmtpClient::operator=(SmtpClient &&other) noexcept
+{
+    if (this != &other)
+	{
+		delete[] mServerName;
+		delete[] mServerReply;
+
+        mServerName = other.mServerName;
+        mPort = other.mPort;
+        mServerReply = other.mServerReply;
+
+        other.mServerName = nullptr;
+        other.mPort = 0;
+        other.mServerReply = nullptr;
+    }
+    return *this;
+}
+
 
 #ifdef _WIN32
 //Windows version of sendMail method
@@ -173,7 +257,7 @@ void SmtpClient::writeCommand(const unsigned int pSock, const string &pStr, cons
 
 #endif
 
-const string &SmtpClient::getServerReply() const
+const char *SmtpClient::getServerReply() const
 {
     return mServerReply;
 }

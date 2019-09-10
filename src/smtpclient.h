@@ -25,13 +25,18 @@ namespace jed_utils
 	class SMTPCLIENT_API SmtpClient
 	{
 	public:
-		SmtpClient(const std::string &pServerName, unsigned int pPort);
+		SmtpClient(const char *pServerName, unsigned int pPort);
+		virtual ~SmtpClient();
+        SmtpClient(const SmtpClient &other); //Copy constructor
+        SmtpClient& operator=(const SmtpClient &other); //Copy assignment
+        SmtpClient(SmtpClient &&other) noexcept; //Move constructor
+        SmtpClient& operator=(SmtpClient &&other) noexcept; //Move assignement
 		void sendMail(const Message &pMsg);
-		const std::string &getServerReply() const;
+		const char *getServerReply() const;
 	protected:
-		std::string mServerName;
+		char *mServerName;
 		unsigned int mPort;
-		std::string mServerReply;
+		char *mServerReply;
 		void writeCommand(unsigned int pSock,
 			const std::string &pStr,
 			const std::string &pArg,
