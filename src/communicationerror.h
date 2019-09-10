@@ -19,10 +19,15 @@ namespace jed_utils
 	class COMMUNICATIONERROR_API CommunicationError : std::exception
 	{
 	public:
-		explicit CommunicationError(const std::string &pErrMsg);
+		explicit CommunicationError(const char *pErrMsg);
+		~CommunicationError() override;
+		CommunicationError(const CommunicationError& other); //Copy constructor
+        CommunicationError& operator=(const CommunicationError& other); //Copy assignment
+		CommunicationError(CommunicationError&& other) noexcept; //Move constructor
+		CommunicationError& operator=(CommunicationError&& other) noexcept; //Move assignement
 		const char *what() const noexcept override;
 	private:
-		std::string mErrorMessage;
+	char *mErrorMessage;
 	};
 } // namespace jed_utils
 

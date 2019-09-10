@@ -5,35 +5,109 @@
 #include <string>
 
 using namespace std;
-
 using namespace jed_utils;
 
-MessageAddress::MessageAddress(const string &pEmailAddress, const string &pDisplayName)
-    : mEmailAddress(""), mDisplayName("")
+MessageAddress::MessageAddress(const char *pEmailAddress, const char *pDisplayName)
+    : mEmailAddress(nullptr), mDisplayName(nullptr)
 {
+    string email_address { pEmailAddress };
     //Check if the email address is not empty or white spaces
-    if (pEmailAddress.length() == 0 || StringUtils::trim(pEmailAddress).empty()) {
+    if (email_address.length() == 0 || StringUtils::trim(email_address).empty()) {
         throw invalid_argument("pEmailAddress");
     }
     //Check is the email address is valid
-    if (!isEmailAddressValid(pEmailAddress)) {
+    if (!isEmailAddressValid(email_address)) {
         throw invalid_argument("pEmailAddress");
     }
 
-    mEmailAddress = pEmailAddress;
-    mDisplayName = pDisplayName;
+    size_t email_len = strlen(pEmailAddress);
+    mEmailAddress = new char[email_len+1];
+    strncpy(mEmailAddress, pEmailAddress, email_len);
+    mEmailAddress[email_len] = '\0';
+
+    size_t name_len = strlen(pDisplayName);
+    mDisplayName = new char[name_len+1];
+    strncpy(mDisplayName, pDisplayName, name_len);
+    mDisplayName[name_len] = '\0';
+}
+
+MessageAddress::~MessageAddress()
+{
+    delete[] mEmailAddress;
+    delete[] mDisplayName;
+}
+
+//Copy constructor
+MessageAddress::MessageAddress(const MessageAddress& other)
+	: mEmailAddress(new char[strlen(other.mEmailAddress) + 1]),
+      mDisplayName(new char[strlen(other.mDisplayName) + 1])
+{
+	strncpy(mEmailAddress, other.mEmailAddress, strlen(other.mEmailAddress) + 1);
+	mEmailAddress[strlen(other.mEmailAddress)] = '\0';
+
+    strncpy(mDisplayName, other.mDisplayName, strlen(other.mDisplayName) + 1);
+	mDisplayName[strlen(other.mDisplayName)] = '\0';
+}
+
+//Assignment operator
+MessageAddress& MessageAddress::operator=(const MessageAddress& other)
+{
+	if (this != &other)
+	{
+		delete[] mEmailAddress;
+		delete[] mDisplayName;
+		//mEmailAddress
+		mEmailAddress = new char[strlen(other.mEmailAddress) + 1];
+		strncpy(mEmailAddress, other.mEmailAddress, strlen(other.mEmailAddress) + 1);
+		mEmailAddress[strlen(other.mEmailAddress)] = '\0';
+        //mDisplayName
+		mDisplayName = new char[strlen(other.mDisplayName) + 1];
+		strncpy(mDisplayName, other.mDisplayName, strlen(other.mDisplayName) + 1);
+		mDisplayName[strlen(other.mDisplayName)] = '\0';
+	}
+	return *this;
+}
+
+//Move constructor
+MessageAddress::MessageAddress(MessageAddress&& other) noexcept
+	: mEmailAddress(other.mEmailAddress),
+      mDisplayName(other.mDisplayName)
+{
+	// Release the data pointer from the source object so that the destructor 
+	// does not free the memory multiple times.
+	other.mEmailAddress = nullptr;
+	other.mDisplayName = nullptr;
+}
+
+//Move assignement operator
+MessageAddress& MessageAddress::operator=(MessageAddress&& other) noexcept
+{
+	if (this != &other)
+	{
+		delete[] mEmailAddress;
+		delete[] mDisplayName;
+		// Copy the data pointer and its length from the source object.
+		mEmailAddress = other.mEmailAddress;
+		mDisplayName = other.mDisplayName;
+		// Release the data pointer from the source object so that
+		// the destructor does not free the memory multiple times.
+		other.mEmailAddress = nullptr;
+		other.mDisplayName = nullptr;
+	}
+	return *this;
 }
 
 bool MessageAddress::operator==(const MessageAddress &pMsgComp) const
 {
-    return (mEmailAddress == pMsgComp.mEmailAddress && 
-            mDisplayName == pMsgComp.mDisplayName);
+    return (strcmp(mEmailAddress, pMsgComp.mEmailAddress) == 0 && 
+            strcmp(mDisplayName, pMsgComp.mDisplayName) == 0);
 }
 
 MessageAddress::operator string() const
 {
     ostringstream retval;
-    if (mDisplayName.empty()) {
+    string display_name { mDisplayName };
+    if (display_name.empty()) {
         retval << mEmailAddress;
     }
     else {
@@ -42,12 +116,12 @@ MessageAddress::operator string() const
     return retval.str();
 }
 
-const string &MessageAddress::getEmailAddress() const
+const char *MessageAddress::getEmailAddress() const
 {
     return mEmailAddress;
 }
 
-const string &MessageAddress::getDisplayName() const
+const char *MessageAddress::getDisplayName() const
 {
     return mDisplayName;
 }

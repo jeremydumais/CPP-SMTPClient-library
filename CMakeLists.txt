@@ -20,7 +20,7 @@ if(NOT CLANG_TIDY_EXE)
     message(STATUS "clang-tidy not found.")
 else()
     message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-    set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;-line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];-checks=*,-llvm-header-guard,-google-build-using-namespace,-fuchsia-default-arguments,-modernize-pass-by-value,-fuchsia-overloaded-operator")
+    set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;-line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];-checks=*,-llvm-header-guard,-google-build-using-namespace,-fuchsia-default-arguments,-modernize-pass-by-value,-fuchsia-overloaded-operator,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory")
 endif()
 
 #set(CMAKE_BUILD_TYPE Debug)
@@ -75,7 +75,7 @@ endif(((NOT CMAKE_BUILD_TYPE)
     OR (CMAKE_BUILD_TYPE STREQUAL "Release"))
 
 add_definitions(-DSMTPCLIENT_EXPORTS)
-add_library(${PROJECT_NAME} 
+add_library(${PROJECT_NAME}
     ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/attachmenterror.cpp
     ${SRC_PATH}/base64.cpp

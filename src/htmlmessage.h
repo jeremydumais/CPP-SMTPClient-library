@@ -21,19 +21,24 @@ namespace jed_utils
 	public:
 		HTMLMessage(const MessageAddress &pFrom,
 			const MessageAddress &pTo,
-			const std::string &pSubject,
-			const std::string &pBody,
-			const std::vector<MessageAddress> &pCc = std::vector<MessageAddress>(),
-			const std::vector<MessageAddress> &pBcc = std::vector<MessageAddress>(),
-			const std::vector<Attachment> &pAttachments = std::vector<Attachment>());
+			const char *pSubject,
+			const char *pBody,
+			const MessageAddress *pCc = nullptr,
+			const MessageAddress *pBcc = nullptr,
+			const Attachment *pAttachments = nullptr,
+			size_t pAttachmentsSize = 0);
 		HTMLMessage(const MessageAddress &pFrom,
-			const std::vector<MessageAddress> &pTo,
-			const std::string &pSubject,
-			const std::string &pBody,
-			const std::vector<MessageAddress> &pCc = std::vector<MessageAddress>(),
-			const std::vector<MessageAddress> &pBcc = std::vector<MessageAddress>(),
-			const std::vector<Attachment> &pAttachments = std::vector<Attachment>());
-		const std::string getMimeType() const override;
+			const MessageAddress pTo[],
+			size_t pToCount,
+			const char *pSubject,
+			const char *pBody,
+			const MessageAddress pCc[] = nullptr,
+			size_t pCcCount = 0,
+			const MessageAddress pBcc[] = nullptr,
+			size_t pBccCount = 0,
+			const Attachment pAttachments[] = nullptr,
+			size_t pAttachmentsSize = 0);
+		const char *getMimeType() const override;
 	};
 } // namespace jed_utils
 

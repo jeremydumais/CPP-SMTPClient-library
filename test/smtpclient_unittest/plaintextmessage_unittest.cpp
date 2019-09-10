@@ -31,13 +31,15 @@ class CompleteMessageWithSimpleConstructor : public ::testing::Test
 public:
     CompleteMessageWithSimpleConstructor()
     {
-        vector<Attachment> att = { Attachment("C:\\Temp\\test.png", "test image.png"), Attachment("C:\\Temp\\test2.png", "test image2.png") };
+        Attachment att[2] { Attachment("C:\\Temp\\test.png", "test image.png"), Attachment("C:\\Temp\\test2.png", "test image2.png") };
+        MessageAddress cc[1] { MessageAddress("myccaddress@domain.com", "myCCName") };
+        MessageAddress bcc[1] { MessageAddress("mybccaddress@domain.com", "myBCCName") };
         msg = new PlaintextMessage(MessageAddress("myfromaddress@test.com", "Test Address Display"),
         MessageAddress("youraddress@domain.com", "DisplayNameTo"),
         "This is a test (Subject)",
         "Hello\nHow are you?",
-        vector<MessageAddress> { MessageAddress("myccaddress@domain.com", "myCCName") },
-        vector<MessageAddress> { MessageAddress("mybccaddress@domain.com", "myBCCName") },
+        cc,
+        bcc,
         att);
         
     }
@@ -61,9 +63,9 @@ TEST(plainTextMessage_SimpleConstructor, validParams)
 
 TEST(plainTextMessage_ExtendedConstructor, validParams)
 {
-    vector<MessageAddress> addr_to { MessageAddress("youraddress@domain.com") };
+    MessageAddress addr_to[1] { MessageAddress("youraddress@domain.com") };
     PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
-        addr_to,
+        *addr_to,
         "This is a test (Subject)",
         "Hello\nHow are you?");
 }
@@ -83,17 +85,18 @@ TEST_F(SimpleMessage, getToCountReturnValid)
 TEST_F(SimpleMessage, getToReturnValid)
 {
     ASSERT_EQ(msg->getToCount(), 1);
-    ASSERT_EQ(msg->getTo()[0], MessageAddress("youraddress@domain.com"));
+    ASSERT_EQ(*msg->getTo()[0], MessageAddress("youraddress@domain.com"));
 }
 
 TEST_F(SimpleMessage, getSubjectReturnValid)
 {
-    ASSERT_EQ(msg->getSubject().compare("This is a test (Subject)"), 0);
+    cout << msg->getSubject() << endl;
+    ASSERT_STREQ("This is a test (Subject)", msg->getSubject());
 }
 
 TEST_F(SimpleMessage, getBodyReturnValid)
 {
-    ASSERT_EQ(msg->getBody().compare("Hello\nHow are you?"), 0);
+    ASSERT_STREQ("Hello\nHow are you?", msg->getBody());
 }
 
 TEST_F(SimpleMessage, getCcCountReturnValid)
@@ -103,7 +106,7 @@ TEST_F(SimpleMessage, getCcCountReturnValid)
 
 TEST_F(SimpleMessage, getCcReturnNull)
 {
-    ASSERT_TRUE(msg->getCc().empty());
+    ASSERT_EQ(nullptr, msg->getCc());
 }
 
 TEST_F(SimpleMessage, getAttachmentsCountReturn0)
@@ -113,12 +116,12 @@ TEST_F(SimpleMessage, getAttachmentsCountReturn0)
 
 TEST_F(SimpleMessage, getAttachmentsPtrReturnNull)
 {
-    ASSERT_TRUE(msg->getAttachments().empty());
+    ASSERT_EQ(nullptr, msg->getAttachments());
 }
 
 TEST_F(SimpleMessage, getMimeTypeReturnValidPlainText)
 {
-    ASSERT_EQ(msg->getMimeType().compare("text/plain"), 0);
+    ASSERT_STREQ("text/plain", msg->getMimeType());
 }
 
 //End Simple Message fixture tests

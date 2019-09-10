@@ -1,6 +1,4 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
         {
@@ -19,8 +17,8 @@
                 "Source/CommunicationError.cpp",
                 "-o",
                 "Release\\SMTPClient.o"
-            ], 
-            "group":{
+            ],
+            "group": {
                 "kind": "build",
                 "isDefault": true
             }
@@ -41,7 +39,7 @@
                 "test/smtpclient_unittest/smtpclient_unittest.cpp",
                 "source/prime.cpp",
                 "source/divisor.cpp",
-                "-lgtest_main", 
+                "-lgtest_main",
                 "-lpthread",
                 "-o",
                 "tests.exe"
@@ -50,7 +48,20 @@
                 "kind": "test",
                 "isDefault": true
             }
+        },
+        {
+            "type": "shell",
+            "label": "clang++-6.0 build active file",
+            "command": "/usr/bin/clang++-6.0",
+            "args": [
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}"
+            ],
+            "options": {
+                "cwd": "/usr/bin"
+            }
         }
     ]
-
 }

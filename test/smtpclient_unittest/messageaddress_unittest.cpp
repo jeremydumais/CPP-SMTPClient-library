@@ -100,11 +100,11 @@ TEST(MessageAddress_constructor, ValidParam)
 TEST(MessageAddress_get_email_address, validDomain)
 {
 	MessageAddress msg_add("test@domain.com", "Test Address");
-	ASSERT_EQ(msg_add.getEmailAddress().compare("test@domain.com"), 0);
+	ASSERT_STREQ("test@domain.com", msg_add.getEmailAddress());
 }
 
 TEST(MessageAddress_get_display_name, validDN)
 {
 	MessageAddress msg_add("test@domain.com", "Test Address");
-	ASSERT_EQ(msg_add.getDisplayName().compare("Test Address"), 0);
+	ASSERT_STREQ("Test Address", msg_add.getDisplayName());
 }

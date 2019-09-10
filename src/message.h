@@ -23,43 +23,52 @@ namespace jed_utils
 	public:
 		Message(const MessageAddress &pFrom,
 			const MessageAddress &pTo,
-			const std::string &pSubject,
-			const std::string &pBody,
-			const std::vector<MessageAddress> &pCc = std::vector<MessageAddress>(),
-			const std::vector<MessageAddress> &pBcc = std::vector<MessageAddress>(),
-			const std::vector<Attachment> &pAttachments = std::vector<Attachment>());
+			const char *pSubject,
+			const char *pBody,
+			const MessageAddress *pCc = nullptr,
+			const MessageAddress *pBcc = nullptr,
+			const Attachment pAttachments[] = nullptr,
+			size_t pAttachmentsSize = 0);
 		Message(const MessageAddress &pFrom,
-			const std::vector<MessageAddress> &pTo,
-			const std::string &pSubject,
-			const std::string &pBody,
-			const std::vector<MessageAddress> &pCc = std::vector<MessageAddress>(),
-			const std::vector<MessageAddress> &pBcc = std::vector<MessageAddress>(),
-			const std::vector<Attachment> &pAttachments = std::vector<Attachment>());
-		virtual ~Message() = default;
-        Message(const Message& other) = default; //Copy constructor
-        Message& operator=(const Message& other) = default; //Copy assignment
-        Message(Message&&) noexcept = default; //Move constructor
-        Message& operator=(Message&&) noexcept = default; //Move assignement
-	 	virtual const std::string getMimeType() const = 0;
+			const MessageAddress pTo[],
+			size_t pToCount,
+			const char *pSubject,
+			const char *pBody,
+			const MessageAddress pCc[] = nullptr,
+			size_t pCcCount = 0,
+			const MessageAddress pBcc[] = nullptr,
+			size_t pBccCount = 0,
+			const Attachment pAttachments[] = nullptr,
+			size_t pAttachmentsSize = 0);
+		virtual ~Message();
+        Message(const Message &other); //Copy constructor
+        Message& operator=(const Message &other); //Copy assignment
+        Message(Message &&other) noexcept; //Move constructor
+        Message& operator=(Message &&other) noexcept; //Move assignement
+	 	virtual const char *getMimeType() const = 0;
 		const MessageAddress &getFrom() const;
-		const std::vector<MessageAddress> &getTo() const;
+		MessageAddress **getTo() const;
 		size_t getToCount() const;
-		const std::string &getSubject() const;
-		const std::string &getBody() const;
-		const std::vector<MessageAddress> &getCc() const;
+		const char *getSubject() const;
+		const char *getBody() const;
+		MessageAddress **getCc() const;
 		size_t getCcCount() const;
-		const std::vector<MessageAddress> &getBcc() const;
+		MessageAddress **getBcc() const;
 		size_t getBccCount() const;
-		const std::vector<Attachment> &getAttachments() const;
+		Attachment **getAttachments() const;
 		size_t getAttachmentsCount() const;
 	protected:
 		MessageAddress mFrom;
-		std::vector<MessageAddress> mTo;
-		std::vector<MessageAddress> mCc;
-		std::vector<MessageAddress> mBcc;
-		std::string mSubject;
-		std::string mBody;
-		std::vector<Attachment> mAttachments;
+		MessageAddress **mTo;
+		size_t mToCount;
+		MessageAddress **mCc;
+		size_t mCCCount;
+		MessageAddress **mBcc;
+		size_t mBCCCount;
+		char *mSubject;
+		char *mBody;
+		Attachment **mAttachments;
+		size_t mAttachmentCount;
 	};
 } //namespace jed_utils
 

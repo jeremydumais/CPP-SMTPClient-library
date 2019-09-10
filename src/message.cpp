@@ -6,85 +6,394 @@ using namespace std;
 using namespace jed_utils;
 
 Message::Message(const MessageAddress &pFrom,
-        const MessageAddress &pTo,
-        const string &pSubject,
-        const string &pBody,
-        const vector<MessageAddress> &pCc,
-        const vector<MessageAddress> &pBcc,
-        const vector<Attachment> &pAttachments)
-    : mFrom(pFrom),
-    mTo(vector<MessageAddress> { pTo }),
-    mCc(vector<MessageAddress>(pCc)),
-    mBcc(vector<MessageAddress>(pBcc)),
-    mSubject(pSubject),
-    mBody(pBody),
-    mAttachments(vector<Attachment>(pAttachments))
+			const MessageAddress &pTo,
+			const char *pSubject,
+			const char *pBody,
+			const MessageAddress *pCc,
+			const MessageAddress *pBcc,
+			const Attachment pAttachments[],
+            size_t pAttachmentsSize)
+    : Message(pFrom, &pTo, 1, pSubject, pBody, 
+    pCc, pCc!=nullptr ? 1 : 0, 
+    pBcc, pBcc !=nullptr ? 1 : 0, 
+    pAttachments, pAttachmentsSize)
 {
-/*    mTo.push_back(pTo);
-    copy(pCc.begin(), pCc.end(), back_inserter(mCc));
-    copy(pBcc.begin(), pBcc.end(), back_inserter(mBcc));
-    copy(pAttachments.begin(), pAttachments.end(), back_inserter(mAttachments));*/
 }
 
 Message::Message(const MessageAddress &pFrom,
-        const vector<MessageAddress> &pTo,
-        const string &pSubject,
-        const string &pBody,
-        const vector<MessageAddress> &pCc,
-        const vector<MessageAddress> &pBcc,
-        const vector<Attachment> &pAttachments)
+			const MessageAddress pTo[],
+			size_t pToCount,
+			const char *pSubject,
+			const char *pBody,
+			const MessageAddress pCc[],
+			size_t pCcCount,
+			const MessageAddress pBcc[],
+			size_t pBccCount,
+			const Attachment pAttachments[],
+			size_t pAttachmentsSize)
     : mFrom(pFrom),
-    mTo(vector<MessageAddress>(pTo)),
-    mCc(vector<MessageAddress>(pCc)),
-    mBcc(vector<MessageAddress>(pBcc)),
-    mSubject(pSubject),
-    mBody(pBody),
-    mAttachments(vector<Attachment>(pAttachments))
+    mTo(nullptr),
+    mToCount(0),
+    mCc(nullptr),
+    mCCCount(0),
+    mBcc(nullptr),
+    mBCCCount(0),
+    mSubject(nullptr),
+    mBody(nullptr),
+    mAttachments(nullptr),
+    mAttachmentCount(0)
 {
-/*    copy(pTo.begin(), pTo.end(), back_inserter(mTo));
-    copy(pCc.begin(), pCc.end(), back_inserter(mCc));
-    copy(pBcc.begin(), pBcc.end(), back_inserter(mBcc));
-    copy(pAttachments.begin(), pAttachments.end(), back_inserter(mAttachments));*/
+    size_t subject_len = strlen(pSubject);
+	mSubject = new char[subject_len + 1];
+	strncpy(mSubject, pSubject, subject_len);
+    mSubject[subject_len] = '\0';
+
+    size_t body_len = strlen(pBody);
+	mBody = new char[body_len + 1];
+	strncpy(mBody, pBody, body_len);
+    mBody[body_len] = '\0';
+
+    if (pTo != nullptr) {
+        mToCount = pToCount;
+        mTo = new MessageAddress*[mToCount];
+        for (unsigned int index = 0; index < mToCount; index++) {
+            mTo[index] = new MessageAddress(pTo[index]);
+        }
+        /*mToCount = 1;
+        mTo = new MessageAddress*[mToCount];
+        mTo[0] = new MessageAddress(pTo);*/
+    }
+
+    if (pCc != nullptr) {
+        mCCCount = pCcCount;
+        mCc = new MessageAddress*[mCCCount];
+        for (unsigned int index = 0; index < mCCCount; index++) {
+            mCc[index] = new MessageAddress(pCc[index]);
+        }
+       /* mCCCount = 1;
+        mCc = new MessageAddress*[mCCCount];
+        mCc[0] = new MessageAddress(*pCc);*/
+    }
+
+    if (pBcc != nullptr) {
+        mBCCCount = pBccCount;
+        mBcc = new MessageAddress*[mBCCCount];
+        for (unsigned int index = 0; index < mBCCCount; index++) {
+            mBcc[index] = new MessageAddress(pBcc[index]);
+        }
+        /*mBCCCount = 1;
+        mBcc = new MessageAddress*[mBCCCount];
+        mBcc[0] = new MessageAddress(*pBcc);*/
+    }
+
+    if (mAttachments != nullptr)
+    {
+        mAttachmentCount = pAttachmentsSize;
+        mAttachments = new Attachment*[mAttachmentCount];
+        for (unsigned int index = 0; index < mAttachmentCount; index++) {
+            mAttachments[index] = new Attachment(pAttachments[index]);
+        }
+    }
 }
 
-const vector<MessageAddress> &Message::getTo() const
+Message::~Message()
+{
+    delete[] mSubject;
+	mSubject = nullptr;
+    delete[] mBody;
+	mBody = nullptr;
+    //To
+	if (mTo != nullptr) {
+		for (unsigned int i = 0; i < mToCount; i++) {
+			delete mTo[i];
+		}
+		delete[] mTo;
+	}
+	mTo = nullptr;
+    //Cc
+    if (mCc != nullptr) {
+		for (unsigned int i = 0; i < mCCCount; i++) {
+			delete mCc[i];
+		}
+		delete[] mCc;
+	}
+	mCc = nullptr;
+    //Bcc
+    if (mBcc != nullptr) {
+		for (unsigned int i = 0; i < mBCCCount; i++) {
+			delete mBcc[i];
+		}
+		delete[] mBcc;
+	}
+	mBcc = nullptr;
+    //Attachment
+    if (mAttachments != nullptr) {
+		for (unsigned int i = 0; i < mAttachmentCount; i++) {
+			delete mAttachments[i];
+		}
+		delete[] mAttachments;
+	}
+	mAttachments = nullptr;
+}
+
+//Copy constructor
+Message::Message(const Message &other)
+    : mFrom(other.mFrom),
+    mTo(nullptr),
+    mToCount(other.mToCount),
+    mCc(nullptr),
+    mCCCount(other.mCCCount),
+    mBcc(nullptr),
+    mBCCCount(other.mBCCCount),
+    mSubject(new char[strlen(other.mSubject) + 1]),
+    mBody(new char[strlen(other.mBody) + 1]),
+    mAttachments(nullptr),
+    mAttachmentCount(other.mAttachmentCount)
+{
+	strncpy(mBody, other.mBody, strlen(other.mBody) + 1);
+	mBody[strlen(other.mBody)] = '\0';
+
+    strncpy(mSubject, other.mSubject, strlen(other.mSubject) + 1);
+	mSubject[strlen(other.mSubject)] = '\0';
+
+	//mTo
+	if (other.mToCount > 0) {
+		mTo = new MessageAddress*[other.mToCount];
+		for (unsigned int i = 0; i < other.mToCount; i++) {
+			mTo[i] = new MessageAddress(*other.mTo[i]);
+		}
+	}
+
+    //mCc
+	if (other.mCCCount > 0) {
+		mCc = new MessageAddress*[other.mCCCount];
+		for (unsigned int i = 0; i < other.mCCCount; i++) {
+			mCc[i] = new MessageAddress(*other.mCc[i]);
+		}
+	}
+
+    //mBcc
+	if (other.mBCCCount > 0) {
+		mBcc = new MessageAddress*[other.mBCCCount];
+		for (unsigned int i = 0; i < other.mBCCCount; i++) {
+			mBcc[i] = new MessageAddress(*other.mBcc[i]);
+		}
+	}
+
+    //mAttachment
+	if (other.mAttachmentCount > 0) {
+		mAttachments = new Attachment*[other.mAttachmentCount];
+		for (unsigned int i = 0; i < other.mAttachmentCount; i++) {
+			mAttachments[i] = new Attachment(*other.mAttachments[i]);
+		}
+	}
+}
+
+//Copy assignment
+Message& Message::operator=(const Message &other) 
+{
+    if (this != &other)
+	{
+        //mSubject
+        delete[] mSubject;
+		mSubject = new char[strlen(other.mSubject) + 1];
+		strncpy(mSubject, other.mSubject, strlen(other.mSubject) + 1);
+		mSubject[strlen(other.mSubject)] = '\0';
+        //mBody
+        delete[] mBody;
+		mBody = new char[strlen(other.mBody) + 1];
+		strncpy(mBody, other.mBody, strlen(other.mBody) + 1);
+		mBody[strlen(other.mBody)] = '\0';
+        //mTo and mToCount
+		if (mToCount > 0) {
+			for (unsigned int i = 0; i < mToCount; i++) {
+				delete mTo[i];
+			}
+			delete[] mTo;
+		}
+		if (other.mToCount > 0) {
+			mTo = new MessageAddress*[other.mToCount];
+			for (unsigned int i = 0; i < other.mToCount; i++) {
+				mTo[i] = new MessageAddress(*other.mTo[i]);
+			}
+		}
+		mToCount = other.mToCount;
+        //mCc and mCCCount
+		if (mCCCount > 0) {
+			for (unsigned int i = 0; i < mCCCount; i++) {
+				delete mCc[i];
+			}
+			delete[] mCc;
+		}
+		if (other.mCCCount > 0) {
+			mCc = new MessageAddress*[other.mCCCount];
+			for (unsigned int i = 0; i < other.mCCCount; i++) {
+				mCc[i] = new MessageAddress(*other.mCc[i]);
+			}
+		}
+		mCCCount = other.mCCCount;
+        //mBcc and mBCCCount
+		if (mBCCCount > 0) {
+			for (unsigned int i = 0; i < mBCCCount; i++) {
+				delete mBcc[i];
+			}
+			delete[] mBcc;
+		}
+		if (other.mBCCCount > 0) {
+			mBcc = new MessageAddress*[other.mBCCCount];
+			for (unsigned int i = 0; i < other.mBCCCount; i++) {
+				mBcc[i] = new MessageAddress(*other.mBcc[i]);
+			}
+		}
+		mBCCCount = other.mBCCCount;
+        //Attachments and mAttachmentCount
+		if (mAttachmentCount > 0) {
+			for (unsigned int i = 0; i < mAttachmentCount; i++) {
+				delete mAttachments[i];
+			}
+			delete[] mAttachments;
+		}
+		if (other.mAttachmentCount > 0) {
+			mAttachments = new Attachment*[other.mAttachmentCount];
+			for (unsigned int i = 0; i < other.mAttachmentCount; i++) {
+				mAttachments[i] = new Attachment(*other.mAttachments[i]);
+			}
+		}
+		mAttachmentCount = other.mAttachmentCount;
+	}
+	return *this;
+}
+
+//Move constructor
+Message::Message(Message &&other) noexcept
+    : mFrom(other.mFrom),
+    mTo(other.mTo),
+    mToCount(other.mToCount),
+    mCc(other.mCc),
+    mCCCount(other.mCCCount),
+    mBcc(other.mBcc),
+    mBCCCount(other.mBCCCount),
+    mSubject(other.mSubject),
+    mBody(other.mBody),
+    mAttachments(other.mAttachments),
+    mAttachmentCount(other.mAttachmentCount)
+{
+	// Release the data pointer from the source object so that the destructor 
+	// does not free the memory multiple times.
+    other.mTo = nullptr;
+    other.mToCount = 0;
+    other.mCc = nullptr;
+    other.mCCCount = 0;
+    other.mBcc = nullptr;
+    other.mBCCCount = 0;
+    other.mSubject = nullptr;
+    other.mBody = nullptr;
+    other.mAttachments = nullptr;
+    other.mAttachmentCount = 0;
+}
+
+//Move assignement
+Message& Message::operator=(Message &&other) noexcept
+{
+    if (this != &other)
+	{
+		delete[] mSubject;
+        delete[] mBody;
+        //mTo
+		if (mTo != nullptr) {
+			for (unsigned int i = 0; i < mToCount; i++) {
+				delete mTo[i];
+			}
+			delete[] mTo;
+		}
+        //mCc
+		if (mCc != nullptr) {
+			for (unsigned int i = 0; i < mCCCount; i++) {
+				delete mCc[i];
+			}
+			delete[] mCc;
+		}
+        //mBcc
+		if (mBcc != nullptr) {
+			for (unsigned int i = 0; i < mBCCCount; i++) {
+				delete mBcc[i];
+			}
+			delete[] mBcc;
+		}
+        //mAttachments
+		if (mAttachments != nullptr) {
+			for (unsigned int i = 0; i < mAttachmentCount; i++) {
+				delete mAttachments[i];
+			}
+			delete[] mAttachments;
+		}
+		// Copy the data pointer and its length from the
+		// source object.
+        mFrom = other.mFrom;
+		mSubject = other.mSubject;
+		mBody = other.mBody;
+		mTo = other.mTo;
+		mToCount = other.mToCount;
+        mCc = other.mCc;
+		mCCCount = other.mCCCount;
+        mBcc = other.mBcc;
+		mBCCCount = other.mBCCCount;
+        mAttachments = other.mAttachments;
+		mAttachmentCount = other.mAttachmentCount;
+		// Release the data pointer from the source object so that
+		// the destructor does not free the memory multiple times.
+		other.mSubject = nullptr;
+		other.mBody = nullptr;
+		other.mTo = nullptr;
+		other.mToCount = 0;
+        mCc = nullptr;
+		mCCCount = 0;
+        mBcc = nullptr;
+		mBCCCount = 0;
+        mAttachments = nullptr;
+		mAttachmentCount = 0;
+	}
+	return *this;
+}
+
+MessageAddress **Message::getTo() const
 {
     return mTo;
 }
 
 size_t Message::getToCount() const
 {
-    return mTo.size();
+    return mToCount;
 }
 
-const string &Message::getSubject() const
+const char *Message::getSubject() const
 {
     return mSubject;
 }
 
-const string &Message::getBody() const
+const char *Message::getBody() const
 {
     return mBody;
 }
 
-const vector<MessageAddress> &Message::getCc() const
+MessageAddress **Message::getCc() const
 {
     return mCc;
 }
 
 size_t Message::getCcCount() const
 {
-    return mCc.size();
+    return mCCCount;
 }
 
-const vector<MessageAddress> &Message::getBcc() const
+MessageAddress **Message::getBcc() const
 {
     return mBcc;
 }
 
 size_t Message::getBccCount() const
 {
-    return mBcc.size();
+    return mBCCCount;
 }
 
 const MessageAddress &Message::getFrom() const
@@ -92,13 +401,13 @@ const MessageAddress &Message::getFrom() const
     return mFrom;
 }
 
-const vector<Attachment> &Message::getAttachments() const
+Attachment **Message::getAttachments() const
 {
     return mAttachments;
 }
 
 size_t Message::getAttachmentsCount() const
 {
-    return mAttachments.size();
+    return mAttachmentCount;
 }
 
