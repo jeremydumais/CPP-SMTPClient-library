@@ -1,19 +1,19 @@
-#Jed# C++ SMTP Client Library
+# Jed# C++ SMTP Client Library
 
-##Jed# C++ SMTP Client Library is a simple SMTP client library built in C++.
+## A simple SMTP client library built in C++.
 
-###SmtpClient class
+### SmtpClient class
 
-####Available methods
+#### Available methods
 ```c++
 SmtpClient(const char *pServerName, const unsigned int pPort);
 void sendMail(message *pMsg);
 const char *getServerReply() const;
 ```	
 
-###MessageAddress class
+### MessageAddress class
 
-####Available methods
+#### Available methods
 ```c++
 MessageAddress(const char *pEmailAddress, const char *pDisplayName = "");
 operator std::string() const;
@@ -21,9 +21,9 @@ const char *getEmailAddress() const;
 const char *getDisplayName() const;
 ```	
 
-###Attachment class
+### Attachment class
 
-####Available methods
+#### Available methods
 ```c++
 Attachment(const char *pFilename, const char *pName = "");
 const char *getName() const;
@@ -32,9 +32,9 @@ const char *getBase64EncodedFile() const;
 const char *getMimeType() const;
 ```	
 
-###PlaintextMessage class
+### PlaintextMessage class
 
-####Available methods
+#### Available methods
 ```c++
 PlaintextMessage(MessageAddress from,
 	MessageAddress to,
@@ -69,9 +69,9 @@ const attachment *getAttachmentsPtr() const;
 const unsigned int getAttachmentsCount() const;
 ```	
 
-###HTMLMessage class
+### HTMLMessage class
 
-####Available methods
+#### Available methods
 ```c++
 HTMLMessage(MessageAddress from,
 	MessageAddress to,
@@ -106,9 +106,9 @@ const attachment *getAttachmentsPtr() const;
 const unsigned int getAttachmentsCount() const;
 ```	
 
-####Here's some examples
+#### Here's some examples
 
-#####Send a plaintext email
+##### Send a plaintext email
 
 ```c++
 #include <SMTPClient.h>
@@ -144,7 +144,7 @@ int main()
 }
 ```
 
-#####Send an html email to 2 recipients with an attachment
+##### Send an html email to 2 recipients with an attachment
 
 ```c++
 #include <SMTPClient.h>
