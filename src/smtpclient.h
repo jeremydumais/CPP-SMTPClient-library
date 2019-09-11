@@ -38,10 +38,10 @@ namespace jed_utils
 		unsigned int mPort;
 		char *mServerReply;
 		void writeCommand(unsigned int pSock,
-			const std::string &pStr,
-			const std::string &pArg,
+			const char *pStr,
+			const char *pArg,
 			bool pAskForReply = true);
-		std::string createAttachmentsText(const std::vector<Attachment> &pAttachments);
+		std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments);
 	};
 } // namespace jed_utils
 

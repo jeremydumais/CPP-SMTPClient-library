@@ -33,15 +33,15 @@ Message::Message(const MessageAddress &pFrom,
 			size_t pAttachmentsSize)
     : mFrom(pFrom),
     mTo(nullptr),
-    mToCount(0),
+    mToCount(pToCount),
     mCc(nullptr),
-    mCCCount(0),
+    mCCCount(pCcCount),
     mBcc(nullptr),
-    mBCCCount(0),
+    mBCCCount(pBccCount),
     mSubject(nullptr),
     mBody(nullptr),
     mAttachments(nullptr),
-    mAttachmentCount(0)
+    mAttachmentCount(pAttachmentsSize)
 {
     size_t subject_len = strlen(pSubject);
 	mSubject = new char[subject_len + 1];
@@ -54,7 +54,6 @@ Message::Message(const MessageAddress &pFrom,
     mBody[body_len] = '\0';
 
     if (pTo != nullptr) {
-        mToCount = pToCount;
         mTo = new MessageAddress*[mToCount];
         for (unsigned int index = 0; index < mToCount; index++) {
             mTo[index] = new MessageAddress(pTo[index]);
@@ -62,7 +61,6 @@ Message::Message(const MessageAddress &pFrom,
     }
 
     if (pCc != nullptr) {
-        mCCCount = pCcCount;
         mCc = new MessageAddress*[mCCCount];
         for (unsigned int index = 0; index < mCCCount; index++) {
             mCc[index] = new MessageAddress(pCc[index]);
@@ -70,16 +68,13 @@ Message::Message(const MessageAddress &pFrom,
     }
 
     if (pBcc != nullptr) {
-        mBCCCount = pBccCount;
         mBcc = new MessageAddress*[mBCCCount];
         for (unsigned int index = 0; index < mBCCCount; index++) {
             mBcc[index] = new MessageAddress(pBcc[index]);
         }
     }
 
-    if (mAttachments != nullptr)
-    {
-        mAttachmentCount = pAttachmentsSize;
+    if (pAttachments != nullptr) {
         mAttachments = new Attachment*[mAttachmentCount];
         for (unsigned int index = 0; index < mAttachmentCount; index++) {
             mAttachments[index] = new Attachment(pAttachments[index]);
@@ -337,12 +332,12 @@ Message& Message::operator=(Message &&other) noexcept
 		other.mBody = nullptr;
 		other.mTo = nullptr;
 		other.mToCount = 0;
-        mCc = nullptr;
-		mCCCount = 0;
-        mBcc = nullptr;
-		mBCCCount = 0;
-        mAttachments = nullptr;
-		mAttachmentCount = 0;
+        other.mCc = nullptr;
+		other.mCCCount = 0;
+        other.mBcc = nullptr;
+		other.mBCCCount = 0;
+        other.mAttachments = nullptr;
+		other.mAttachmentCount = 0;
 	}
 	return *this;
 }
