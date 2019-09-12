@@ -87,15 +87,11 @@ add_library(${PROJECT_NAME}
     ${SRC_PATH}/smtpclient.cpp
     ${SRC_PATH}/stringutils.cpp
     )
-
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	target_compile_definitions(${PROJECT_NAME}
 		INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
-		INTERFACE _SCL_SECURE_NO_WARNINGS # disable security-paranoia warning
-		INTERFACE _CRT_SECURE_NO_WARNINGS)
-	#target_compile_options(PluginBase
-	#  INTERFACE "/W3" # waring level
-	#  INTERFACE "/WX") # warning as error
+		INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") # gcc
 	# https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 	target_compile_options(${PROJECT_NAME}

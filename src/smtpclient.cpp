@@ -119,19 +119,21 @@ void SmtpClient::sendMail(const Message &pMsg)
     unsigned int sock = 0;
     WSADATA wsaData;
 
-    if (!mServerReply.empty()) {
-		mServerReply = "";
-    }
+	delete[] mServerReply;
+	mServerReply = new char[2048];
 
     ostringstream body_ss;
     body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
     string body_real = body_ss.str();
 
     //If there's attachments, prepare the attachments text content
-    if (pMsg.getAttachmentsCount() > 0) {
-        string attachments_text = createAttachmentsText(pMsg.getAttachments());
-        body_real += attachments_text;
-    }
+	Attachment** arr_attachment = pMsg.getAttachments();
+
+	vector<Attachment*> vect_attachment(arr_attachment, arr_attachment + pMsg.getAttachmentsCount());
+	if (pMsg.getAttachmentsCount() > 0) {
+		string attachments_text = createAttachmentsText(vect_attachment);
+		body_real += attachments_text;
+	}
 
     /* Windows Sockets version */
     WORD wVersionRequested = MAKEWORD(2, 2);
@@ -146,7 +148,7 @@ void SmtpClient::sendMail(const Message &pMsg)
     hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
     hints.ai_socktype = SOCK_STREAM;
 
-    dwRetval = getaddrinfo(mServerName.c_str(), "25", &hints, &result);
+    dwRetval = getaddrinfo(mServerName, "25", &hints, &result);
     if (dwRetval != 0) 
     {
         WSACleanup();
@@ -167,15 +169,19 @@ void SmtpClient::sendMail(const Message &pMsg)
 
     writeCommand(sock, "HELO %s\r\n", pMsg.getFrom().getEmailAddress());    
     writeCommand(sock, "MAIL FROM: %s\r\n", pMsg.getFrom().getEmailAddress());
-    //Send command for the recepients
-    for(auto &item : pMsg.getTo())
-        writeCommand(sock, "RCPT TO: %s\r\n", item.getEmailAddress());
+    //Send command for the recipients
+	for (size_t i = 0; i < pMsg.getToCount(); i++) {
+		MessageAddress* to_addr = pMsg.getTo()[i];
+		writeCommand(sock, "RCPT TO: %s\r\n", to_addr->getEmailAddress());
+	}
     // Data section
     writeCommand(sock, "DATA\r\n", "");
     // Mail headers
     writeCommand(sock, "From: %s\r\n", pMsg.getFrom().getEmailAddress());
-    for(auto &item : pMsg.getTo())
-        writeCommand(sock, "To: %s\r\n", item.getEmailAddress(), false);
+	for (size_t i = 0; i < pMsg.getToCount(); i++) {
+		MessageAddress* to_addr = pMsg.getTo()[i];
+		writeCommand(sock, "To: %s\r\n", to_addr->getEmailAddress(), false);
+	}
     writeCommand(sock, "Subject: %s\r\n", pMsg.getSubject(), false);
     writeCommand(sock, "MIME-Version: 1.0\r\n", "", false);
     writeCommand(sock, "Content-Type: multipart/mixed; boundary=sep\r\n", "", false);
@@ -189,11 +195,11 @@ void SmtpClient::sendMail(const Message &pMsg)
             size_t length = 512;
             if (index_start + 512 > body_real.length() - 1)
                 length = body_real.length() - index_start;
-            writeCommand(sock, body_real.substr(index_start, length), "", false);
+            writeCommand(sock, body_real.substr(index_start, length).c_str(), "", false);
         }
     }
     else
-        writeCommand(sock, "%s", body_real, false);
+        writeCommand(sock, "%s", body_real.c_str(), false);
     writeCommand(sock, "\r\n", "", false);
     //End of data
     writeCommand(sock, ".\r\n", "", false); 
@@ -211,14 +217,14 @@ void SmtpClient::sendMail(const Message &pMsg)
 }
 
 //Windows version of writeCommand method
-void SmtpClient::writeCommand(unsigned int pSock, const string &pStr, const string &pArg, bool pAskForReply)
+void SmtpClient::writeCommand(unsigned int pSock, const char *pStr, const char *pArg, bool pAskForReply)
 {
     char buf[4096];
 
     if (pArg != "")
-        snprintf(buf, sizeof(buf), pStr.c_str(), pArg.c_str());
+        snprintf(buf, sizeof(buf), pStr, pArg);
     else
-        snprintf(buf, sizeof(buf), pStr.c_str());
+        snprintf(buf, sizeof(buf), pStr);
 
 
     int wsa_retVal = send(pSock, buf, static_cast<int>(strlen(buf)), 0);
@@ -238,7 +244,7 @@ void SmtpClient::writeCommand(unsigned int pSock, const string &pStr, const stri
         if (len > 0)
         {
             outbuf[len] = '\0';
-            mServerReply += string(outbuf);
+			strcat(mServerReply, outbuf);
         }
     }
 }
@@ -279,7 +285,7 @@ void SmtpClient::sendMail(const Message &pMsg)
 
     writeCommand(sock, "HELO %s\r\n", pMsg.getFrom().getEmailAddress());    
     writeCommand(sock, "MAIL FROM: %s\r\n", pMsg.getFrom().getEmailAddress());
-    //Send command for the recepients
+    //Send command for the recipients
     for(size_t i=0; i<pMsg.getToCount(); i++) {
         MessageAddress* to_addr = pMsg.getTo()[i];
         writeCommand(sock, "RCPT TO: %s\r\n", to_addr->getEmailAddress());
