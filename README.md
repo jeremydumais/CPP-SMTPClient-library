@@ -2,111 +2,11 @@
 
 ## A simple SMTP client library built in C++.
 
-### SmtpClient class
+### How to build the SMTP client or integrate it in your application
 
-#### Available methods
-```c++
-SmtpClient(const char *pServerName, unsigned int pPort);
-void sendMail(const Message &pMsg);
-const char *getServerReply() const;
-```	
+Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-build-the-SMTP-client-or-integrate-it-in-your-application) for a quick guide on how to build the SMTP client or integrate it in your application.
 
-### MessageAddress class
-
-#### Available methods
-```c++
-explicit MessageAddress(const char *pEmailAddress, const char *pDisplayName = "");
-explicit operator std::string() const;
-const char *getEmailAddress() const;
-const char *getDisplayName() const;
-```	
-
-### Attachment class
-
-#### Available methods
-```c++
-explicit Attachment(const char *pFilename, const char *pName = "");
-const char *getName() const;
-const char *getFilename() const;
-const char *getBase64EncodedFile() const;
-const char *getMimeType() const;
-```	
-
-### PlaintextMessage class
-
-#### Available methods
-```c++
-PlaintextMessage(const MessageAddress &pFrom,
-	const MessageAddress &pTo,
-	const char *pSubject,
-	const char *pBody,
-	const MessageAddress *pCc = nullptr,
-	const MessageAddress *pBcc = nullptr,
-	const Attachment pAttachments[] = nullptr,
-	size_t pAttachmentsSize = 0);
-PlaintextMessage(const MessageAddress &pFrom,
-	const MessageAddress pTo[],
-	size_t pToCount,
-	const char *pSubject,
-	const char *pBody,
-	const MessageAddress pCc[] = nullptr,
-	size_t pCcCount = 0,
-	const MessageAddress pBcc[] = nullptr,
-	size_t pBccCount = 0,
-	const Attachment pAttachments[] = nullptr,
-	size_t pAttachmentsSize = 0);
-const char *getMimeType() const override;
-const MessageAddress &getFrom() const;
-MessageAddress **getTo() const;
-size_t getToCount() const;
-const char *getSubject() const;
-const char *getBody() const;
-MessageAddress **getCc() const;
-size_t getCcCount() const;
-MessageAddress **getBcc() const;
-size_t getBccCount() const;
-Attachment **getAttachments() const;
-size_t getAttachmentsCount() const;
-```	
-
-### HTMLMessage class
-
-#### Available methods
-```c++
-HTMLMessage(const MessageAddress &pFrom,
-	const MessageAddress &pTo,
-	const char *pSubject,
-	const char *pBody,
-	const MessageAddress *pCc = nullptr,
-	const MessageAddress *pBcc = nullptr,
-	const Attachment *pAttachments = nullptr,
-	size_t pAttachmentsSize = 0);
-HTMLMessage(const MessageAddress &pFrom,
-	const MessageAddress pTo[],
-	size_t pToCount,
-	const char *pSubject,
-	const char *pBody,
-	const MessageAddress pCc[] = nullptr,
-	size_t pCcCount = 0,
-	const MessageAddress pBcc[] = nullptr,
-	size_t pBccCount = 0,
-	const Attachment pAttachments[] = nullptr,
-	size_t pAttachmentsSize = 0);
-const char *getMimeType() const override;
-const MessageAddress &getFrom() const;
-MessageAddress **getTo() const;
-size_t getToCount() const;
-const char *getSubject() const;
-const char *getBody() const;
-MessageAddress **getCc() const;
-size_t getCcCount() const;
-MessageAddress **getBcc() const;
-size_t getBccCount() const;
-Attachment **getAttachments() const;
-size_t getAttachmentsCount() const;
-```	
-
-#### Here's some examples
+#### Some examples
 
 ##### Send a plaintext email
 
@@ -186,3 +86,109 @@ int main()
     return 0;
 }
 ```
+### Classes
+
+#### SmtpClient class
+
+##### Available methods
+```c++
+SmtpClient(const char *pServerName, unsigned int pPort);
+void sendMail(const Message &pMsg);
+const char *getServerReply() const;
+```	
+
+#### MessageAddress class
+
+##### Available methods
+```c++
+explicit MessageAddress(const char *pEmailAddress, const char *pDisplayName = "");
+explicit operator std::string() const;
+const char *getEmailAddress() const;
+const char *getDisplayName() const;
+```	
+
+#### Attachment class
+
+##### Available methods
+```c++
+explicit Attachment(const char *pFilename, const char *pName = "");
+const char *getName() const;
+const char *getFilename() const;
+const char *getBase64EncodedFile() const;
+const char *getMimeType() const;
+```	
+
+#### PlaintextMessage class
+
+##### Available methods
+```c++
+PlaintextMessage(const MessageAddress &pFrom,
+	const MessageAddress &pTo,
+	const char *pSubject,
+	const char *pBody,
+	const MessageAddress *pCc = nullptr,
+	const MessageAddress *pBcc = nullptr,
+	const Attachment pAttachments[] = nullptr,
+	size_t pAttachmentsSize = 0);
+PlaintextMessage(const MessageAddress &pFrom,
+	const MessageAddress pTo[],
+	size_t pToCount,
+	const char *pSubject,
+	const char *pBody,
+	const MessageAddress pCc[] = nullptr,
+	size_t pCcCount = 0,
+	const MessageAddress pBcc[] = nullptr,
+	size_t pBccCount = 0,
+	const Attachment pAttachments[] = nullptr,
+	size_t pAttachmentsSize = 0);
+const char *getMimeType() const override;
+const MessageAddress &getFrom() const;
+MessageAddress **getTo() const;
+size_t getToCount() const;
+const char *getSubject() const;
+const char *getBody() const;
+MessageAddress **getCc() const;
+size_t getCcCount() const;
+MessageAddress **getBcc() const;
+size_t getBccCount() const;
+Attachment **getAttachments() const;
+size_t getAttachmentsCount() const;
+```	
+
+#### HTMLMessage class
+
+##### Available methods
+```c++
+HTMLMessage(const MessageAddress &pFrom,
+	const MessageAddress &pTo,
+	const char *pSubject,
+	const char *pBody,
+	const MessageAddress *pCc = nullptr,
+	const MessageAddress *pBcc = nullptr,
+	const Attachment *pAttachments = nullptr,
+	size_t pAttachmentsSize = 0);
+HTMLMessage(const MessageAddress &pFrom,
+	const MessageAddress pTo[],
+	size_t pToCount,
+	const char *pSubject,
+	const char *pBody,
+	const MessageAddress pCc[] = nullptr,
+	size_t pCcCount = 0,
+	const MessageAddress pBcc[] = nullptr,
+	size_t pBccCount = 0,
+	const Attachment pAttachments[] = nullptr,
+	size_t pAttachmentsSize = 0);
+const char *getMimeType() const override;
+const MessageAddress &getFrom() const;
+MessageAddress **getTo() const;
+size_t getToCount() const;
+const char *getSubject() const;
+const char *getBody() const;
+MessageAddress **getCc() const;
+size_t getCcCount() const;
+MessageAddress **getBcc() const;
+size_t getBccCount() const;
+Attachment **getAttachments() const;
+size_t getAttachmentsCount() const;
+```	
+
