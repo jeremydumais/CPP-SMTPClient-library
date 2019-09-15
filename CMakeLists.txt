@@ -74,9 +74,7 @@ endif(((NOT CMAKE_BUILD_TYPE)
     AND (NOT BUILD_COVERAGE_ANALYSIS))
     OR (CMAKE_BUILD_TYPE STREQUAL "Release"))
 
-add_definitions(-DSMTPCLIENT_EXPORTS)
-add_library(${PROJECT_NAME}
-    ${SRC_PATH}/attachment.cpp
+set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/attachmenterror.cpp
     ${SRC_PATH}/base64.cpp
     ${SRC_PATH}/communicationerror.cpp
@@ -85,15 +83,21 @@ add_library(${PROJECT_NAME}
     ${SRC_PATH}/messageaddress.cpp
     ${SRC_PATH}/plaintextmessage.cpp
     ${SRC_PATH}/smtpclient.cpp
-    ${SRC_PATH}/stringutils.cpp
-    )
+    ${SRC_PATH}/stringutils.cpp)
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	add_library(${PROJECT_NAME} SHARED
+		${PROJECT_SOURCE_FILES})
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	target_compile_definitions(${PROJECT_NAME}
+		PRIVATE SMTPCLIENT_EXPORTS
 		INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
 		INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
+	target_link_libraries(${PROJECT_NAME} Ws2_32)
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") # gcc
 	# https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+	add_library(${PROJECT_NAME}
+		${PROJECT_SOURCE_FILES})
 	target_compile_options(${PROJECT_NAME}
         PRIVATE "-Wfatal-errors" # stops on first error
 		"-Wall" # enables all the warnings about constructions

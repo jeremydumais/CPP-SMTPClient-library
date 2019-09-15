@@ -121,6 +121,7 @@ void SmtpClient::sendMail(const Message &pMsg)
 
 	delete[] mServerReply;
 	mServerReply = new char[2048];
+	mServerReply[0] = '\0';
 
     ostringstream body_ss;
     body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
@@ -205,15 +206,18 @@ void SmtpClient::sendMail(const Message &pMsg)
     writeCommand(sock, ".\r\n", "", false); 
     writeCommand(sock, "QUIT\r\n", "", false);
 
+	// winsock requires a special function for sockets
+	shutdown(sock, SD_BOTH);
     wsa_retVal = closesocket(sock);
     if (wsa_retVal == SOCKET_ERROR)
     {
-        WSACleanup();
-        ostringstream error_stream;
+		WSACleanup();
+		ostringstream error_stream;
         error_stream << "Windows Sockets connect error : " << WSAGetLastError();
         throw CommunicationError(error_stream.str().c_str());
     }
-    WSACleanup();
+
+	WSACleanup();
 }
 
 //Windows version of writeCommand method
@@ -227,7 +231,7 @@ void SmtpClient::writeCommand(unsigned int pSock, const char *pStr, const char *
         snprintf(buf, sizeof(buf), pStr);
 
 
-    int wsa_retVal = send(pSock, buf, static_cast<int>(strlen(buf)), 0);
+	int wsa_retVal = send(pSock, buf, static_cast<int>(strlen(buf)), 0);
     if (wsa_retVal == SOCKET_ERROR) {
         cout << "send failed: " << WSAGetLastError() << endl;
         closesocket(pSock);
@@ -240,7 +244,7 @@ void SmtpClient::writeCommand(unsigned int pSock, const char *pStr, const char *
     {
         // read a reply from server
         char outbuf[1024];
-        int len = recv(pSock, outbuf, 1024, 0);
+		int len = recv(pSock, outbuf, 1024, 0);
         if (len > 0)
         {
             outbuf[len] = '\0';
