@@ -130,7 +130,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} --build .
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
 if(result)
   message(FATAL_ERROR "Build step for googletest failed: ${result}")
-endif()
+endif() 
 
 # Prevent overriding the parent project's compiler/linker
 # settings on Windows

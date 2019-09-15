@@ -208,7 +208,7 @@ void SmtpClient::sendMail(const Message &pMsg)
 
 	// winsock requires a special function for sockets
 	shutdown(sock, SD_BOTH);
-    wsa_retVal = closesocket(sock);
+    wsa_retVal = closesocket(sock); 
     if (wsa_retVal == SOCKET_ERROR)
     {
 		WSACleanup();
