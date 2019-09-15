@@ -6,9 +6,9 @@
 
 Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-build-the-SMTP-client-or-integrate-it-in-your-application) for a quick guide on how to build the SMTP client or integrate it in your application.
 
-#### Some examples
+### Some examples
 
-##### Send a plaintext email
+#### Send a plaintext email
 
 ```c++
 #include "SMTPClient.h"
@@ -43,7 +43,7 @@ int main()
 }
 ```
 
-##### Send an html email to 2 recipients with an attachment
+#### Send an html email to 2 recipients with an attachment
 
 ```c++
 #include "SMTPClient.h"
