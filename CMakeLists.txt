@@ -86,6 +86,7 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/stringutils.cpp)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	#For MSVC create the library as a shared library
 	add_library(${PROJECT_NAME} SHARED
 		${PROJECT_SOURCE_FILES})
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -94,20 +95,32 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
 		INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
 	target_link_libraries(${PROJECT_NAME} Ws2_32)
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") # gcc
-	# https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+else()
+	#For other compiler create the library as a static library
 	add_library(${PROJECT_NAME}
 		${PROJECT_SOURCE_FILES})
-	target_compile_options(${PROJECT_NAME}
-        PRIVATE "-Wfatal-errors" # stops on first error
-		"-Wall" # enables all the warnings about constructions
-		"-Wextra" # Print extra warning messages"
-        "-Werror" # Make all warnings into errors.
-		"-pedantic" # Issue all the warnings demanded by strict ISO C and ISO C++
-		"-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
-		"-ftrack-macro-expansion=0"
-		"-fno-diagnostics-show-caret"
-		)
+	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") #gcc
+		# https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+		target_compile_options(${PROJECT_NAME}
+			PRIVATE "-Wfatal-errors" # stops on first error
+			"-Wall" # enables all the warnings about constructions
+			"-Wextra" # Print extra warning messages"
+			"-Werror" # Make all warnings into errors.
+			"-pedantic" # Issue all the warnings demanded by strict ISO C and ISO C++
+			"-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
+			"-ftrack-macro-expansion=0"
+			"-fno-diagnostics-show-caret"
+			)
+	elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+		target_compile_options(${PROJECT_NAME}
+			PRIVATE "-Wfatal-errors" # stops on first error
+			"-Wall" # enables all the warnings about constructions
+			"-Wextra" # Print extra warning messages"
+			"-Werror" # Make all warnings into errors.
+			"-pedantic" # Issue all the warnings demanded by strict ISO C and ISO C++
+			"-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
+			)
+	endif()
 endif()
 
 #Run clang-tidy on project

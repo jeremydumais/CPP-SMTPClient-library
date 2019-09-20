@@ -477,3 +477,10 @@ TEST(Attachment_getmimetype_documents, xul)
 	Attachment att1("test.xul", "");
 	ASSERT_STREQ(att1.getMimeType(), "application/vnd.mozilla.xul+xml") ;
 }
+
+TEST(Attachment_getBase64EncodedFile_NonExsitantFile, ReturnNullPTR)
+{
+	Attachment att1("C:\\NonExistantfile.txt", "");
+	ASSERT_EQ(att1.getBase64EncodedFile(), nullptr) ;
+}
+

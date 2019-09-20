@@ -111,7 +111,7 @@ SmtpClient& SmtpClient::operator=(SmtpClient &&other) noexcept
 
 #ifdef _WIN32
 //Windows version of sendMail method
-void SmtpClient::sendMail(const Message &pMsg)
+int SmtpClient::sendMail(const Message &pMsg)
 {
     DWORD dwRetval;
     struct addrinfo *result = nullptr;
@@ -133,6 +133,9 @@ void SmtpClient::sendMail(const Message &pMsg)
 	vector<Attachment*> vect_attachment(arr_attachment, arr_attachment + pMsg.getAttachmentsCount());
 	if (pMsg.getAttachmentsCount() > 0) {
 		string attachments_text = createAttachmentsText(vect_attachment);
+        if (attachments_text.empty()) {
+            return 6;
+        }
 		body_real += attachments_text;
 	}
 
@@ -140,9 +143,8 @@ void SmtpClient::sendMail(const Message &pMsg)
     WORD wVersionRequested = MAKEWORD(2, 2);
     int wsa_retVal = WSAStartup(wVersionRequested, &wsaData);
     if (wsa_retVal != 0) {
-        ostringstream error_stream;
-        error_stream << "Windows Sockets startup error : " << wsa_retVal;
-        throw CommunicationError(error_stream.str().c_str());
+        cerr << "Windows Sockets startup error : " << wsa_retVal << endl;
+        return 1;
     }
 
     memset(&hints, 0, sizeof hints);
@@ -153,9 +155,8 @@ void SmtpClient::sendMail(const Message &pMsg)
     if (dwRetval != 0) 
     {
         WSACleanup();
-        ostringstream error_stream;
-        error_stream << "Windows Sockets getaddrinfo error : " << dwRetval;
-        throw CommunicationError(error_stream.str().c_str());
+        cerr << "Windows Sockets getaddrinfo error : " << dwRetval << endl;
+        return 2;
     }
 
     sock = static_cast<unsigned int>(socket(result->ai_family, result->ai_socktype, result->ai_protocol));
@@ -163,48 +164,122 @@ void SmtpClient::sendMail(const Message &pMsg)
     if (wsa_retVal == SOCKET_ERROR) 
     {
         WSACleanup();
-        ostringstream error_stream;
-        error_stream << "Windows Sockets connect error : " << WSAGetLastError();
-        throw CommunicationError(error_stream.str().c_str());
+        cerr << "Windows Sockets connect error : " << WSAGetLastError() << endl;
+        return 3;
     }
 
-    writeCommand(sock, "HELO %s\r\n", pMsg.getFrom().getEmailAddress());    
-    writeCommand(sock, "MAIL FROM: %s\r\n", pMsg.getFrom().getEmailAddress());
+    if (writeCommand(sock, "HELO %s\r\n", pMsg.getFrom().getEmailAddress()) != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+    } 
+    if (writeCommand(sock, "MAIL FROM: %s\r\n", pMsg.getFrom().getEmailAddress()) != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+    } 
     //Send command for the recipients
 	for (size_t i = 0; i < pMsg.getToCount(); i++) {
 		MessageAddress* to_addr = pMsg.getTo()[i];
-		writeCommand(sock, "RCPT TO: %s\r\n", to_addr->getEmailAddress());
+		if (writeCommand(sock, "RCPT TO: %s\r\n", to_addr->getEmailAddress()) != 0) {
+            shutdown(sock, SD_BOTH);
+            wsa_retVal = closesocket(sock);
+            WSACleanup();
+            return 5;
+        } 
 	}
     // Data section
-    writeCommand(sock, "DATA\r\n", "");
+    if (writeCommand(sock, "DATA\r\n", "") != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+    } 
     // Mail headers
-    writeCommand(sock, "From: %s\r\n", pMsg.getFrom().getEmailAddress());
+    if (writeCommand(sock, "From: %s\r\n", pMsg.getFrom().getEmailAddress()) != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+    } 
 	for (size_t i = 0; i < pMsg.getToCount(); i++) {
 		MessageAddress* to_addr = pMsg.getTo()[i];
-		writeCommand(sock, "To: %s\r\n", to_addr->getEmailAddress(), false);
+		if (writeCommand(sock, "To: %s\r\n", to_addr->getEmailAddress(), false) != 0) {
+            shutdown(sock, SD_BOTH);
+            wsa_retVal = closesocket(sock);
+            WSACleanup();
+            return 5;
+        } 
 	}
-    writeCommand(sock, "Subject: %s\r\n", pMsg.getSubject(), false);
-    writeCommand(sock, "MIME-Version: 1.0\r\n", "", false);
-    writeCommand(sock, "Content-Type: multipart/mixed; boundary=sep\r\n", "", false);
-    writeCommand(sock, "\r\n", "", false);
+    if (writeCommand(sock, "Subject: %s\r\n", pMsg.getSubject(), false) != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+    } 
+    if (writeCommand(sock, "MIME-Version: 1.0\r\n", "", false) != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+    } 
+    if (writeCommand(sock, "Content-Type: multipart/mixed; boundary=sep\r\n", "", false) != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+    } 
+    if (writeCommand(sock, "\r\n", "", false) != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+    } 
     // Body part
-    if (body_real.length() > 512)
-    {
+    if (body_real.length() > 512) {
         //Split into chunk
-        for (size_t index_start = 0; index_start < body_real.length(); index_start += 512)
-        {
+        for (size_t index_start = 0; index_start < body_real.length(); index_start += 512) {
             size_t length = 512;
-            if (index_start + 512 > body_real.length() - 1)
+            if (index_start + 512 > body_real.length() - 1) {
                 length = body_real.length() - index_start;
-            writeCommand(sock, body_real.substr(index_start, length).c_str(), "", false);
+            }
+            if (writeCommand(sock, body_real.substr(index_start, length).c_str(), "", false) != 0) {
+                shutdown(sock, SD_BOTH);
+                wsa_retVal = closesocket(sock);
+                WSACleanup();
+                return 5;
+            } 
         }
     }
-    else
-        writeCommand(sock, "%s", body_real.c_str(), false);
-    writeCommand(sock, "\r\n", "", false);
+    else {
+        if (writeCommand(sock, "%s", body_real.c_str(), false) != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+        } 
+    }
+    if (writeCommand(sock, "\r\n", "", false) != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+    } 
     //End of data
-    writeCommand(sock, ".\r\n", "", false); 
-    writeCommand(sock, "QUIT\r\n", "", false);
+    if (writeCommand(sock, ".\r\n", "", false) != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+    } 
+    if (writeCommand(sock, "QUIT\r\n", "", false) != 0) {
+        shutdown(sock, SD_BOTH);
+        wsa_retVal = closesocket(sock);
+		WSACleanup();
+        return 5;
+    } 
 
 	// winsock requires a special function for sockets
 	shutdown(sock, SD_BOTH);
@@ -212,16 +287,16 @@ void SmtpClient::sendMail(const Message &pMsg)
     if (wsa_retVal == SOCKET_ERROR)
     {
 		WSACleanup();
-		ostringstream error_stream;
-        error_stream << "Windows Sockets connect error : " << WSAGetLastError();
-        throw CommunicationError(error_stream.str().c_str());
+        cerr << "Windows Sockets close error : " << WSAGetLastError() << endl;
+        return 4;
     }
 
 	WSACleanup();
+    return 0;
 }
 
 //Windows version of writeCommand method
-void SmtpClient::writeCommand(unsigned int pSock, const char *pStr, const char *pArg, bool pAskForReply)
+int SmtpClient::writeCommand(unsigned int pSock, const char *pStr, const char *pArg, bool pAskForReply)
 {
     char buf[4096];
 
@@ -230,15 +305,13 @@ void SmtpClient::writeCommand(unsigned int pSock, const char *pStr, const char *
     else
         snprintf(buf, sizeof(buf), pStr);
 
-
 	int wsa_retVal = send(pSock, buf, static_cast<int>(strlen(buf)), 0);
     if (wsa_retVal == SOCKET_ERROR) {
         cout << "send failed: " << WSAGetLastError() << endl;
         closesocket(pSock);
         WSACleanup();
-        ostringstream error_stream;
-        error_stream << "send command failed : " << WSAGetLastError();
-        throw CommunicationError(error_stream.str().c_str());
+        cerr << "send command failed : " << WSAGetLastError() << endl;
+        return 1;
     }
     if (pAskForReply)
     {
@@ -251,12 +324,13 @@ void SmtpClient::writeCommand(unsigned int pSock, const char *pStr, const char *
 			strcat(mServerReply, outbuf);
         }
     }
+    return 0;
 }
 
 #else
 
 //Linux version of sendMail method	
-void SmtpClient::sendMail(const Message &pMsg)
+int SmtpClient::sendMail(const Message &pMsg)
 {
     delete[] mServerReply;
     mServerReply = new char[2048];
@@ -271,10 +345,17 @@ void SmtpClient::sendMail(const Message &pMsg)
     vector<Attachment*> vect_attachment(arr_attachment, arr_attachment + pMsg.getAttachmentsCount());
     if (pMsg.getAttachmentsCount() > 0) {
         string attachments_text = createAttachmentsText(vect_attachment);
+        if (attachments_text.empty()) {
+            return 6;
+        }
         body_real += attachments_text;
     }
 
     int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        cerr << "Socket start error : " << errno << endl;
+        return 1;
+    }
     struct hostent *host = gethostbyname(mServerName);
     struct sockaddr_in saddr_in {};
     saddr_in.sin_family = AF_INET;
@@ -284,54 +365,99 @@ void SmtpClient::sendMail(const Message &pMsg)
     memcpy(reinterpret_cast<char*>(&(saddr_in.sin_addr)), host->h_addr, host->h_length);
 
     if (connect(sock, reinterpret_cast<struct sockaddr*>(&saddr_in), sizeof(saddr_in)) == -1) {
-        throw CommunicationError("Unable to connect. Error -1;");
+        cerr << "Unable to connect. Error -1" << endl;
+        return 3;
     }
 
-    writeCommand(sock, "HELO %s\r\n", pMsg.getFrom().getEmailAddress());    
-    writeCommand(sock, "MAIL FROM: %s\r\n", pMsg.getFrom().getEmailAddress());
+    if (writeCommand(sock, "HELO %s\r\n", pMsg.getFrom().getEmailAddress()) != 0) {
+        close(sock);
+        return 5;
+    }
+    if (writeCommand(sock, "MAIL FROM: %s\r\n", pMsg.getFrom().getEmailAddress()) != 0) {
+        close(sock);
+        return 5;
+    }
     //Send command for the recipients
     for(size_t i=0; i<pMsg.getToCount(); i++) {
         MessageAddress* to_addr = pMsg.getTo()[i];
-        writeCommand(sock, "RCPT TO: %s\r\n", to_addr->getEmailAddress());
+        if (writeCommand(sock, "RCPT TO: %s\r\n", to_addr->getEmailAddress()) != 0) {
+            close(sock);
+            return 5;
+        }
     }
     // Data section
-    writeCommand(sock, "DATA\r\n", "");
+    if (writeCommand(sock, "DATA\r\n", "") != 0) {
+        close(sock);
+        return 5;
+    }
     // Mail headers
-    writeCommand(sock, "From: %s\r\n", pMsg.getFrom().getEmailAddress());
+    if (writeCommand(sock, "From: %s\r\n", pMsg.getFrom().getEmailAddress()) != 0) {
+        close(sock);
+        return 5;
+    }
     for(size_t i=0; i<pMsg.getToCount(); i++) {
         MessageAddress* to_addr = pMsg.getTo()[i];
-        writeCommand(sock, "To: %s\r\n", to_addr->getEmailAddress(), false);
+        if (writeCommand(sock, "To: %s\r\n", to_addr->getEmailAddress(), false) != 0) {
+            close(sock);
+            return 5;
+        }
     }
-    writeCommand(sock, "Subject: %s\r\n", pMsg.getSubject(), false);
-    writeCommand(sock, "MIME-Version: 1.0\r\n", "", false);
-    writeCommand(sock, "Content-Type: multipart/mixed; boundary=sep\r\n", "", false);
-    writeCommand(sock, "\r\n", "", false);
+    if (writeCommand(sock, "Subject: %s\r\n", pMsg.getSubject(), false) != 0) {
+        close(sock);
+        return 5;
+    }
+    if (writeCommand(sock, "MIME-Version: 1.0\r\n", "", false) != 0) {
+        close(sock);
+        return 5;
+    }
+    if (writeCommand(sock, "Content-Type: multipart/mixed; boundary=sep\r\n", "", false) != 0) {
+        close(sock);
+        return 5;
+    }
+    if (writeCommand(sock, "\r\n", "", false) != 0) {
+        close(sock);
+        return 5;
+    }
     // Body part
-    if (body_real.length() > 512)
-    {
+    if (body_real.length() > 512) {
         //Split into chunk
-        for (size_t index_start = 0; index_start < body_real.length(); index_start += 512)
-        {
+        for (size_t index_start = 0; index_start < body_real.length(); index_start += 512) {
             size_t length = 512;
             if (index_start + 512 > body_real.length() - 1) {
                 length = body_real.length() - index_start;
             }
-            writeCommand(sock, body_real.substr(index_start, length).c_str(), "", false);
+            if (writeCommand(sock, body_real.substr(index_start, length).c_str(), "", false) != 0) {
+                close(sock);
+                return 5;
+            }
         }
     }
     else {
-        writeCommand(sock, "%s", body_real.c_str(), false);
+        if (writeCommand(sock, "%s", body_real.c_str(), false) != 0) {
+            close(sock);
+            return 5;
+        }
     }
-    writeCommand(sock, "\r\n", "", false);
+    if (writeCommand(sock, "\r\n", "", false) != 0) {
+        close(sock);
+        return 5;
+    }
     //End of data
-    writeCommand(sock, ".\r\n", "", false); 
-    writeCommand(sock, "QUIT\r\n", "", false);
+    if (writeCommand(sock, ".\r\n", "", false) != 0) {
+        close(sock);
+        return 5;
+    }
+    if (writeCommand(sock, "QUIT\r\n", "", false) != 0) {
+        close(sock);
+        return 5;
+    }
 
     close(sock);
+    return 0;
 }
 
 //Linux version of writeCommand method
-void SmtpClient::writeCommand(const unsigned int pSock, const char *pStr, const char *pArg, const bool pAskForReply)
+int SmtpClient::writeCommand(const unsigned int pSock, const char *pStr, const char *pArg, const bool pAskForReply)
 {
      char buf[4096];
 
@@ -339,10 +465,13 @@ void SmtpClient::writeCommand(const unsigned int pSock, const char *pStr, const 
         snprintf(buf, sizeof(buf), pStr, pArg);
     }        
     else {
-        snprintf(buf, sizeof(buf), pStr);
+        snprintf(buf, sizeof(buf), pStr, nullptr);
     }
     
-    send(pSock, buf, strlen(buf), 0);
+    if (send(pSock, buf, strlen(buf), 0) == -1) {
+        cerr << "send command failed : " << errno << endl;
+        return 1;
+    }
     if (pAskForReply) {
         // read a reply from server
         char outbuf[1024];
@@ -352,6 +481,7 @@ void SmtpClient::writeCommand(const unsigned int pSock, const char *pStr, const 
             strcat(mServerReply,outbuf);
         }
     }
+    return 0;
 }
 
 #endif
@@ -370,7 +500,7 @@ string SmtpClient::createAttachmentsText(const vector<Attachment*> &pAttachments
         retval += "Content-Type: " + string(item->getMimeType()) + "; file=\"" + string(item->getName()) + "\"\r\n";
         retval += "Content-Disposition: Inline; filename=\"" + string(item->getName()) + "\"\r\n";
         retval += "Content-Transfer-Encoding: base64\r\n\r\n";
-        retval += string(item->getBase64EncodedFile());
+        retval += string((item->getBase64EncodedFile() != nullptr ? item->getBase64EncodedFile() : ""));
 
     }
     retval += "\r\n--sep--";

@@ -118,9 +118,9 @@ const char *Attachment::getBase64EncodedFile() const
         strncpy(base64_file, base64_result.c_str(), base64_result.length() + 1);
         return base64_file;
     }
-    stringstream ss_error;
-    ss_error << "Could not open file " << mFilename;
-    throw AttachmentError(ss_error.str().c_str());
+    
+    cerr << "Could not open file " << mFilename << endl;
+    return nullptr;
 }
 
 const char *Attachment::getMimeType() const

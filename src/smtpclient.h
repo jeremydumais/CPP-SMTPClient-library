@@ -31,13 +31,13 @@ namespace jed_utils
         SmtpClient& operator=(const SmtpClient &other); //Copy assignment
         SmtpClient(SmtpClient &&other) noexcept; //Move constructor
         SmtpClient& operator=(SmtpClient &&other) noexcept; //Move assignement
-		void sendMail(const Message &pMsg);
+		int sendMail(const Message &pMsg);
 		const char *getServerReply() const;
 	protected:
 		char *mServerName;
 		unsigned int mPort;
 		char *mServerReply;
-		void writeCommand(unsigned int pSock,
+		int writeCommand(unsigned int pSock,
 			const char *pStr,
 			const char *pArg,
 			bool pAskForReply = true);

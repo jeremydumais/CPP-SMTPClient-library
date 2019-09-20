@@ -90,7 +90,6 @@ TEST_F(SimpleMessage, getToReturnValid)
 
 TEST_F(SimpleMessage, getSubjectReturnValid)
 {
-    cout << msg->getSubject() << endl;
     ASSERT_STREQ("This is a test (Subject)", msg->getSubject());
 }
 
