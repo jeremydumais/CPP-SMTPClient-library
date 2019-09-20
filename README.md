@@ -93,9 +93,21 @@ int main()
 ##### Available methods
 ```c++
 SmtpClient(const char *pServerName, unsigned int pPort);
-void sendMail(const Message &pMsg);
+int sendMail(const Message &pMsg);
 const char *getServerReply() const;
-```	
+```
+
+##### sendMail method Return Codes
+
+| Code  | Status Text
+|-------|-----------------------------------------------------
+|   0   | Success
+|   1   | Socket startup error. See the return code via cerr
+|   2   | Socket getaddrinfo error. See the getaddrinfo return code via cerr
+|   3   | Socket connect error. See the connect return code via cerr
+|   4   | Socket close error. See the closesocket return code via cerr
+|   5   | Socket send error. See the send error via cerr
+|   6   | Unable to load the attachment
 
 #### MessageAddress class
 
