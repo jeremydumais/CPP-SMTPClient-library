@@ -27,15 +27,15 @@ int main()
 			"This is a test (Subject)",
 			"Hello\nHow are you?");
 
-		client.sendMail(msg);
+		int err_no = client.sendMail(msg);
+		if (err_no != 0) {
+			cerr << "An error occurred. Return code : " << err_no;
+			return 1;
+		}
 		cout << client.getServerReply() << endl;
 		cout << "Operation completed!" << endl;
 	}
-	catch (CommunicationError &err)
-	{
-		cerr << err.what() << endl;
-	}
-	catch (AttachmentError &err)
+	catch (invalid_argument &err)
 	{
 		cerr << err.what() << endl;
 	}
@@ -71,15 +71,15 @@ int main()
 			"This is a test (Subject)",
 			"<html><body><h1>Hello,</h1><br/><br/>How are you?</body></html>", nullptr, 0, nullptr, 0, att1, ATTACHMENT_COUNT);
 
-		client.sendMail(msg);
+		int err_no = client.sendMail(msg);
+		if (err_no != 0) {
+			cerr << "An error occurred. Return code : " << err_no;
+			return 1;
+		}
 		cout << client.getServerReply() << endl;
 		cout << "Operation completed!" << endl;
 	}
-	catch (CommunicationError &err)
-	{
-		cerr << err.what() << endl;
-	}
-	catch (AttachmentError &err)
+	catch (invalid_argument &err)
 	{
 		cerr << err.what() << endl;
 	}
