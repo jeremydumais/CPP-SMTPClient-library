@@ -4,6 +4,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_PDB_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR})
 
 project(SMTPClient C CXX)
 
@@ -23,7 +24,7 @@ else()
     set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;-line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];-checks=*,-llvm-header-guard,-google-build-using-namespace,-fuchsia-default-arguments,-modernize-pass-by-value,-fuchsia-overloaded-operator,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory")
 endif()
 
-#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 
 # Set directories
 set(PROJECT_PATH    "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -83,7 +84,8 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/messageaddress.cpp
     ${SRC_PATH}/plaintextmessage.cpp
     ${SRC_PATH}/smtpclient.cpp
-    ${SRC_PATH}/stringutils.cpp)
+	${SRC_PATH}/sslsmtpclient.cpp
+	${SRC_PATH}/stringutils.cpp)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	#For MSVC create the library as a shared library
@@ -156,12 +158,12 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
                  EXCLUDE_FROM_ALL)
 
 add_executable(${PROJECT_UNITTEST_NAME} ${INCLUDE_PATH}
-${TEST_SRC_PATH}/main.cpp
-${TEST_SRC_PATH}/messageaddress_unittest.cpp
-${TEST_SRC_PATH}/attachment_unittest.cpp
-${TEST_SRC_PATH}/plaintextmessage_unittest.cpp
-${TEST_SRC_PATH}/stringutils_unittest.cpp
-)
+	${TEST_SRC_PATH}/main.cpp
+	${TEST_SRC_PATH}/messageaddress_unittest.cpp
+	${TEST_SRC_PATH}/attachment_unittest.cpp
+	${TEST_SRC_PATH}/plaintextmessage_unittest.cpp
+	${TEST_SRC_PATH}/stringutils_unittest.cpp
+	${TEST_SRC_PATH}/sslsmtpclient_unittest.cpp)
 
 target_link_libraries(${PROJECT_UNITTEST_NAME} ${PROJECT_NAME} gtest gtest_main ${PTHREAD})
 add_test(AllTestsInMain ${PROJECT_UNITTEST_NAME})
@@ -170,3 +172,4 @@ install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 install(DIRECTORY src/ DESTINATION include/smtpclient
             FILES_MATCHING PATTERN "*.h")
 
+add_subdirectory("simpleclient")
