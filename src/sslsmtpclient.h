@@ -7,6 +7,7 @@
 #include "htmlmessage.h"
 #include "messageaddress.h"
 #include "plaintextmessage.h"
+#include <openssl/ssl.h>
 #include <string>
 #include <vector>
 
@@ -29,12 +30,24 @@ namespace jed_utils
 		virtual ~SSLSmtpClient();
 		int initSession(const unsigned int pSock);
 		int initClient(const unsigned int pSock);
-		const char *getServerReply() const;
+		int initSecureClient();
+		int authenticate(const char* pUsername, const char* pPassword);
+		int initTLS(const unsigned int pSock);
+		int startTLS(const unsigned int pSock);
+		const char *getCommunicationLog() const;
 	protected:
 		char *mServerName;
 		unsigned int mPort;
-		char *mServerReply;
-		int extractReturnCode(const char *output) const;
+		char *mCommunicationLog;
+		unsigned int mCommandTimeOut;
+		int mLastSocketErrNo;
+		BIO *mBIO;
+		SSL_CTX *mCTX;
+		SSL *mSSL;
+		void cleanup();
+		int extractReturnCode(const char *pOutput) const;
+		void addCommunicationLogItem(const char *pItem, const char *pPrefix = "c");
+		void InitSSL_CTX();
 	};
 } // namespace jed_utils
 

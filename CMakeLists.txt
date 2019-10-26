@@ -48,8 +48,6 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC") # the quotes are needed here, may
 		message(FATAL_ERROR "Visual Studio 2015 or newer is required.")
 	endif()
 else()
-	#if(HAS_CXX20_FLAG)
-	#    set(CMAKE_CXX_STANDARD 20)
 	if(HAS_CXX17_FLAG)
 		set(CMAKE_CXX_STANDARD 17)
 	elseif(HAS_CXX14_FLAG)
@@ -96,11 +94,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		PRIVATE SMTPCLIENT_EXPORTS
 		INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
 		INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
-	target_link_libraries(${PROJECT_NAME} Ws2_32)
+	target_link_libraries(${PROJECT_NAME} Ws2_32 ssl crypto)
 else()
 	#For other compiler create the library as a static library
 	add_library(${PROJECT_NAME}
 		${PROJECT_SOURCE_FILES})
+	target_link_libraries(${PROJECT_NAME} ssl crypto)
 	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") #gcc
 		# https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 		target_compile_options(${PROJECT_NAME}
