@@ -28,12 +28,14 @@ namespace jed_utils
 	public:
 		SSLSmtpClient(const char *pServerName, unsigned int pPort);
 		virtual ~SSLSmtpClient();
-		int initSession(const unsigned int pSock);
-		int initClient(const unsigned int pSock);
+		int initSession();
+		int initClient();
 		int initSecureClient();
 		int authenticate(const char* pUsername, const char* pPassword);
-		int initTLS(const unsigned int pSock);
-		int startTLS(const unsigned int pSock);
+		int initTLS();
+		int startTLSNegotiation();
+		int sendTest();
+		int sendMail(const Message &pMsg);
 		const char *getCommunicationLog() const;
 	protected:
 		char *mServerName;
@@ -41,6 +43,7 @@ namespace jed_utils
 		char *mCommunicationLog;
 		unsigned int mCommandTimeOut;
 		int mLastSocketErrNo;
+		int mSock;
 		BIO *mBIO;
 		SSL_CTX *mCTX;
 		SSL *mSSL;
@@ -48,6 +51,8 @@ namespace jed_utils
 		int extractReturnCode(const char *pOutput) const;
 		void addCommunicationLogItem(const char *pItem, const char *pPrefix = "c");
 		void InitSSL_CTX();
+		int sendCommand(const char *pCommand, int pErrorCode, int pTimeoutCode);
+		int sendTLSCommand(const char *pCommand, int pErrorCode, int pTimeoutCode, bool pWaitForReply = true);
 	};
 } // namespace jed_utils
 

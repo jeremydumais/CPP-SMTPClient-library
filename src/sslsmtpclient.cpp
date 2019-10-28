@@ -1,3 +1,5 @@
+#include <algorithm>
+#include "base64.h"
 #include "sslsmtpclient.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
@@ -28,6 +30,7 @@ SSLSmtpClient::SSLSmtpClient(const char *pServerName, unsigned int pPort)
       mCommunicationLog(nullptr),
       mCommandTimeOut(3),
       mLastSocketErrNo(0),
+      mSock(0),
       mBIO(nullptr),
       mCTX(nullptr),
       mSSL(nullptr)
@@ -52,13 +55,21 @@ void SSLSmtpClient::cleanup()
     mCTX = nullptr;
     BIO_free_all(mBIO);
     mBIO = nullptr;
+    close(mSock);
+    mSock = 0;
 }
 
-int SSLSmtpClient::initSession(const unsigned int pSock) 
+int SSLSmtpClient::initSession() 
 {
     delete[] mCommunicationLog;
     mCommunicationLog = new char[4096];
     mCommunicationLog[0] = '\0';
+
+    mSock = socket(AF_INET, SOCK_STREAM, 0);
+    if (mSock < 0) {
+        mLastSocketErrNo = errno;
+        return SOCKET_INIT_SESSION_CREATION_ERROR;
+    }
 
     char outbuf[1024];
     struct hostent *host = gethostbyname(mServerName);
@@ -70,14 +81,14 @@ int SSLSmtpClient::initSession(const unsigned int pSock)
     stringstream ss;
     ss << "Trying to connect to " << mServerName << " on port " << mPort;
     addCommunicationLogItem(ss.str().c_str());
-    if (connect(pSock, reinterpret_cast<struct sockaddr*>(&saddr_in), sizeof(saddr_in)) == -1) {
+    if (connect(mSock, reinterpret_cast<struct sockaddr*>(&saddr_in), sizeof(saddr_in)) == -1) {
         mLastSocketErrNo = errno;
         return SOCKET_INIT_SESSION_CONNECT_ERROR;
     } 
 
     unsigned int waitTime = 0;
     ssize_t bytes_received = 0;
-    while ((bytes_received = recv(pSock, outbuf, 1024, 0)) < 0 && waitTime < mCommandTimeOut)
+    while ((bytes_received = recv(mSock, outbuf, 1024, 0)) < 0 && waitTime < mCommandTimeOut)
     {
         sleep(1);
         waitTime += 1;
@@ -94,56 +105,22 @@ int SSLSmtpClient::initSession(const unsigned int pSock)
     return SOCKET_INIT_SESSION_CONNECT_TIMEOUT;
 }
 
-int SSLSmtpClient::initClient(const unsigned int pSock) 
+int SSLSmtpClient::initClient() 
 {
-    char outbuf[1024];
-
     string ehlo { "ehlo localhost\r\n" };
-    addCommunicationLogItem("ehlo localhost\\r\\n");
-    if (send(pSock, ehlo.c_str(), ehlo.length(), 0) == -1) {
-        mLastSocketErrNo = errno;
-        return SOCKET_INIT_CLIENT_SEND_EHLO_ERROR;
-    }
-    unsigned int waitTime = 0;
-    ssize_t bytes_received = 0;
-    while ((bytes_received = recv(pSock, outbuf, 1024, 0)) < 0 && waitTime < mCommandTimeOut)
-    {
-        sleep(1);
-        waitTime += 1;
-    }
-    if (waitTime < mCommandTimeOut) {
-        outbuf[bytes_received-1] = '\0';
-        addCommunicationLogItem(outbuf, "s");
-        return extractReturnCode(outbuf);
-    }
-    
-    return SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT;
+    addCommunicationLogItem(ehlo.c_str());
+    return sendCommand(ehlo.c_str(), 
+        SOCKET_INIT_CLIENT_SEND_EHLO_ERROR, 
+        SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT);
 }
 
-int SSLSmtpClient::initTLS(const unsigned int pSock)
+int SSLSmtpClient::initTLS()
 {
-    char outbuf[1024];
-
-    string ehlo { "STARTTLS\r\n" };
-    addCommunicationLogItem("STARTTLS\\r\\n");
-    if (send(pSock, ehlo.c_str(), ehlo.length(), 0) == -1) {
-        mLastSocketErrNo = errno;
-        return SOCKET_INIT_CLIENT_SEND_STARTTLS_ERROR;
-    }
-    unsigned int waitTime = 0;
-    ssize_t bytes_received = 0;
-    while ((bytes_received = recv(pSock, outbuf, 1024, 0)) < 0 && waitTime < mCommandTimeOut)
-    {
-        sleep(1);
-        waitTime += 1;
-    }
-    if (waitTime < mCommandTimeOut) {
-        outbuf[bytes_received-1] = '\0';
-        addCommunicationLogItem(outbuf, "s");
-        return extractReturnCode(outbuf);
-    }
-    
-    return SOCKET_INIT_CLIENT_SEND_STARTTLS_TIMEOUT;
+    string start_tls_cmd { "STARTTLS\r\n" };
+    addCommunicationLogItem(start_tls_cmd.c_str());
+    return sendCommand(start_tls_cmd.c_str(), 
+        SOCKET_INIT_CLIENT_SEND_STARTTLS_ERROR, 
+        SOCKET_INIT_CLIENT_SEND_STARTTLS_TIMEOUT);
 }
 
 void SSLSmtpClient::InitSSL_CTX()
@@ -160,7 +137,7 @@ void SSLSmtpClient::InitSSL_CTX()
     }
 }
 
-int SSLSmtpClient::startTLS(const unsigned int pSock)
+int SSLSmtpClient::startTLSNegotiation()
 {
     addCommunicationLogItem("<Start TLS negotiation>");    
     InitSSL_CTX();
@@ -177,7 +154,7 @@ int SSLSmtpClient::startTLS(const unsigned int pSock)
     char name[1024];
     sprintf(name, "%s:%i", mServerName, mPort);
     BIO_get_ssl(mBIO, &mSSL); /* session */
-    SSL_set_fd(mSSL, pSock);
+    SSL_set_fd(mSSL, mSock);
     SSL_set_mode(mSSL, SSL_MODE_AUTO_RETRY); /* robustness */
     BIO_set_conn_hostname(mBIO, name); /* prepare to connect */
 
@@ -240,38 +217,138 @@ int SSLSmtpClient::startTLS(const unsigned int pSock)
 int SSLSmtpClient::initSecureClient()
 {
     addCommunicationLogItem("Contacting the server again but via the secure channel...");
-    addCommunicationLogItem("ehlo localhost\\r\\n");
-    if (const int status = BIO_puts(mBIO, "ehlo localhost\r\n") < 0) {
-        mLastSocketErrNo = ERR_get_error();
-        cleanup();
-        return SSL_CLIENT_INITSECURECLIENT_ERROR;
+    string ehlo { "ehlo localhost\r\n"s };
+    addCommunicationLogItem(ehlo.c_str());
+    return sendTLSCommand(ehlo.c_str(), SSL_CLIENT_INITSECURECLIENT_ERROR, SSL_CLIENT_INITSECURECLIENT_TIMEOUT);
+}
+
+int SSLSmtpClient::authenticate(const char* pUsername, const char* pPassword)
+{
+    addCommunicationLogItem("AUTH PLAIN ***************\r\n");
+    stringstream ss_credentials;
+    //Format : \0username\0password
+    ss_credentials << '\0' << pUsername << '\0' << pPassword;
+    string str_credentials = ss_credentials.str();
+    stringstream ss;
+    ss << "AUTH PLAIN " 
+       << Base64::Encode(reinterpret_cast<const unsigned char*>(str_credentials.c_str()),
+             strlen(pUsername) + strlen(pPassword) + 2) // + 2 for the two null characters 
+       << "\r\n";
+    return sendTLSCommand(ss.str().c_str(), SSL_CLIENT_AUTHENTICATE_ERROR, SSL_CLIENT_AUTHENTICATE_TIMEOUT);
+}
+
+int SSLSmtpClient::sendTest()
+{
+    cleanup(); // **** TO be removed
+    return 0;
+}
+
+int SSLSmtpClient::sendMail(const Message &pMsg)
+{
+    stringstream ss_mail_from;
+    ss_mail_from << "MAIL FROM: <"s << pMsg.getFrom().getDisplayName() << " "s << pMsg.getFrom().getEmailAddress() << ">\r\n"s;
+    addCommunicationLogItem(ss_mail_from.str().c_str());
+    int mail_from_ret_code = sendTLSCommand(ss_mail_from.str().c_str(), SSL_CLIENT_SENDMAIL_MAILFROM_ERROR, SSL_CLIENT_SENDMAIL_MAILFROM_TIMEOUT);
+    if (mail_from_ret_code != 250) {
+        return mail_from_ret_code;
     }
+
+    //Send command for the recipients
+    int rcpt_to_ret_code = 250;
+    for_each(pMsg.getTo(), pMsg.getTo() + pMsg.getToCount(), [this, &rcpt_to_ret_code](MessageAddress *address) {
+        stringstream ss_rcpt_to;
+        ss_rcpt_to << "RCPT TO: <"s << address->getEmailAddress() << ">\r\n"s;
+        addCommunicationLogItem(ss_rcpt_to.str().c_str());
+        int ret_code = sendTLSCommand(ss_rcpt_to.str().c_str(), SSL_CLIENT_SENDMAIL_RCPTTO_ERROR, SSL_CLIENT_SENDMAIL_RCPTTO_TIMEOUT);
+        if (ret_code != 250) {
+            rcpt_to_ret_code = ret_code;
+        }
+    });
+    if (rcpt_to_ret_code != 250) {
+        return rcpt_to_ret_code;
+    }
+
+    // Data section
+    string data_cmd = "DATA\r\n";
+    addCommunicationLogItem(data_cmd.c_str());
+    int data_ret_code = sendTLSCommand(data_cmd.c_str(), SSL_CLIENT_SENDMAIL_DATA_ERROR, SSL_CLIENT_SENDMAIL_DATA_TIMEOUT);
+    if (data_ret_code != 354) {
+        return data_ret_code;
+    }
+
+    // Mail headers
+    // From
+    stringstream ss_header_from_cmd;
+    ss_header_from_cmd << "From: " << pMsg.getFrom().getEmailAddress() << "\r\n";
+    addCommunicationLogItem(ss_header_from_cmd.str().c_str());
+    sendTLSCommand(ss_header_from_cmd.str().c_str(), SSL_CLIENT_SENDMAIL_HEADERFROM_ERROR, 0, false);
+    // To
+    for_each(pMsg.getTo(), pMsg.getTo() + pMsg.getToCount(), [this, &rcpt_to_ret_code](MessageAddress *address) {
+        stringstream ss_header_to_cmd;
+        ss_header_to_cmd << "To: " << address->getEmailAddress() << "\r\n";
+        addCommunicationLogItem(ss_header_to_cmd.str().c_str());
+        sendTLSCommand(ss_header_to_cmd.str().c_str(), SSL_CLIENT_SENDMAIL_HEADERTO_ERROR, 0, false);
+    });
+
+    return 0;
+}
+
+int SSLSmtpClient::sendCommand(const char *pCommand, int pErrorCode, int pTimeoutCode)
+{
     unsigned int waitTime {0};
-    int bytes_received {0};
+    ssize_t bytes_received {0};
     char outbuf[1024];
-    
-    while ((bytes_received = BIO_read(mBIO, outbuf, 1024)) <= 0 && waitTime < mCommandTimeOut) {
+    if (send(mSock, pCommand, strlen(pCommand), 0) == -1) {
+        mLastSocketErrNo = errno;
+        return pErrorCode;
+    }
+
+    while ((bytes_received = recv(mSock, outbuf, 1024, 0)) < 0 && waitTime < mCommandTimeOut) {
         sleep(1);
         waitTime += 1;
     }
     if (waitTime < mCommandTimeOut) {
         outbuf[bytes_received-1] = '\0';
         addCommunicationLogItem(outbuf, "s");
-        cleanup(); //To be removed
-        return 0;
+        return extractReturnCode(outbuf);
     }
-    else {
-        cleanup();
-        return SSL_CLIENT_INITSECURECLIENT_TIMEOUT;
-    }
+    
+    return pTimeoutCode;
 }
 
-int SSLSmtpClient::authenticate(const char* pUsername, const char* pPassword)
+int SSLSmtpClient::sendTLSCommand(const char *pCommand, int pErrorCode, int pTimeoutCode, bool pWaitForReply)
 {
-    string username { pUsername };
-    string password { pPassword };
-    return 0;
+    unsigned int waitTime {0};
+    int bytes_received {0};
+    char outbuf[1024];
+
+    if (const int status = BIO_puts(mBIO, pCommand) < 0) {
+        mLastSocketErrNo = ERR_get_error();
+        cleanup();
+        return pErrorCode;
+    }
+    
+    if (pWaitForReply == true) {
+        while ((bytes_received = BIO_read(mBIO, outbuf, 1024)) <= 0 && waitTime < mCommandTimeOut) {
+            sleep(1);
+            waitTime += 1;
+        }
+        if (waitTime < mCommandTimeOut) {
+            outbuf[bytes_received-1] = '\0';
+            addCommunicationLogItem(outbuf, "s");
+            return extractReturnCode(outbuf);
+        }
+        else {
+            cleanup();
+            return pTimeoutCode;
+        }
+    }
+    else {
+        return 0;
+    }
+    
 }
+
 
 const char *SSLSmtpClient::getCommunicationLog() const
 {
@@ -294,8 +371,19 @@ int SSLSmtpClient::extractReturnCode(const char *pOutput) const
 
 void SSLSmtpClient::addCommunicationLogItem(const char *pItem, const char *pPrefix)
 {
+    string item { pItem };
+    if (strcmp(pPrefix, "c") == 0) {
+        /* Replace the \ by \\ */
+        string from { "\r\n" };
+        string to { "\\r\\n" };
+        size_t start_pos = 0;
+        while((start_pos = item.find(from, start_pos)) != std::string::npos) {
+            item.replace(start_pos, from.length(), to);
+            start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+        }
+    }
     strcat(mCommunicationLog, "\n");
     strcat(mCommunicationLog, pPrefix);
     strcat(mCommunicationLog, ": ");
-    strcat(mCommunicationLog, pItem);
+    strcat(mCommunicationLog, item.c_str());
 }
