@@ -52,7 +52,8 @@ namespace jed_utils
 		void addCommunicationLogItem(const char *pItem, const char *pPrefix = "c");
 		void InitSSL_CTX();
 		int sendCommand(const char *pCommand, int pErrorCode, int pTimeoutCode);
-		int sendTLSCommand(const char *pCommand, int pErrorCode, int pTimeoutCode, bool pWaitForReply = true);
+		int sendTLSCommand(const char *pCommand, int pErrorCode);
+		int sendTLSCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode);
 	};
 } // namespace jed_utils
 
