@@ -237,12 +237,6 @@ int SSLSmtpClient::authenticate(const char* pUsername, const char* pPassword)
     return sendTLSCommandWithFeedback(ss.str().c_str(), SSL_CLIENT_AUTHENTICATE_ERROR, SSL_CLIENT_AUTHENTICATE_TIMEOUT);
 }
 
-int SSLSmtpClient::sendTest()
-{
-    cleanup(); // **** TO be removed
-    return 0;
-}
-
 int SSLSmtpClient::sendMail(const Message &pMsg)
 {
     stringstream ss_mail_from;
@@ -278,18 +272,89 @@ int SSLSmtpClient::sendMail(const Message &pMsg)
 
     // Mail headers
     // From
-    stringstream ss_header_from_cmd;
-    ss_header_from_cmd << "From: " << pMsg.getFrom().getEmailAddress() << "\r\n";
-    addCommunicationLogItem(ss_header_from_cmd.str().c_str());
-    sendTLSCommand(ss_header_from_cmd.str().c_str(), SSL_CLIENT_SENDMAIL_HEADERFROM_ERROR);
-    // To
-    for_each(pMsg.getTo(), pMsg.getTo() + pMsg.getToCount(), [this, &rcpt_to_ret_code](MessageAddress *address) {
-        stringstream ss_header_to_cmd;
-        ss_header_to_cmd << "To: " << address->getEmailAddress() << "\r\n";
-        addCommunicationLogItem(ss_header_to_cmd.str().c_str());
-        sendTLSCommand(ss_header_to_cmd.str().c_str(), SSL_CLIENT_SENDMAIL_HEADERTO_ERROR);
-    });
+    stringstream ss_header_from;
+    ss_header_from << "From: " << pMsg.getFrom().getEmailAddress() << "\r\n";
+    addCommunicationLogItem(ss_header_from.str().c_str());
+    int header_from_ret_code = sendTLSCommand(ss_header_from.str().c_str(), SSL_CLIENT_SENDMAIL_HEADERFROM_ERROR);
+    if (header_from_ret_code != 0) {
+        return header_from_ret_code;
+    }
 
+    // To
+    int header_to_ret_code { 0 };
+    for_each(pMsg.getTo(), pMsg.getTo() + pMsg.getToCount(), [this, &header_to_ret_code](MessageAddress *address) {
+        stringstream ss_header_to;
+        ss_header_to << "To: " << address->getEmailAddress() << "\r\n";
+        addCommunicationLogItem(ss_header_to.str().c_str());
+        int ret_code = sendTLSCommand(ss_header_to.str().c_str(), SSL_CLIENT_SENDMAIL_HEADERTO_ERROR);
+        if (ret_code != 0) {
+            header_to_ret_code = ret_code;
+        }
+    });
+    if (header_to_ret_code != 0) {
+        return header_to_ret_code;
+    }
+
+    // Subject
+    stringstream ss_header_subject;
+    ss_header_subject << "Subject: " << pMsg.getSubject() << "\r\n";
+    addCommunicationLogItem(ss_header_subject.str().c_str());
+    int header_subject_ret_code = sendTLSCommand(ss_header_subject.str().c_str(), SSL_CLIENT_SENDMAIL_HEADERSUBJECT_ERROR);
+    if (header_subject_ret_code != 0) {
+        return header_subject_ret_code;
+    }
+
+    //Content-Type
+    string content_type { "Content-Type: multipart/mixed; boundary=sep\r\n\r\n" };
+    addCommunicationLogItem(content_type.c_str());
+    int header_content_type_ret_code = sendTLSCommand(content_type.c_str(), SSL_CLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR);
+    if (header_content_type_ret_code != 0) {
+        return header_content_type_ret_code;
+    }
+
+    // Body part
+    ostringstream body_ss;
+    body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
+    string body_real = body_ss.str();
+    addCommunicationLogItem(body_real.c_str());    
+
+    //If there's attachments, prepare the attachments text content
+    Attachment** arr_attachment = pMsg.getAttachments();
+
+    vector<Attachment*> vect_attachment(arr_attachment, arr_attachment + pMsg.getAttachmentsCount());
+    if (pMsg.getAttachmentsCount() > 0) {
+        string attachments_text = createAttachmentsText(vect_attachment);
+        body_real += attachments_text;
+    }
+
+    if (body_real.length() > 512) {
+        //Split into chunk
+        for (size_t index_start = 0; index_start < body_real.length(); index_start += 512) {
+            size_t length = 512;
+            if (index_start + 512 > body_real.length() - 1) {
+                length = body_real.length() - index_start;
+            }
+            int body_part_ret_code = sendTLSCommand(body_real.substr(index_start, length).c_str(), SSL_CLIENT_SENDMAIL_BODYPART_ERROR);
+            if (body_part_ret_code != 0) {
+                return body_part_ret_code;
+            }
+        }
+    }
+    else {
+        int body_ret_code = sendTLSCommand(body_real.c_str(), SSL_CLIENT_SENDMAIL_BODY_ERROR);
+        if (body_ret_code != 0) {
+            return body_ret_code;
+        }
+    }
+    //End of data
+    string end_command { "\r\n.\r\nQUIT\r\n" };
+    addCommunicationLogItem(end_command.c_str());    
+    int quit_ret_code = sendTLSCommand(end_command.c_str(), SSL_CLIENT_SENDMAIL_QUIT_ERROR);
+    if (quit_ret_code != 0) {
+        return quit_ret_code;
+    }
+
+    cleanup(); 
     return 0;
 }
 
@@ -390,4 +455,20 @@ void SSLSmtpClient::addCommunicationLogItem(const char *pItem, const char *pPref
     strcat(mCommunicationLog, pPrefix);
     strcat(mCommunicationLog, ": ");
     strcat(mCommunicationLog, item.c_str());
+}
+
+string SSLSmtpClient::createAttachmentsText(const vector<Attachment*> &pAttachments) const
+{
+    string retval;	
+    for (auto &item : pAttachments)
+    {
+        retval += "\r\n--sep\r\n";
+        retval += "Content-Type: " + string(item->getMimeType()) + "; file=\"" + string(item->getName()) + "\"\r\n";
+        retval += "Content-Disposition: Inline; filename=\"" + string(item->getName()) + "\"\r\n";
+        retval += "Content-Transfer-Encoding: base64\r\n\r\n";
+        retval += string((item->getBase64EncodedFile() != nullptr ? item->getBase64EncodedFile() : ""));
+
+    }
+    retval += "\r\n--sep--";
+    return retval;
 }

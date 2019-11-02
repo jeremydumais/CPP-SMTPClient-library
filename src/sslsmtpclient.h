@@ -34,7 +34,6 @@ namespace jed_utils
 		int authenticate(const char* pUsername, const char* pPassword);
 		int initTLS();
 		int startTLSNegotiation();
-		int sendTest();
 		int sendMail(const Message &pMsg);
 		const char *getCommunicationLog() const;
 	protected:
@@ -54,6 +53,8 @@ namespace jed_utils
 		int sendCommand(const char *pCommand, int pErrorCode, int pTimeoutCode);
 		int sendTLSCommand(const char *pCommand, int pErrorCode);
 		int sendTLSCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode);
+		std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments) const;
+
 	};
 } // namespace jed_utils
 
