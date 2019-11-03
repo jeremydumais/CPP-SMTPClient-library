@@ -15,8 +15,7 @@ Credential::Credential(const char *pUsername, const char *pPassword)
         throw invalid_argument("Username cannot be null or empty");
     }
 
-    string password_str { pPassword == nullptr ? "" : pPassword };
-    if (pPassword == nullptr || strcmp(pPassword, "") == 0 || StringUtils::trim(password_str).empty()) {
+    if (pPassword == nullptr || strcmp(pPassword, "") == 0) {
         throw invalid_argument("Password cannot be null or empty");
     }
 
@@ -106,4 +105,31 @@ const char *Credential::getUsername() const
 const char *Credential::getPassword() const
 {
     return mPassword;
+}
+
+void Credential::setUsername(const char *pUsername)
+{
+	string username_str { pUsername == nullptr ? "" : pUsername };
+    if (pUsername == nullptr || strcmp(pUsername, "") == 0 || StringUtils::trim(username_str).empty()) {
+        throw invalid_argument("Username cannot be null or empty");
+    }
+
+	delete []mUsername;
+	size_t username_len = strlen(pUsername);
+	mUsername = new char[username_len + 1];
+	strncpy(mUsername, pUsername, username_len);
+    mUsername[username_len] = '\0';
+}
+
+void Credential::setPassword(const char *pPassword)
+{
+    if (pPassword == nullptr || strcmp(pPassword, "") == 0) {
+        throw invalid_argument("Password cannot be null or empty");
+    }
+
+	delete []mPassword;
+    size_t password_len = strlen(pPassword);
+	mPassword = new char[password_len + 1];
+	strncpy(mPassword, pPassword, password_len);
+    mPassword[password_len] = '\0';
 }

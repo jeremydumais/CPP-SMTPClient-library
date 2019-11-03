@@ -24,6 +24,8 @@ namespace jed_utils
 		Credential& operator=(Credential&& other) noexcept; //Move assignement
         const char *getUsername() const;
         const char *getPassword() const;
+        void setUsername(const char *pUsername);
+        void setPassword(const char *pPassword);
     private:
         char* mUsername;
         char* mPassword;

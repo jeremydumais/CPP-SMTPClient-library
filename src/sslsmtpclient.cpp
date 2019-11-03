@@ -27,8 +27,7 @@ using namespace jed_utils;
 SSLSmtpClient::SSLSmtpClient(const char *pServerName, unsigned int pPort)
     : mServerName(nullptr),
       mPort(pPort),
-      mUsername(nullptr),
-      mPassword(nullptr),
+      mCredential(nullptr),
       mCommunicationLog(nullptr),
       mCommandTimeOut(3),
       mLastSocketErrNo(0),
@@ -50,21 +49,55 @@ SSLSmtpClient::~SSLSmtpClient()
 {    
     delete[] mServerName;
     mServerName = nullptr;
+    mCredential = nullptr;
     delete[] mCommunicationLog;
     mCommunicationLog = nullptr;
+    cleanup();
 }
 
 void SSLSmtpClient::cleanup()
 {
-    SSL_CTX_free(mCTX);
+    if (mCTX != nullptr) {
+        SSL_CTX_free(mCTX);
+    }
     mCTX = nullptr;
-    BIO_free_all(mBIO);
+    if (mBIO != nullptr) {
+        BIO_free_all(mBIO);
+    }
     mBIO = nullptr;
-    close(mSock);
+    if (mSock != 0) {
+        close(mSock);
+    }
     mSock = 0;
 }
 
-int SSLSmtpClient::initSession() 
+void SSLSmtpClient::setCredentials(const Credential &pCredential)
+{
+    delete mCredential;
+    mCredential = new Credential(pCredential);
+}
+
+void SSLSmtpClient::setCommandTimeout(unsigned int pTimeOutInSeconds)
+{
+    mCommandTimeOut = pTimeOutInSeconds;
+}
+
+const char *SSLSmtpClient::getCommunicationLog() const
+{
+    return mCommunicationLog;
+}
+
+const Credential *SSLSmtpClient::getCredentials() const
+{
+    return mCredential;
+}
+
+unsigned int SSLSmtpClient::getCommandTimeout() const
+{
+    return mCommandTimeOut;
+}
+
+int SSLSmtpClient::initializeSession() 
 {
     delete[] mCommunicationLog;
     mCommunicationLog = new char[4096];
@@ -110,25 +143,25 @@ int SSLSmtpClient::initSession()
     return SOCKET_INIT_SESSION_CONNECT_TIMEOUT;
 }
 
-int SSLSmtpClient::initClient() 
+int SSLSmtpClient::getServerIdentification() 
 {
     string ehlo { "ehlo localhost\r\n" };
     addCommunicationLogItem(ehlo.c_str());
-    return sendCommand(ehlo.c_str(), 
+    return sendRawCommand(ehlo.c_str(), 
         SOCKET_INIT_CLIENT_SEND_EHLO_ERROR, 
         SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT);
 }
 
-int SSLSmtpClient::initTLS()
+int SSLSmtpClient::upgradeToSecureConnection()
 {
     string start_tls_cmd { "STARTTLS\r\n" };
     addCommunicationLogItem(start_tls_cmd.c_str());
-    return sendCommand(start_tls_cmd.c_str(), 
+    return sendRawCommand(start_tls_cmd.c_str(), 
         SOCKET_INIT_CLIENT_SEND_STARTTLS_ERROR, 
         SOCKET_INIT_CLIENT_SEND_STARTTLS_TIMEOUT);
 }
 
-void SSLSmtpClient::InitSSL_CTX()
+void SSLSmtpClient::initializeSSLContext()
 {
     SSL_library_init();
 
@@ -145,7 +178,7 @@ void SSLSmtpClient::InitSSL_CTX()
 int SSLSmtpClient::startTLSNegotiation()
 {
     addCommunicationLogItem("<Start TLS negotiation>");    
-    InitSSL_CTX();
+    initializeSSLContext();
     if (mCTX == nullptr) {
         return SSL_CLIENT_STARTTLS_INITSSLCTX_ERROR;
     }
@@ -219,7 +252,7 @@ int SSLSmtpClient::startTLSNegotiation()
     return 0;
 }
 
-int SSLSmtpClient::initSecureClient()
+int SSLSmtpClient::getServerSecureIdentification()
 {
     addCommunicationLogItem("Contacting the server again but via the secure channel...");
     string ehlo { "ehlo localhost\r\n"s };
@@ -227,34 +260,34 @@ int SSLSmtpClient::initSecureClient()
     return sendTLSCommandWithFeedback(ehlo.c_str(), SSL_CLIENT_INITSECURECLIENT_ERROR, SSL_CLIENT_INITSECURECLIENT_TIMEOUT);
 }
 
-int SSLSmtpClient::authenticate(const char* pUsername, const char* pPassword)
+int SSLSmtpClient::authenticateClient()
 {
     addCommunicationLogItem("AUTH PLAIN ***************\r\n");
     stringstream ss_credentials;
     //Format : \0username\0password
-    ss_credentials << '\0' << pUsername << '\0' << pPassword;
+    ss_credentials << '\0' << mCredential->getUsername() << '\0' << mCredential->getPassword();
     string str_credentials = ss_credentials.str();
     stringstream ss;
     ss << "AUTH PLAIN " 
        << Base64::Encode(reinterpret_cast<const unsigned char*>(str_credentials.c_str()),
-             strlen(pUsername) + strlen(pPassword) + 2) // + 2 for the two null characters 
+             strlen(mCredential->getUsername()) + strlen(mCredential->getPassword()) + 2) // + 2 for the two null characters 
        << "\r\n";
     return sendTLSCommandWithFeedback(ss.str().c_str(), SSL_CLIENT_AUTHENTICATE_ERROR, SSL_CLIENT_AUTHENTICATE_TIMEOUT);
 }
 
-int SSLSmtpClient::connectToServer()
+int SSLSmtpClient::establishConnectionWithServer()
 {
-    int session_init_return_code = initSession();
+    int session_init_return_code = initializeSession();
     if (session_init_return_code != 220) {
         return session_init_return_code;
     }
 
-    int client_init_return_code = initClient();
+    int client_init_return_code = getServerIdentification();
     if (client_init_return_code != 250) {
         return client_init_return_code;
     }
 
-    int tls_init_return_code = initTLS();
+    int tls_init_return_code = upgradeToSecureConnection();
     if (tls_init_return_code != 220) {
         return tls_init_return_code;
     }
@@ -264,13 +297,13 @@ int SSLSmtpClient::connectToServer()
         return tls_start_return_code;
     }
 
-    int client_initSecure_return_code = initSecureClient();
+    int client_initSecure_return_code = getServerSecureIdentification();
     if (client_initSecure_return_code != 250) {
         return client_initSecure_return_code;
     }
 
-    if (mUsername!=nullptr) {
-        int client_auth_return_code = authenticate(mUsername, mPassword);
+    if (mCredential != nullptr) {
+        int client_auth_return_code = authenticateClient();
         if (client_auth_return_code != 235) {
             return client_auth_return_code;
         }
@@ -409,7 +442,7 @@ int SSLSmtpClient::setMailBody(const Message &pMsg)
 
 int SSLSmtpClient::sendMail(const Message &pMsg)
 {
-    int client_connect_ret_code = connectToServer();
+    int client_connect_ret_code = establishConnectionWithServer();
     if (client_connect_ret_code != 0) {
         return client_connect_ret_code;
     }
@@ -433,7 +466,7 @@ int SSLSmtpClient::sendMail(const Message &pMsg)
     return 0;
 }
 
-int SSLSmtpClient::sendCommand(const char *pCommand, int pErrorCode, int pTimeoutCode)
+int SSLSmtpClient::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode)
 {
     unsigned int waitTime {0};
     ssize_t bytes_received {0};
@@ -493,12 +526,6 @@ int SSLSmtpClient::sendTLSCommandWithFeedback(const char *pCommand, int pErrorCo
     }  
 }
 
-
-const char *SSLSmtpClient::getCommunicationLog() const
-{
-    return mCommunicationLog;
-}
-
 int SSLSmtpClient::extractReturnCode(const char *pOutput) const
 {
     if (pOutput != nullptr && strlen(pOutput) >= 3) {
@@ -548,18 +575,3 @@ string SSLSmtpClient::createAttachmentsText(const vector<Attachment*> &pAttachme
     return retval;
 }
 
-void SSLSmtpClient::setCredentials(const char *pUsername, const char *pPassword)
-{
-    delete []mUsername;
-    delete []mPassword;
-
-    size_t username_len = strlen(pUsername);
-	mUsername = new char[username_len + 1];
-	strncpy(mUsername, pUsername, username_len);
-    mUsername[username_len] = '\0';
-
-    size_t password_len = strlen(pPassword);
-	mPassword = new char[password_len + 1];
-	strncpy(mPassword, pPassword, password_len);
-    mUsername[password_len] = '\0';
-}

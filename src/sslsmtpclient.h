@@ -4,6 +4,7 @@
 #include "attachment.h"
 #include "attachmenterror.h"
 #include "communicationerror.h"
+#include "credential.h"
 #include "htmlmessage.h"
 #include "messageaddress.h"
 #include "plaintextmessage.h"
@@ -30,35 +31,42 @@ namespace jed_utils
 		virtual ~SSLSmtpClient();
 		//All Move dans Copy Constr
 		int sendMail(const Message &pMsg);
-		void setCredentials(const char *pUsername, const char *pPassword);
+		void setCredentials(const Credential &pCredential);
+		void setCommandTimeout(unsigned int pTimeOutInSeconds);
 		const char *getCommunicationLog() const;
+		const Credential *getCredentials() const;
+		unsigned int getCommandTimeout() const;
 	protected:
 		char *mServerName;
 		unsigned int mPort;
-		char *mUsername;
-		char *mPassword;
+		Credential *mCredential;
 		char *mCommunicationLog;
 		unsigned int mCommandTimeOut;
 		int mLastSocketErrNo;
+		//Attributes used to communicate with the server
 		int mSock;
 		BIO *mBIO;
 		SSL_CTX *mCTX;
 		SSL *mSSL;
+		//Methods
 		void cleanup();
 		int extractReturnCode(const char *pOutput) const;
 		void addCommunicationLogItem(const char *pItem, const char *pPrefix = "c");
-		int initSession();
-		int initClient();
-		int initSecureClient();
-		int authenticate(const char* pUsername, const char* pPassword);
-		int initTLS();
+		//Methods used to establish the connection with server
+		int initializeSession();
+		int getServerIdentification();
+		int getServerSecureIdentification();
+		int authenticateClient();
+		int upgradeToSecureConnection();
 		int startTLSNegotiation();
-		int connectToServer();
+		void initializeSSLContext();
+		//Methods to send an email
+		int establishConnectionWithServer();
 		int setMailRecipients(const Message &pMsg);
 		int setMailHeaders(const Message &pMsg);
 		int setMailBody(const Message &pMsg);
-		void InitSSL_CTX();
-		int sendCommand(const char *pCommand, int pErrorCode, int pTimeoutCode);
+		//Methods to send commands to the server
+		int sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode);
 		int sendTLSCommand(const char *pCommand, int pErrorCode);
 		int sendTLSCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode);
 		std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments) const;

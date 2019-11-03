@@ -96,3 +96,16 @@ TEST_F(FakeSSLSMTPClient, NullPtr_ReturnMinus1)
 {
     ASSERT_EQ(-1, __extractReturnCode(nullptr));
 }
+
+TEST(SSLSmtpClient_getCommandTimeout, DefaultTimeOut_Return3)
+{
+    SSLSmtpClient client("fdfdsfs", 587);
+    ASSERT_EQ(3, client.getCommandTimeout());
+}
+
+TEST(SSLSmtpClient_getCommandTimeout, SetTimeOutWith2_Return2)
+{
+    SSLSmtpClient client("fdfdsfs", 587);
+    client.setCommandTimeout(2);
+    ASSERT_EQ(2, client.getCommandTimeout());
+}
