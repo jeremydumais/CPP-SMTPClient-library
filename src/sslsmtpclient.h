@@ -48,6 +48,7 @@ namespace jed_utils
 		unsigned int mPort;
 		Credential *mCredential;
 		char *mCommunicationLog;
+		char *mLastServerResponse;
 		unsigned int mCommandTimeOut;
 		int mLastSocketErrNo;
 		//Attributes used to communicate with the server
@@ -73,6 +74,7 @@ namespace jed_utils
 		int setMailHeaders(const Message &pMsg);
 		int setMailBody(const Message &pMsg);
 		//Methods to send commands to the server
+		void setLastServerRespose(const char *pResponse);
 		int sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode);
 		int sendTLSCommand(const char *pCommand, int pErrorCode);
 		int sendTLSCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode);

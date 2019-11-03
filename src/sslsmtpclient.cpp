@@ -30,6 +30,7 @@ SSLSmtpClient::SSLSmtpClient(const char *pServerName, unsigned int pPort)
       mPort(pPort),
       mCredential(nullptr),
       mCommunicationLog(nullptr),
+      mLastServerResponse(nullptr),
       mCommandTimeOut(3),
       mLastSocketErrNo(0),
       mSock(0),
@@ -54,6 +55,8 @@ SSLSmtpClient::~SSLSmtpClient()
     mCredential = nullptr;
     delete[] mCommunicationLog;
     mCommunicationLog = nullptr;
+    delete[] mLastServerResponse;
+    mLastServerResponse = nullptr;
     cleanup();
 }
 
@@ -63,6 +66,7 @@ SSLSmtpClient::SSLSmtpClient(const SSLSmtpClient& other)
       mPort(other.mPort),
       mCredential(other.mCredential != nullptr ? new Credential(*other.mCredential) : nullptr),
       mCommunicationLog(other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr),
+      mLastServerResponse(other.mLastServerResponse != nullptr ? new char[strlen(other.mLastServerResponse) + 1]: nullptr),
       mCommandTimeOut(other.mCommandTimeOut),
       mLastSocketErrNo(other.mLastSocketErrNo),
       mSock(0),
@@ -76,6 +80,11 @@ SSLSmtpClient::SSLSmtpClient(const SSLSmtpClient& other)
     if (mCommunicationLog != nullptr) {
 	    strncpy(mCommunicationLog, other.mCommunicationLog, strlen(other.mCommunicationLog) + 1);
 	    mCommunicationLog[strlen(other.mCommunicationLog)] = '\0';
+    }
+
+    if (mLastServerResponse != nullptr) {
+	    strncpy(mLastServerResponse, other.mLastServerResponse, strlen(other.mLastServerResponse) + 1);
+	    mLastServerResponse[strlen(other.mLastServerResponse)] = '\0';
     }
 }
 
@@ -99,6 +108,12 @@ SSLSmtpClient& SSLSmtpClient::operator=(const SSLSmtpClient& other)
             strncpy(mCommunicationLog, other.mCommunicationLog, strlen(other.mCommunicationLog) + 1);
             mCommunicationLog[strlen(other.mCommunicationLog)] = '\0';
         }
+        //mLastServerResponse
+        mLastServerResponse = other.mLastServerResponse != nullptr ? new char[strlen(other.mLastServerResponse) + 1]: nullptr;
+        if (mLastServerResponse != nullptr) {
+            strncpy(mLastServerResponse, other.mLastServerResponse, strlen(other.mLastServerResponse) + 1);
+            mLastServerResponse[strlen(other.mLastServerResponse)] = '\0';
+        }
         mCommandTimeOut = other.mCommandTimeOut;
         mLastSocketErrNo = other.mLastSocketErrNo;
         mSock = 0;
@@ -115,6 +130,7 @@ SSLSmtpClient::SSLSmtpClient(SSLSmtpClient&& other) noexcept
       mPort(other.mPort),
       mCredential(other.mCredential),
       mCommunicationLog(other.mCommunicationLog),
+      mLastServerResponse(other.mLastServerResponse),
       mCommandTimeOut(other.mCommandTimeOut),
       mLastSocketErrNo(other.mLastSocketErrNo),
       mSock(other.mSock),
@@ -128,6 +144,7 @@ SSLSmtpClient::SSLSmtpClient(SSLSmtpClient&& other) noexcept
     other.mPort = 0;
     other.mCredential = nullptr;
     other.mCommunicationLog = nullptr;
+    other.mLastServerResponse = nullptr;
     other.mCommandTimeOut = 0;
     other.mLastSocketErrNo = 0;
     other.mSock = 0;
@@ -144,6 +161,7 @@ SSLSmtpClient& SSLSmtpClient::operator=(SSLSmtpClient&& other) noexcept
 		delete[] mServerName;
         delete mCredential;
         delete[] mCommunicationLog;
+        delete[] mLastServerResponse;
         delete mBIO;
         delete mCTX;
 		// Copy the data pointer and its length from the source object.
@@ -151,6 +169,7 @@ SSLSmtpClient& SSLSmtpClient::operator=(SSLSmtpClient&& other) noexcept
         mPort = other.mPort;
         mCredential = other.mCredential;
         mCommunicationLog = other.mCommunicationLog;
+        mLastServerResponse = other.mLastServerResponse;
         mCommandTimeOut = other.mCommandTimeOut;
         mLastSocketErrNo = other.mLastSocketErrNo;
         mSock = other.mSock;
@@ -163,6 +182,7 @@ SSLSmtpClient& SSLSmtpClient::operator=(SSLSmtpClient&& other) noexcept
 		other.mPort = 0;
         other.mCredential = nullptr;
         other.mCommunicationLog = nullptr;
+        other.mLastServerResponse = nullptr;
         other.mCommandTimeOut = 0;
         other.mLastSocketErrNo = 0;
         other.mSock = 0;
