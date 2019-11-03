@@ -104,7 +104,6 @@ TEST(Credential_MoveConstructor, CredentialMoveConstructorValid)
 	ASSERT_EQ(nullptr, cred1.getPassword());
 }
 
-//Move Assignment
 TEST(Credential_MoveAssignment, CredentialMoveAssignmentValid)
 {
 	Credential cred1("test", "123");

@@ -3,6 +3,7 @@
 #include "sslsmtpclient.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
+#include "stringutils.h"
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -36,7 +37,8 @@ SSLSmtpClient::SSLSmtpClient(const char *pServerName, unsigned int pPort)
       mCTX(nullptr),
       mSSL(nullptr)
 {
-    if (pServerName == nullptr || strcmp(pServerName, "") == 0) {
+    string servername_str { pServerName == nullptr ? "" : pServerName };
+    if (pServerName == nullptr || strcmp(pServerName, "") == 0  || StringUtils::trim(servername_str).empty()) {
         throw invalid_argument("Server name cannot be null or empty");
     }
     size_t server_name_len = strlen(pServerName);
@@ -55,6 +57,122 @@ SSLSmtpClient::~SSLSmtpClient()
     cleanup();
 }
 
+//Copy constructor
+SSLSmtpClient::SSLSmtpClient(const SSLSmtpClient& other)
+	: mServerName(new char[strlen(other.mServerName) + 1]),
+      mPort(other.mPort),
+      mCredential(other.mCredential != nullptr ? new Credential(*other.mCredential) : nullptr),
+      mCommunicationLog(other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr),
+      mCommandTimeOut(other.mCommandTimeOut),
+      mLastSocketErrNo(other.mLastSocketErrNo),
+      mSock(0),
+      mBIO(nullptr),
+      mCTX(nullptr),
+      mSSL(nullptr)
+{
+	strncpy(mServerName, other.mServerName, strlen(other.mServerName) + 1);
+	mServerName[strlen(other.mServerName)] = '\0';
+    
+    if (mCommunicationLog != nullptr) {
+	    strncpy(mCommunicationLog, other.mCommunicationLog, strlen(other.mCommunicationLog) + 1);
+	    mCommunicationLog[strlen(other.mCommunicationLog)] = '\0';
+    }
+}
+
+//Assignment operator
+SSLSmtpClient& SSLSmtpClient::operator=(const SSLSmtpClient& other)
+{
+	if (this != &other)
+	{
+		//mServerName
+        delete[] mServerName;
+		mServerName = new char[strlen(other.mServerName) + 1];
+		strncpy(mServerName, other.mServerName, strlen(other.mServerName) + 1);
+		mServerName[strlen(other.mServerName)] = '\0';
+        //mPort
+        mPort = other.mPort;
+        //mCredential
+        mCredential = other.mCredential != nullptr ? new Credential(*other.mCredential) : nullptr;
+        //mCommunicationLog
+        mCommunicationLog = other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr;
+        if (mCommunicationLog != nullptr) {
+            strncpy(mCommunicationLog, other.mCommunicationLog, strlen(other.mCommunicationLog) + 1);
+            mCommunicationLog[strlen(other.mCommunicationLog)] = '\0';
+        }
+        mCommandTimeOut = other.mCommandTimeOut;
+        mLastSocketErrNo = other.mLastSocketErrNo;
+        mSock = 0;
+        mBIO = nullptr;
+        mCTX = nullptr;
+        mSSL = nullptr;
+	}
+	return *this;
+}
+
+//Move constructor
+SSLSmtpClient::SSLSmtpClient(SSLSmtpClient&& other) noexcept
+	: mServerName(other.mServerName),
+      mPort(other.mPort),
+      mCredential(other.mCredential),
+      mCommunicationLog(other.mCommunicationLog),
+      mCommandTimeOut(other.mCommandTimeOut),
+      mLastSocketErrNo(other.mLastSocketErrNo),
+      mSock(other.mSock),
+      mBIO(other.mBIO),
+      mCTX(other.mCTX),
+      mSSL(other.mSSL)
+{
+	// Release the data pointer from the source object so that the destructor 
+	// does not free the memory multiple times.
+	other.mServerName = nullptr;
+    other.mPort = 0;
+    other.mCredential = nullptr;
+    other.mCommunicationLog = nullptr;
+    other.mCommandTimeOut = 0;
+    other.mLastSocketErrNo = 0;
+    other.mSock = 0;
+    other.mBIO = nullptr;
+    other.mCTX = nullptr;
+    other.mSSL = nullptr;
+}
+
+//Move assignement operator
+SSLSmtpClient& SSLSmtpClient::operator=(SSLSmtpClient&& other) noexcept
+{
+	if (this != &other)
+	{
+		delete[] mServerName;
+        delete mCredential;
+        delete[] mCommunicationLog;
+        delete mBIO;
+        delete mCTX;
+		// Copy the data pointer and its length from the source object.
+		mServerName = other.mServerName;
+        mPort = other.mPort;
+        mCredential = other.mCredential;
+        mCommunicationLog = other.mCommunicationLog;
+        mCommandTimeOut = other.mCommandTimeOut;
+        mLastSocketErrNo = other.mLastSocketErrNo;
+        mSock = other.mSock;
+        mBIO = other.mBIO;
+        mCTX = other.mCTX;
+        mSSL = other.mSSL;
+		// Release the data pointer from the source object so that
+		// the destructor does not free the memory multiple times.
+		other.mServerName = nullptr;
+		other.mPort = 0;
+        other.mCredential = nullptr;
+        other.mCommunicationLog = nullptr;
+        other.mCommandTimeOut = 0;
+        other.mLastSocketErrNo = 0;
+        other.mSock = 0;
+        other.mBIO = nullptr;
+        other.mCTX = nullptr;
+        other.mSSL = nullptr;
+	}
+	return *this;
+}
+
 void SSLSmtpClient::cleanup()
 {
     if (mCTX != nullptr) {
@@ -69,17 +187,12 @@ void SSLSmtpClient::cleanup()
         close(mSock);
     }
     mSock = 0;
+    mSSL = nullptr;
 }
 
-void SSLSmtpClient::setCredentials(const Credential &pCredential)
+unsigned int SSLSmtpClient::getCommandTimeout() const
 {
-    delete mCredential;
-    mCredential = new Credential(pCredential);
-}
-
-void SSLSmtpClient::setCommandTimeout(unsigned int pTimeOutInSeconds)
-{
-    mCommandTimeOut = pTimeOutInSeconds;
+    return mCommandTimeOut;
 }
 
 const char *SSLSmtpClient::getCommunicationLog() const
@@ -92,10 +205,45 @@ const Credential *SSLSmtpClient::getCredentials() const
     return mCredential;
 }
 
-unsigned int SSLSmtpClient::getCommandTimeout() const
+const char *SSLSmtpClient::getServerName() const
 {
-    return mCommandTimeOut;
+    return mServerName;
 }
+
+unsigned int SSLSmtpClient::getServerPort() const
+{
+    return mPort;
+}
+
+void SSLSmtpClient::setCommandTimeout(unsigned int pTimeOutInSeconds)
+{
+    mCommandTimeOut = pTimeOutInSeconds;
+}
+
+void SSLSmtpClient::setCredentials(const Credential &pCredential)
+{
+    delete mCredential;
+    mCredential = new Credential(pCredential);
+}
+
+void SSLSmtpClient::setServerPort(unsigned int pPort)
+{
+    mPort = pPort;
+}
+
+void SSLSmtpClient::setServerName(const char *pServerName)
+{
+    string servername_str { pServerName == nullptr ? "" : pServerName };
+    if (pServerName == nullptr || strcmp(pServerName, "") == 0  || StringUtils::trim(servername_str).empty()) {
+        throw invalid_argument("Server name cannot be null or empty");
+    }
+    delete []mServerName;
+    size_t server_name_len = strlen(pServerName);
+	mServerName = new char[server_name_len + 1];
+	strncpy(mServerName, pServerName, server_name_len);
+    mServerName[server_name_len] = '\0';
+}
+
 
 int SSLSmtpClient::initializeSession() 
 {

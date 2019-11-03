@@ -29,13 +29,20 @@ namespace jed_utils
 	public:
 		SSLSmtpClient(const char *pServerName, unsigned int pPort);
 		virtual ~SSLSmtpClient();
-		//All Move dans Copy Constr
-		int sendMail(const Message &pMsg);
-		void setCredentials(const Credential &pCredential);
-		void setCommandTimeout(unsigned int pTimeOutInSeconds);
+		SSLSmtpClient(const SSLSmtpClient& other); //Copy constructor
+        SSLSmtpClient& operator=(const SSLSmtpClient& other); //Copy assignment
+		SSLSmtpClient(SSLSmtpClient&& other) noexcept; //Move constructor
+		SSLSmtpClient& operator=(SSLSmtpClient&& other) noexcept; //Move assignement
+		unsigned int getCommandTimeout() const;
 		const char *getCommunicationLog() const;
 		const Credential *getCredentials() const;
-		unsigned int getCommandTimeout() const;
+		const char *getServerName() const;
+		unsigned int getServerPort() const;
+		int sendMail(const Message &pMsg);
+		void setCommandTimeout(unsigned int pTimeOutInSeconds);
+		void setCredentials(const Credential &pCredential);
+		void setServerName(const char *pServerName);
+		void setServerPort(unsigned int pPort);
 	protected:
 		char *mServerName;
 		unsigned int mPort;
