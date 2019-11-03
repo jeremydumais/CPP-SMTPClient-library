@@ -28,17 +28,15 @@ namespace jed_utils
 	public:
 		SSLSmtpClient(const char *pServerName, unsigned int pPort);
 		virtual ~SSLSmtpClient();
-		int initSession();
-		int initClient();
-		int initSecureClient();
-		int authenticate(const char* pUsername, const char* pPassword);
-		int initTLS();
-		int startTLSNegotiation();
+		//All Move dans Copy Constr
 		int sendMail(const Message &pMsg);
+		void setCredentials(const char *pUsername, const char *pPassword);
 		const char *getCommunicationLog() const;
 	protected:
 		char *mServerName;
 		unsigned int mPort;
+		char *mUsername;
+		char *mPassword;
 		char *mCommunicationLog;
 		unsigned int mCommandTimeOut;
 		int mLastSocketErrNo;
@@ -49,12 +47,21 @@ namespace jed_utils
 		void cleanup();
 		int extractReturnCode(const char *pOutput) const;
 		void addCommunicationLogItem(const char *pItem, const char *pPrefix = "c");
+		int initSession();
+		int initClient();
+		int initSecureClient();
+		int authenticate(const char* pUsername, const char* pPassword);
+		int initTLS();
+		int startTLSNegotiation();
+		int connectToServer();
+		int setMailRecipients(const Message &pMsg);
+		int setMailHeaders(const Message &pMsg);
+		int setMailBody(const Message &pMsg);
 		void InitSSL_CTX();
 		int sendCommand(const char *pCommand, int pErrorCode, int pTimeoutCode);
 		int sendTLSCommand(const char *pCommand, int pErrorCode);
 		int sendTLSCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode);
 		std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments) const;
-
 	};
 } // namespace jed_utils
 

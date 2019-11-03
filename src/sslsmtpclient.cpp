@@ -27,6 +27,8 @@ using namespace jed_utils;
 SSLSmtpClient::SSLSmtpClient(const char *pServerName, unsigned int pPort)
     : mServerName(nullptr),
       mPort(pPort),
+      mUsername(nullptr),
+      mPassword(nullptr),
       mCommunicationLog(nullptr),
       mCommandTimeOut(3),
       mLastSocketErrNo(0),
@@ -35,6 +37,9 @@ SSLSmtpClient::SSLSmtpClient(const char *pServerName, unsigned int pPort)
       mCTX(nullptr),
       mSSL(nullptr)
 {
+    if (pServerName == nullptr || strcmp(pServerName, "") == 0) {
+        throw invalid_argument("Server name cannot be null or empty");
+    }
     size_t server_name_len = strlen(pServerName);
 	mServerName = new char[server_name_len + 1];
 	strncpy(mServerName, pServerName, server_name_len);
@@ -237,7 +242,43 @@ int SSLSmtpClient::authenticate(const char* pUsername, const char* pPassword)
     return sendTLSCommandWithFeedback(ss.str().c_str(), SSL_CLIENT_AUTHENTICATE_ERROR, SSL_CLIENT_AUTHENTICATE_TIMEOUT);
 }
 
-int SSLSmtpClient::sendMail(const Message &pMsg)
+int SSLSmtpClient::connectToServer()
+{
+    int session_init_return_code = initSession();
+    if (session_init_return_code != 220) {
+        return session_init_return_code;
+    }
+
+    int client_init_return_code = initClient();
+    if (client_init_return_code != 250) {
+        return client_init_return_code;
+    }
+
+    int tls_init_return_code = initTLS();
+    if (tls_init_return_code != 220) {
+        return tls_init_return_code;
+    }
+
+    int tls_start_return_code = startTLSNegotiation();
+    if (tls_start_return_code != 0) {
+        return tls_start_return_code;
+    }
+
+    int client_initSecure_return_code = initSecureClient();
+    if (client_initSecure_return_code != 250) {
+        return client_initSecure_return_code;
+    }
+
+    if (mUsername!=nullptr) {
+        int client_auth_return_code = authenticate(mUsername, mPassword);
+        if (client_auth_return_code != 235) {
+            return client_auth_return_code;
+        }
+    }
+    return 0;
+}
+
+int SSLSmtpClient::setMailRecipients(const Message &pMsg) 
 {
     stringstream ss_mail_from;
     ss_mail_from << "MAIL FROM: <"s << pMsg.getFrom().getDisplayName() << " "s << pMsg.getFrom().getEmailAddress() << ">\r\n"s;
@@ -261,7 +302,11 @@ int SSLSmtpClient::sendMail(const Message &pMsg)
     if (rcpt_to_ret_code != 250) {
         return rcpt_to_ret_code;
     }
+    return 0;
+}
 
+int SSLSmtpClient::setMailHeaders(const Message &pMsg)
+{
     // Data section
     string data_cmd = "DATA\r\n";
     addCommunicationLogItem(data_cmd.c_str());
@@ -312,6 +357,11 @@ int SSLSmtpClient::sendMail(const Message &pMsg)
         return header_content_type_ret_code;
     }
 
+    return 0;
+}
+
+int SSLSmtpClient::setMailBody(const Message &pMsg)
+{
     // Body part
     ostringstream body_ss;
     body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
@@ -346,12 +396,37 @@ int SSLSmtpClient::sendMail(const Message &pMsg)
             return body_ret_code;
         }
     }
+
     //End of data
     string end_command { "\r\n.\r\nQUIT\r\n" };
     addCommunicationLogItem(end_command.c_str());    
     int quit_ret_code = sendTLSCommand(end_command.c_str(), SSL_CLIENT_SENDMAIL_QUIT_ERROR);
     if (quit_ret_code != 0) {
         return quit_ret_code;
+    }
+    return 0;
+}
+
+int SSLSmtpClient::sendMail(const Message &pMsg)
+{
+    int client_connect_ret_code = connectToServer();
+    if (client_connect_ret_code != 0) {
+        return client_connect_ret_code;
+    }
+
+    int set_mail_recipients_ret_code = setMailRecipients(pMsg);
+    if (set_mail_recipients_ret_code != 0) {
+        return set_mail_recipients_ret_code;
+    }
+
+    int set_mail_headers_ret_code = setMailHeaders(pMsg);
+    if (set_mail_headers_ret_code != 0) {
+        return set_mail_headers_ret_code;
+    }
+
+    int set_mail_body_ret_code = setMailBody(pMsg);
+    if (set_mail_body_ret_code != 0) {
+        return set_mail_body_ret_code;
     }
 
     cleanup(); 
@@ -471,4 +546,20 @@ string SSLSmtpClient::createAttachmentsText(const vector<Attachment*> &pAttachme
     }
     retval += "\r\n--sep--";
     return retval;
+}
+
+void SSLSmtpClient::setCredentials(const char *pUsername, const char *pPassword)
+{
+    delete []mUsername;
+    delete []mPassword;
+
+    size_t username_len = strlen(pUsername);
+	mUsername = new char[username_len + 1];
+	strncpy(mUsername, pUsername, username_len);
+    mUsername[username_len] = '\0';
+
+    size_t password_len = strlen(pPassword);
+	mPassword = new char[password_len + 1];
+	strncpy(mPassword, pPassword, password_len);
+    mUsername[password_len] = '\0';
 }

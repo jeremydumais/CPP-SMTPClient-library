@@ -77,6 +77,7 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/attachmenterror.cpp
     ${SRC_PATH}/base64.cpp
     ${SRC_PATH}/communicationerror.cpp
+    ${SRC_PATH}/credential.cpp
     ${SRC_PATH}/htmlmessage.cpp
     ${SRC_PATH}/message.cpp
     ${SRC_PATH}/messageaddress.cpp
@@ -160,6 +161,7 @@ add_executable(${PROJECT_UNITTEST_NAME} ${INCLUDE_PATH}
 	${TEST_SRC_PATH}/main.cpp
 	${TEST_SRC_PATH}/messageaddress_unittest.cpp
 	${TEST_SRC_PATH}/attachment_unittest.cpp
+	${TEST_SRC_PATH}/credential_unittest.cpp
 	${TEST_SRC_PATH}/plaintextmessage_unittest.cpp
 	${TEST_SRC_PATH}/stringutils_unittest.cpp
 	${TEST_SRC_PATH}/sslsmtpclient_unittest.cpp)

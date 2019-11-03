@@ -2,12 +2,13 @@
 #include <gtest/gtest.h>
 
 using namespace jed_utils;
+using namespace std;
 
 class FakeSSLSMTPClient : public ::testing::Test, public SSLSmtpClient
 {
 public:
     FakeSSLSMTPClient()
-        : SSLSmtpClient("", 0)
+        : SSLSmtpClient("127.0.0.1", 587)
     {
     }
 
@@ -20,6 +21,32 @@ public:
         return extractReturnCode(output);
     }
 };
+
+TEST(SSLSmtpClient_Constructor, NullServerName)
+{
+	try
+	{
+		SSLSmtpClient client(nullptr, 587);
+		FAIL();
+	}
+	catch(invalid_argument &err) 
+	{
+        ASSERT_STREQ("Server name cannot be null or empty", err.what());
+	}
+}
+
+TEST(SSLSmtpClient_Constructor, EmptyServerName)
+{
+	try
+	{
+		SSLSmtpClient client("", 587);
+		FAIL();
+	}
+	catch(invalid_argument &err) 
+	{
+        ASSERT_STREQ("Server name cannot be null or empty", err.what());
+	}
+}
 
 TEST_F(FakeSSLSMTPClient, ValidWelcomeCode220_Return220)
 {
@@ -40,7 +67,11 @@ TEST_F(FakeSSLSMTPClient, ValidClientCode250NoSpace_Return250)
 {
     ASSERT_EQ(250, __extractReturnCode("250smtp.gmail.com at your service, [24.48.180.30]"));
 }
+#include "../../src/sslsmtpclient.h"
+#include <gtest/gtest.h>
 
+using namespace jed_utils;
+using namespace std;
 TEST_F(FakeSSLSMTPClient, EmptyOutput_ReturnMinus1)
 {
     ASSERT_EQ(-1, __extractReturnCode(""));
