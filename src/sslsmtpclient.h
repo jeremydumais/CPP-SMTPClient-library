@@ -8,6 +8,7 @@
 #include "htmlmessage.h"
 #include "messageaddress.h"
 #include "plaintextmessage.h"
+#include "serverauthoptions.h"
 #include <openssl/ssl.h>
 #include <string>
 #include <vector>
@@ -51,6 +52,7 @@ namespace jed_utils
 		char *mLastServerResponse;
 		unsigned int mCommandTimeOut;
 		int mLastSocketErrNo;
+		ServerAuthOptions *mAuthOptions;
 		//Attributes used to communicate with the server
 		int mSock;
 		BIO *mBIO;
@@ -74,7 +76,7 @@ namespace jed_utils
 		int setMailHeaders(const Message &pMsg);
 		int setMailBody(const Message &pMsg);
 		//Methods to send commands to the server
-		void setLastServerRespose(const char *pResponse);
+		void setLastServerResponse(const char *pResponse);
 		int sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode);
 		int sendTLSCommand(const char *pCommand, int pErrorCode);
 		int sendTLSCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode);

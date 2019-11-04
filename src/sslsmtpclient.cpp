@@ -1,9 +1,9 @@
-#include <algorithm>
 #include "base64.h"
-#include "sslsmtpclient.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
+#include "sslsmtpclient.h"
 #include "stringutils.h"
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -13,10 +13,10 @@
     #include <ws2tcpip.h>
 #else
     #include <fcntl.h>
-    #include <openssl/bio.h> /* BasicInput/Output streams */
-    #include <openssl/err.h>
     #include <netdb.h>
     #include <netinet/in.h>
+    #include <openssl/bio.h> /* BasicInput/Output streams */
+    #include <openssl/err.h>  
     #include <sys/socket.h>	
     #include <unistd.h>
 #endif
@@ -33,6 +33,7 @@ SSLSmtpClient::SSLSmtpClient(const char *pServerName, unsigned int pPort)
       mLastServerResponse(nullptr),
       mCommandTimeOut(3),
       mLastSocketErrNo(0),
+      mAuthOptions(nullptr),
       mSock(0),
       mBIO(nullptr),
       mCTX(nullptr),
@@ -57,6 +58,8 @@ SSLSmtpClient::~SSLSmtpClient()
     mCommunicationLog = nullptr;
     delete[] mLastServerResponse;
     mLastServerResponse = nullptr;
+    delete mAuthOptions;
+    mAuthOptions = nullptr;
     cleanup();
 }
 
@@ -69,6 +72,7 @@ SSLSmtpClient::SSLSmtpClient(const SSLSmtpClient& other)
       mLastServerResponse(other.mLastServerResponse != nullptr ? new char[strlen(other.mLastServerResponse) + 1]: nullptr),
       mCommandTimeOut(other.mCommandTimeOut),
       mLastSocketErrNo(other.mLastSocketErrNo),
+      mAuthOptions(other.mAuthOptions != nullptr ? new ServerAuthOptions(*other.mAuthOptions) : nullptr),
       mSock(0),
       mBIO(nullptr),
       mCTX(nullptr),
@@ -116,6 +120,9 @@ SSLSmtpClient& SSLSmtpClient::operator=(const SSLSmtpClient& other)
         }
         mCommandTimeOut = other.mCommandTimeOut;
         mLastSocketErrNo = other.mLastSocketErrNo;
+
+        delete mAuthOptions;
+        mAuthOptions = other.mAuthOptions != nullptr ? new ServerAuthOptions(*other.mAuthOptions) : nullptr;
         mSock = 0;
         mBIO = nullptr;
         mCTX = nullptr;
@@ -133,6 +140,7 @@ SSLSmtpClient::SSLSmtpClient(SSLSmtpClient&& other) noexcept
       mLastServerResponse(other.mLastServerResponse),
       mCommandTimeOut(other.mCommandTimeOut),
       mLastSocketErrNo(other.mLastSocketErrNo),
+      mAuthOptions(other.mAuthOptions),
       mSock(other.mSock),
       mBIO(other.mBIO),
       mCTX(other.mCTX),
@@ -147,6 +155,7 @@ SSLSmtpClient::SSLSmtpClient(SSLSmtpClient&& other) noexcept
     other.mLastServerResponse = nullptr;
     other.mCommandTimeOut = 0;
     other.mLastSocketErrNo = 0;
+    other.mAuthOptions = nullptr;
     other.mSock = 0;
     other.mBIO = nullptr;
     other.mCTX = nullptr;
@@ -162,8 +171,7 @@ SSLSmtpClient& SSLSmtpClient::operator=(SSLSmtpClient&& other) noexcept
         delete mCredential;
         delete[] mCommunicationLog;
         delete[] mLastServerResponse;
-        delete mBIO;
-        delete mCTX;
+        delete mAuthOptions;
 		// Copy the data pointer and its length from the source object.
 		mServerName = other.mServerName;
         mPort = other.mPort;
@@ -172,6 +180,7 @@ SSLSmtpClient& SSLSmtpClient::operator=(SSLSmtpClient&& other) noexcept
         mLastServerResponse = other.mLastServerResponse;
         mCommandTimeOut = other.mCommandTimeOut;
         mLastSocketErrNo = other.mLastSocketErrNo;
+        mAuthOptions = other.mAuthOptions;
         mSock = other.mSock;
         mBIO = other.mBIO;
         mCTX = other.mCTX;
@@ -185,6 +194,7 @@ SSLSmtpClient& SSLSmtpClient::operator=(SSLSmtpClient&& other) noexcept
         other.mLastServerResponse = nullptr;
         other.mCommandTimeOut = 0;
         other.mLastSocketErrNo = 0;
+        other.mAuthOptions = nullptr;
         other.mSock = 0;
         other.mBIO = nullptr;
         other.mCTX = nullptr;
@@ -634,6 +644,15 @@ int SSLSmtpClient::sendMail(const Message &pMsg)
     return 0;
 }
 
+void SSLSmtpClient::setLastServerResponse(const char *pResponse)
+{
+    delete[] mLastServerResponse;
+    size_t response_len = strlen(pResponse);
+	mLastServerResponse = new char[response_len + 1];
+	strncpy(mLastServerResponse, pResponse, response_len);
+    mLastServerResponse[response_len] = '\0';
+}        
+
 int SSLSmtpClient::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode)
 {
     unsigned int waitTime {0};
@@ -650,6 +669,7 @@ int SSLSmtpClient::sendRawCommand(const char *pCommand, int pErrorCode, int pTim
     }
     if (waitTime < mCommandTimeOut) {
         outbuf[bytes_received-1] = '\0';
+        setLastServerResponse(outbuf);
         addCommunicationLogItem(outbuf, "s");
         return extractReturnCode(outbuf);
     }
@@ -685,13 +705,13 @@ int SSLSmtpClient::sendTLSCommandWithFeedback(const char *pCommand, int pErrorCo
     }
     if (waitTime < mCommandTimeOut) {
         outbuf[bytes_received-1] = '\0';
+        setLastServerResponse(outbuf);
         addCommunicationLogItem(outbuf, "s");
         return extractReturnCode(outbuf);
     }
-    else {
-        cleanup();
-        return pTimeoutCode;
-    }  
+    
+    cleanup();
+    return pTimeoutCode;  
 }
 
 int SSLSmtpClient::extractReturnCode(const char *pOutput) const
@@ -721,10 +741,10 @@ void SSLSmtpClient::addCommunicationLogItem(const char *pItem, const char *pPref
             start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
         }
     }
-    strcat(mCommunicationLog, "\n");
-    strcat(mCommunicationLog, pPrefix);
-    strcat(mCommunicationLog, ": ");
-    strcat(mCommunicationLog, item.c_str());
+    strncat(mCommunicationLog, "\n", 1);
+    strncat(mCommunicationLog, pPrefix, strlen(pPrefix));
+    strncat(mCommunicationLog, ": ", 2);
+    strncat(mCommunicationLog, item.c_str(), item.length());
 }
 
 string SSLSmtpClient::createAttachmentsText(const vector<Attachment*> &pAttachments) const

@@ -1,7 +1,7 @@
 #include "credential.h"
+#include "stringutils.h"
 #include <cstring>
 #include <stdexcept>
-#include "stringutils.h"
 
 using namespace jed_utils;
 using namespace std;
