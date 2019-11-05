@@ -432,11 +432,74 @@ int SSLSmtpClient::startTLSNegotiation()
 
 int SSLSmtpClient::getServerSecureIdentification()
 {
+    const int EHLO_SUCCESS_CODE = 250;
     addCommunicationLogItem("Contacting the server again but via the secure channel...");
     string ehlo { "ehlo localhost\r\n"s };
     addCommunicationLogItem(ehlo.c_str());
-    return sendTLSCommandWithFeedback(ehlo.c_str(), SSL_CLIENT_INITSECURECLIENT_ERROR, SSL_CLIENT_INITSECURECLIENT_TIMEOUT);
+    int tls_command_return_code = sendTLSCommandWithFeedback(ehlo.c_str(), 
+                                    SSL_CLIENT_INITSECURECLIENT_ERROR, 
+                                    SSL_CLIENT_INITSECURECLIENT_TIMEOUT);
+    if (tls_command_return_code != EHLO_SUCCESS_CODE) {
+        return tls_command_return_code;
+    }
+    //Inspect the returned values for authentication options
+    delete mAuthOptions;
+    mAuthOptions = SSLSmtpClient::extractAuthenticationOptions(mLastServerResponse);
+    return EHLO_SUCCESS_CODE;
 }
+
+ServerAuthOptions *SSLSmtpClient::extractAuthenticationOptions(const char *pEhloOutput)
+{
+    ServerAuthOptions *retVal = nullptr;
+    const string AUTH_LINE_PREFIX = "250-AUTH";
+    if (pEhloOutput == nullptr) {
+        return retVal;
+    }
+    const string DELIMITER { "\r\n" };
+    string ehlo_output { pEhloOutput }; 
+    size_t ehlo_character_index { 0 };
+    while((ehlo_character_index = ehlo_output.find(DELIMITER)) != string::npos) {
+        string line { ehlo_output.substr(0, ehlo_character_index)};
+        //Find the line that begin with 250-AUTH
+        if (line.substr(0, AUTH_LINE_PREFIX.length()) == AUTH_LINE_PREFIX) {
+            retVal = new ServerAuthOptions();
+            //Find each options 
+            vector<string> options;
+            size_t line_character_index { 0 };
+            while((line_character_index = line.find(" ")) != string::npos) {
+                string option { line.substr(0, line_character_index)};
+                options.push_back(option);
+                line.erase(0, line_character_index + 1);
+            }
+            options.push_back(line);
+            //Try to match the string options with the ServerAuthOptions struct attributes
+            for_each(options.begin(), options.end(), [&retVal](const string &option) {
+                if (option == "PLAIN") {
+                    retVal->Plain = true;
+                }
+                else if (option == "LOGIN") {
+                    retVal->Login = true;
+                }
+                else if (option == "XOAUTH2") {
+                    retVal->XOAuth2 = true;
+                }                
+                else if (option == "PLAIN-CLIENTTOKEN") {
+                    retVal->Plain_ClientToken = true;
+                }                
+                else if (option == "OAUTHBEARER") {
+                    retVal->OAuthBearer = true;
+                }                
+                else if (option == "XOAUTH") {
+                    retVal->XOAuth = true;
+                }
+            });
+            break;
+        }
+        ehlo_output.erase(0, ehlo_character_index + DELIMITER.length());
+    }
+    return retVal;
+}
+
 
 int SSLSmtpClient::authenticateClient()
 {

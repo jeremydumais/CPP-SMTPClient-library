@@ -20,6 +20,11 @@ public:
     {
         return extractReturnCode(output);
     }
+
+	ServerAuthOptions *__extractAuthenticationOptions(const char *pEhloOutput) const
+	{
+		return SSLSmtpClient::extractAuthenticationOptions(pEhloOutput);
+	}
 };
 
 TEST(SSLSmtpClient_Constructor, NullServerName_ThrowInvalidArgument)
@@ -258,4 +263,61 @@ TEST(SSLSmtpClient_getCommandTimeout, SetTimeOutWith2_Return2)
     SSLSmtpClient client("fdfdsfs", 587);
     client.setCommandTimeout(2);
     ASSERT_EQ(2, client.getCommandTimeout());
+}
+
+TEST_F(FakeSSLSMTPClient, extractAuthenticationOptionsWithNullEhlo_ReturnNullptr)
+{
+	ASSERT_EQ(nullptr, __extractAuthenticationOptions(nullptr));
+}
+
+TEST_F(FakeSSLSMTPClient, extractAuthenticationOptionsWithEmptyEhlo_ReturnNullptr)
+{
+	ASSERT_EQ(nullptr, __extractAuthenticationOptions(""));
+}
+
+TEST_F(FakeSSLSMTPClient, extractAuthenticationOptionsWithOnlySpacesEhlo_ReturnNullptr)
+{
+	ASSERT_EQ(nullptr, __extractAuthenticationOptions("    "));
+}
+
+TEST_F(FakeSSLSMTPClient, extractAuthenticationOptionsWithNoAuthOptionsEhlo_ReturnNullptr)
+{
+	ASSERT_EQ(nullptr, __extractAuthenticationOptions("250-SIZE 35882577\r\n250-8BITMIME\r\n"));
+}
+
+TEST_F(FakeSSLSMTPClient, extractAuthenticationOptionsWithAuthOnlyPlainEhlo_ReturnNullptr)
+{
+	ServerAuthOptions *options = __extractAuthenticationOptions("250-AUTH PLAIN\r\n");
+	ASSERT_NE(nullptr, options);
+	ASSERT_TRUE(options->Plain);
+	ASSERT_FALSE(options->Login);
+	ASSERT_FALSE(options->XOAuth2);
+    ASSERT_FALSE(options->Plain_ClientToken);
+    ASSERT_FALSE(options->OAuthBearer);
+    ASSERT_FALSE(options->XOAuth);
+}
+
+TEST_F(FakeSSLSMTPClient, extractAuthenticationOptionsWithAuthPlainLoginEhlo_ReturnNullptr)
+{
+	ServerAuthOptions *options = __extractAuthenticationOptions("250-AUTH LOGIN PLAIN\r\n");
+	ASSERT_NE(nullptr, options);
+	ASSERT_TRUE(options->Plain);
+	ASSERT_TRUE(options->Login);
+	ASSERT_FALSE(options->XOAuth2);
+    ASSERT_FALSE(options->Plain_ClientToken);
+    ASSERT_FALSE(options->OAuthBearer);
+    ASSERT_FALSE(options->XOAuth);
+}
+
+
+TEST_F(FakeSSLSMTPClient, extractAuthenticationOptionsWithAuthMultipleEhlo_ReturnNullptr)
+{
+	ServerAuthOptions *options = __extractAuthenticationOptions("250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH\r\n");
+	ASSERT_NE(nullptr, options);
+	ASSERT_TRUE(options->Plain);
+	ASSERT_TRUE(options->Login);
+	ASSERT_TRUE(options->XOAuth2);
+    ASSERT_TRUE(options->Plain_ClientToken);
+    ASSERT_TRUE(options->OAuthBearer);
+    ASSERT_TRUE(options->XOAuth);
 }

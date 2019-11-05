@@ -81,6 +81,7 @@ namespace jed_utils
 		int sendTLSCommand(const char *pCommand, int pErrorCode);
 		int sendTLSCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode);
 		std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments) const;
+		static ServerAuthOptions *extractAuthenticationOptions(const char *pEhloOutput);
 	};
 } // namespace jed_utils
 

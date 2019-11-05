@@ -7,6 +7,10 @@ namespace jed_utils
     {
         bool Plain = false;
         bool Login = false;
+        bool XOAuth2 = false;
+        bool Plain_ClientToken = false;
+        bool OAuthBearer = false;
+        bool XOAuth = false;
     };
 } // namespace jed_utils
 
