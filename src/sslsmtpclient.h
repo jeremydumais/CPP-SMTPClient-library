@@ -67,6 +67,8 @@ namespace jed_utils
 		int getServerIdentification();
 		int getServerSecureIdentification();
 		int authenticateClient();
+		int authenticateWithMethodPlain();
+		int authenticateWithMethodLogin();
 		int upgradeToSecureConnection();
 		int startTLSNegotiation();
 		void initializeSSLContext();

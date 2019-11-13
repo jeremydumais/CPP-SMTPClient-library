@@ -9,17 +9,13 @@
 #include <stdexcept>
 #include <string>
 #ifdef _WIN32
-	#include <WinSock2.h>
+	#include <WinSock2.h>UGFzc3dvcmQ6
     #include <ws2tcpip.h>
 #else
     #include <fcntl.h>
     #include <netdb.h>
     #include <netinet/in.h>
-    #include <openssl/bio.h> /* BasicInput/Output streams */
-    #include <openssl/err.h>  
-    #include <sys/socket.h>	
-    #include <unistd.h>
-#endif
+    #include <openssl/bio.h> /* BasicInput/Output streams */UGFzc3dvcmQ6
 #include <vector>
 
 using namespace std;
@@ -503,6 +499,23 @@ ServerAuthOptions *SSLSmtpClient::extractAuthenticationOptions(const char *pEhlo
 
 int SSLSmtpClient::authenticateClient()
 {
+    if (mCredential != nullptr) {
+        if (mAuthOptions->Plain == true) {
+            return authenticateWithMethodPlain();
+        }
+        else if (mAuthOptions->Login == true) {
+            return authenticateWithMethodLogin();
+        }
+        else {
+            return SSL_CLIENT_AUTHENTICATION_METHOD_NOTSUPPORTED;
+        }
+    }
+    else {
+        return SSL_CLIENT_AUTHENTICATE_NONEED;
+    }
+}
+
+int SSLSmtpClient::authenticateWithMethodPlain() {
     addCommunicationLogItem("AUTH PLAIN ***************\r\n");
     stringstream ss_credentials;
     //Format : \0username\0password
@@ -510,10 +523,37 @@ int SSLSmtpClient::authenticateClient()
     string str_credentials = ss_credentials.str();
     stringstream ss;
     ss << "AUTH PLAIN " 
-       << Base64::Encode(reinterpret_cast<const unsigned char*>(str_credentials.c_str()),
-             strlen(mCredential->getUsername()) + strlen(mCredential->getPassword()) + 2) // + 2 for the two null characters 
-       << "\r\n";
+    << Base64::Encode(reinterpret_cast<const unsigned char*>(str_credentials.c_str()),
+            strlen(mCredential->getUsername()) + strlen(mCredential->getPassword()) + 2) // + 2 for the two null characters 
+    << "\r\n";
     return sendTLSCommandWithFeedback(ss.str().c_str(), SSL_CLIENT_AUTHENTICATE_ERROR, SSL_CLIENT_AUTHENTICATE_TIMEOUT);
+}
+
+int SSLSmtpClient::authenticateWithMethodLogin()
+{
+    addCommunicationLogItem("AUTH LOGIN ***************\r\n");
+    int login_return_code = sendTLSCommandWithFeedback("AUTH LOGIN\r\n",  
+        SSL_CLIENT_AUTHENTICATE_ERROR, 
+        SSL_CLIENT_AUTHENTICATE_TIMEOUT);
+    if (login_return_code != 334) {
+        return SSL_CLIENT_AUTHENTICATE_ERROR;
+    }
+    
+    string encoded_username { Base64::Encode(reinterpret_cast<const unsigned char*>(mCredential->getUsername()), 
+        strlen(mCredential->getUsername())) };
+    stringstream ss_username;
+    ss_username << encoded_username << "\r\n";
+    int username_return_code = sendTLSCommandWithFeedback(ss_username.str().c_str(), 
+        SSL_CLIENT_AUTHENTICATE_ERROR, 
+        SSL_CLIENT_AUTHENTICATE_TIMEOUT);
+    if (username_return_code != 334) {
+        return SSL_CLIENT_AUTHENTICATE_ERROR;
+    }
+    string encoded_password { Base64::Encode(reinterpret_cast<const unsigned char*>(mCredential->getPassword()), 
+        strlen(mCredential->getPassword())) };
+    stringstream ss_password;
+    ss_password << encoded_password << "\r\n";
+    return sendTLSCommandWithFeedback(ss_password.str().c_str(), SSL_CLIENT_AUTHENTICATE_ERROR, SSL_CLIENT_AUTHENTICATE_TIMEOUT);
 }
 
 int SSLSmtpClient::establishConnectionWithServer()
@@ -554,26 +594,44 @@ int SSLSmtpClient::establishConnectionWithServer()
 
 int SSLSmtpClient::setMailRecipients(const Message &pMsg) 
 {
+    const int INVALID_ADDRESS { 501 };
+    const int SENDER_OK { 250 };
+    const int RECIPIENT_OK { 250 };
+    vector<string> mailFormats;
     stringstream ss_mail_from;
-    ss_mail_from << "MAIL FROM: <"s << pMsg.getFrom().getDisplayName() << " "s << pMsg.getFrom().getEmailAddress() << ">\r\n"s;
-    addCommunicationLogItem(ss_mail_from.str().c_str());
-    int mail_from_ret_code = sendTLSCommandWithFeedback(ss_mail_from.str().c_str(), SSL_CLIENT_SENDMAIL_MAILFROM_ERROR, SSL_CLIENT_SENDMAIL_MAILFROM_TIMEOUT);
-    if (mail_from_ret_code != 250) {
+    //Method 1, 2 and 3
+    mailFormats.push_back("MAIL FROM: <"s + pMsg.getFrom().getDisplayName() + " " + pMsg.getFrom().getEmailAddress() + ">\r\n"s);
+    mailFormats.push_back("MAIL FROM: "s + pMsg.getFrom().getEmailAddress() + "\r\n"s);
+    mailFormats.push_back("MAIL FROM: <"s + pMsg.getFrom().getEmailAddress() + ">\r\n"s);
+
+    int mail_from_ret_code { 0 };
+    for(const auto &format : mailFormats) {
+        addCommunicationLogItem(format.c_str());
+        mail_from_ret_code = sendTLSCommandWithFeedback(format.c_str(), SSL_CLIENT_SENDMAIL_MAILFROM_ERROR, SSL_CLIENT_SENDMAIL_MAILFROM_TIMEOUT);
+        if (mail_from_ret_code == SENDER_OK) {
+            break;
+        }
+        else if (mail_from_ret_code != INVALID_ADDRESS) {
+            return mail_from_ret_code;
+        }
+    }
+    //if no compatible format were found
+    if (mail_from_ret_code != SENDER_OK) {
         return mail_from_ret_code;
     }
 
     //Send command for the recipients
-    int rcpt_to_ret_code = 250;
+    int rcpt_to_ret_code = RECIPIENT_OK;
     for_each(pMsg.getTo(), pMsg.getTo() + pMsg.getToCount(), [this, &rcpt_to_ret_code](MessageAddress *address) {
         stringstream ss_rcpt_to;
         ss_rcpt_to << "RCPT TO: <"s << address->getEmailAddress() << ">\r\n"s;
         addCommunicationLogItem(ss_rcpt_to.str().c_str());
         int ret_code = sendTLSCommandWithFeedback(ss_rcpt_to.str().c_str(), SSL_CLIENT_SENDMAIL_RCPTTO_ERROR, SSL_CLIENT_SENDMAIL_RCPTTO_TIMEOUT);
-        if (ret_code != 250) {
+        if (ret_code != RECIPIENT_OK) {
             rcpt_to_ret_code = ret_code;
         }
     });
-    if (rcpt_to_ret_code != 250) {
+    if (rcpt_to_ret_code != RECIPIENT_OK) {
         return rcpt_to_ret_code;
     }
     return 0;
@@ -672,9 +730,16 @@ int SSLSmtpClient::setMailBody(const Message &pMsg)
     }
 
     //End of data
-    string end_command { "\r\n.\r\nQUIT\r\n" };
-    addCommunicationLogItem(end_command.c_str());    
-    int quit_ret_code = sendTLSCommand(end_command.c_str(), SSL_CLIENT_SENDMAIL_QUIT_ERROR);
+    string end_data_command { "\r\n.\r\n" };
+    addCommunicationLogItem(end_data_command.c_str());    
+    int end_data_ret_code = sendTLSCommandWithFeedback(end_data_command.c_str(), SSL_CLIENT_SENDMAIL_END_DATA_ERROR, SSL_CLIENT_SENDMAIL_END_DATA_TIMEOUT);
+    if (end_data_ret_code != 250) {
+        return end_data_ret_code;
+    }
+
+    string quit_command { "QUIT\r\n" };
+    addCommunicationLogItem(quit_command.c_str());    
+    int quit_ret_code = sendTLSCommand(quit_command.c_str(), SSL_CLIENT_SENDMAIL_QUIT_ERROR);
     if (quit_ret_code != 0) {
         return quit_ret_code;
     }
