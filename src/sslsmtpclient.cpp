@@ -9,13 +9,19 @@
 #include <stdexcept>
 #include <string>
 #ifdef _WIN32
-	#include <WinSock2.h>UGFzc3dvcmQ6
+	#include <WinSock2.h>
     #include <ws2tcpip.h>
+    #include <openssl/err.h>
+    #include <BaseTsd.h>
+    typedef SSIZE_T ssize_t;
+    #include <windows.h>
+    constexpr auto sleep = Sleep;
 #else
     #include <fcntl.h>
     #include <netdb.h>
     #include <netinet/in.h>
-    #include <openssl/bio.h> /* BasicInput/Output streams */UGFzc3dvcmQ6
+    #include <openssl/bio.h> /* BasicInput/Output streams */
+#endif
 #include <vector>
 
 using namespace std;
@@ -210,7 +216,12 @@ void SSLSmtpClient::cleanup()
     }
     mBIO = nullptr;
     if (mSock != 0) {
-        close(mSock);
+        #ifdef _WIN32
+            shutdown(mSock, SD_BOTH);
+            closesocket(mSock);
+        #else
+            close(mSock);
+        #endif 
     }
     mSock = 0;
     mSSL = nullptr;
@@ -622,7 +633,7 @@ int SSLSmtpClient::setMailRecipients(const Message &pMsg)
 
     //Send command for the recipients
     int rcpt_to_ret_code = RECIPIENT_OK;
-    for_each(pMsg.getTo(), pMsg.getTo() + pMsg.getToCount(), [this, &rcpt_to_ret_code](MessageAddress *address) {
+    for_each(pMsg.getTo(), pMsg.getTo() + pMsg.getToCount(), [this, &rcpt_to_ret_code, &RECIPIENT_OK](MessageAddress *address) {
         stringstream ss_rcpt_to;
         ss_rcpt_to << "RCPT TO: <"s << address->getEmailAddress() << ">\r\n"s;
         addCommunicationLogItem(ss_rcpt_to.str().c_str());
@@ -890,4 +901,3 @@ string SSLSmtpClient::createAttachmentsText(const vector<Attachment*> &pAttachme
     retval += "\r\n--sep--";
     return retval;
 }
-

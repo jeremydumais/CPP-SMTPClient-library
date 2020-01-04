@@ -88,6 +88,9 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	#For MSVC create the library as a shared library
+	find_package(OpenSSL REQUIRED)
+	include_directories($ENV{OPENSSL_INCLUDE_DIR})
+	link_directories($ENV{OPENSSL_CRYPTO_LIBRARY})
 	add_library(${PROJECT_NAME} SHARED
 		${PROJECT_SOURCE_FILES})
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -95,7 +98,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		PRIVATE SMTPCLIENT_EXPORTS
 		INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
 		INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
-	target_link_libraries(${PROJECT_NAME} Ws2_32 ssl crypto)
+	target_link_libraries(${PROJECT_NAME} Ws2_32 libsslMD libcryptoMD)
 else()
 	#For other compiler create the library as a static library
 	add_library(${PROJECT_NAME}
@@ -173,4 +176,4 @@ install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 install(DIRECTORY src/ DESTINATION include/smtpclient
             FILES_MATCHING PATTERN "*.h")
 
-add_subdirectory("simpleclient")
+#add_subdirectory("simpleclient")
