@@ -12,6 +12,8 @@ project(SMTPClient C CXX)
 set(PROJECT_NAME    "smtpclient")
 set(PROJECT_UNITTEST_NAME   "smtpclient_unittests")
 
+find_package(OpenSSL REQUIRED)
+
 find_program(
     CLANG_TIDY_EXE
     NAMES "clang-tidy"
@@ -88,7 +90,6 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	#For MSVC create the library as a shared library
-	find_package(OpenSSL REQUIRED)
 	include_directories($ENV{OPENSSL_INCLUDE_DIR})
 	link_directories($ENV{OPENSSL_CRYPTO_LIBRARY})
 	add_library(${PROJECT_NAME} SHARED
@@ -122,6 +123,7 @@ else()
 			"-Wall" # enables all the warnings about constructions
 			"-Wextra" # Print extra warning messages"
 			"-Werror" # Make all warnings into errors.
+			"-Wno-unused-lambda-capture"
 			"-pedantic" # Issue all the warnings demanded by strict ISO C and ISO C++
 			"-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
 			)

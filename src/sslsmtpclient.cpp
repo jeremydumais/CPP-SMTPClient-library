@@ -5,13 +5,14 @@
 #include "stringutils.h"
 #include <algorithm>
 #include <iostream>
+#include <openssl/err.h>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+
 #ifdef _WIN32
 	#include <WinSock2.h>
     #include <ws2tcpip.h>
-    #include <openssl/err.h>
     #include <BaseTsd.h>
     typedef SSIZE_T ssize_t;
     #include <windows.h>
@@ -19,8 +20,11 @@
 #else
     #include <fcntl.h>
     #include <netdb.h>
+    #include <unistd.h>
     #include <netinet/in.h>
     #include <openssl/bio.h> /* BasicInput/Output streams */
+    #include <sys/socket.h>
+    #include <sys/types.h>  
 #endif
 #include <vector>
 
