@@ -123,7 +123,7 @@ else()
 			"-Wall" # enables all the warnings about constructions
 			"-Wextra" # Print extra warning messages"
 			"-Werror" # Make all warnings into errors.
-			"-Wno-unused-lambda-capture"
+			"-Wno-unused-lambda-capture" # FIX: It is necessary when building on MSVC
 			"-pedantic" # Issue all the warnings demanded by strict ISO C and ISO C++
 			"-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
 			)
@@ -178,4 +178,4 @@ install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 install(DIRECTORY src/ DESTINATION include/smtpclient
             FILES_MATCHING PATTERN "*.h")
 
-add_subdirectory("simpleclient")
+#add_subdirectory("simpleclient")

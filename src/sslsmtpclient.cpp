@@ -448,15 +448,9 @@ int SSLSmtpClient::startTLSNegotiation()
                 X509_free(x509);
             }
         }
-        //SSL_CTX_set_default_verify_paths(mCTX);
     #else
-        /* Specifies the locations for ctx, at which CA certificates 
-       for verification purposes are located */
-        if (!SSL_CTX_load_verify_locations(mCTX,
-                "/etc/ssl/certs/ca-certificates.crt", 
-                "/etc/ssl/certs/")) {
-            mLastSocketErrNo = ERR_get_error();
-            return SSL_CLIENT_STARTTLS_CTX_LOAD_VERIFY_LOCATIONS_ERROR;
+        if (SSL_CTX_set_default_verify_paths(mCTX) == 0) {
+           return SSL_CLIENT_STARTTLS_CTX_SET_DEFAULT_VERIFY_PATHS_ERROR; 
         }
     #endif
     long verify_flag = SSL_get_verify_result(mSSL);
