@@ -97,6 +97,11 @@ TEST(MessageAddress_constructor, ValidParam)
 	MessageAddress msg_add("test@domain.com", "Test Address");
 }
 
+TEST(MessageAddress_constructor, ValidParamWithUpperCaseCharEmailAddress)
+{
+	MessageAddress msg_add("MCMUSBCampaign@gmail.com", "Test Address");
+}
+
 TEST(MessageAddress_get_email_address, validDomain)
 {
 	MessageAddress msg_add("test@domain.com", "Test Address");
@@ -108,3 +113,4 @@ TEST(MessageAddress_get_display_name, validDN)
 	MessageAddress msg_add("test@domain.com", "Test Address");
 	ASSERT_STREQ("Test Address", msg_add.getDisplayName());
 }
+

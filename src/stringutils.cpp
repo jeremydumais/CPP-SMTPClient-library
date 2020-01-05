@@ -34,3 +34,17 @@ string StringUtils::trim(const string &pString)
     return s;
 }
 
+string StringUtils::toLower(const string &pString)
+{
+    string transformed_string { pString };
+    std::transform(pString.begin(), pString.end(), transformed_string.begin(),
+        [](unsigned char c){ return std::tolower(c); });
+    return transformed_string;
+}
+string StringUtils::toUpper(const string &pString)
+{
+    string transformed_string { pString };
+    std::transform(pString.begin(), pString.end(), transformed_string.begin(),
+        [](unsigned char c){ return std::toupper(c); });
+    return transformed_string;
+}

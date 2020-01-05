@@ -21,6 +21,8 @@ namespace jed_utils
         static std::string trimLeft(const std::string &pString);
         static std::string trimRight(const std::string &pString);
         static std::string trim(const std::string &pString);
+        static std::string toLower(const std::string &pString);
+        static std::string toUpper(const std::string &pString);
     };
 } // namespace jed_utils
 

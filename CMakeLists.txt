@@ -99,7 +99,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		PRIVATE SMTPCLIENT_EXPORTS
 		INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
 		INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
-	target_link_libraries(${PROJECT_NAME} Ws2_32 libsslMD libcryptoMD)
+	target_link_libraries(${PROJECT_NAME} Ws2_32 libsslMD libcryptoMD crypt32 cryptui)
 else()
 	#For other compiler create the library as a static library
 	add_library(${PROJECT_NAME}
@@ -178,4 +178,4 @@ install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 install(DIRECTORY src/ DESTINATION include/smtpclient
             FILES_MATCHING PATTERN "*.h")
 
-#add_subdirectory("simpleclient")
+add_subdirectory("simpleclient")

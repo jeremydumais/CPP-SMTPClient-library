@@ -229,6 +229,9 @@ void SSLSmtpClient::cleanup()
     }
     mSock = 0;
     mSSL = nullptr;
+    #ifdef _WIN32
+        WSACleanup();
+    #endif
 }
 
 unsigned int SSLSmtpClient::getCommandTimeout() const
@@ -238,7 +241,7 @@ unsigned int SSLSmtpClient::getCommandTimeout() const
 
 const char *SSLSmtpClient::getCommunicationLog() const
 {
-    return mCommunicationLog;
+    return mCommunicationLog == nullptr ? "" : mCommunicationLog;
 }
 
 const Credential *SSLSmtpClient::getCredentials() const
@@ -292,27 +295,65 @@ int SSLSmtpClient::initializeSession()
     mCommunicationLog = new char[4096];
     mCommunicationLog[0] = '\0';
 
-    mSock = socket(AF_INET, SOCK_STREAM, 0);
-    if (mSock < 0) {
-        mLastSocketErrNo = errno;
-        return SOCKET_INIT_SESSION_CREATION_ERROR;
-    }
+    #ifdef _WIN32
+    //Windows Sockets version
+        WSADATA wsaData;
+        WORD wVersionRequested = MAKEWORD(2, 2);
+        int wsa_retVal = WSAStartup(wVersionRequested, &wsaData);
+        if (wsa_retVal != 0) {
+            mLastSocketErrNo = wsa_retVal;
+            return SOCKET_INIT_SESSION_WINSOCKET_STARTUP_ERROR;
+        }
+        struct addrinfo *result = nullptr;
+        struct addrinfo hints; 
+        memset(&hints, 0, sizeof hints);
+        hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
+        hints.ai_socktype = SOCK_STREAM;
+
+        wsa_retVal = getaddrinfo(mServerName, to_string(mPort).c_str(), &hints, &result);
+        if (wsa_retVal != 0) 
+        {
+            WSACleanup();
+            mLastSocketErrNo = wsa_retVal;
+            return SOCKET_INIT_SESSION_WINSOCKET_GETADDRINFO_ERROR;
+        }
+
+        mSock = static_cast<unsigned int>(socket(result->ai_family, result->ai_socktype, result->ai_protocol));
+        if (mSock == INVALID_SOCKET) {
+            WSACleanup();
+            mLastSocketErrNo = WSAGetLastError();
+            return SOCKET_INIT_SESSION_CREATION_ERROR;
+        }
+        wsa_retVal = connect(mSock, result->ai_addr, static_cast<int>(result->ai_addrlen));
+        if (wsa_retVal == SOCKET_ERROR) 
+        {
+            WSACleanup();
+            mLastSocketErrNo = WSAGetLastError();
+            return SOCKET_INIT_SESSION_CONNECT_ERROR;
+        }
+    #else
+    //POSIX socket version
+        mSock = socket(AF_INET, SOCK_STREAM, 0);
+        if (mSock < 0) {
+            mLastSocketErrNo = errno;
+            return SOCKET_INIT_SESSION_CREATION_ERROR;
+        }
+        struct hostent *host = gethostbyname(mServerName);
+        struct sockaddr_in saddr_in {};
+        saddr_in.sin_family = AF_INET;
+        saddr_in.sin_port = htons(static_cast<u_short>(mPort));
+        saddr_in.sin_addr.s_addr = 0;
+        memcpy(reinterpret_cast<char*>(&(saddr_in.sin_addr)), host->h_addr, host->h_length);
+        stringstream ss;
+        ss << "Trying to connect to " << mServerName << " on port " << mPort;
+        addCommunicationLogItem(ss.str().c_str());
+        if (connect(mSock, reinterpret_cast<struct sockaddr*>(&saddr_in), sizeof(saddr_in)) == -1) {
+            mLastSocketErrNo = errno;
+            return SOCKET_INIT_SESSION_CONNECT_ERROR;
+        } 
+    #endif
 
     char outbuf[1024];
-    struct hostent *host = gethostbyname(mServerName);
-    struct sockaddr_in saddr_in {};
-    saddr_in.sin_family = AF_INET;
-    saddr_in.sin_port = htons(static_cast<u_short>(mPort));
-    saddr_in.sin_addr.s_addr = 0;
-    memcpy(reinterpret_cast<char*>(&(saddr_in.sin_addr)), host->h_addr, host->h_length);
-    stringstream ss;
-    ss << "Trying to connect to " << mServerName << " on port " << mPort;
-    addCommunicationLogItem(ss.str().c_str());
-    if (connect(mSock, reinterpret_cast<struct sockaddr*>(&saddr_in), sizeof(saddr_in)) == -1) {
-        mLastSocketErrNo = errno;
-        return SOCKET_INIT_SESSION_CONNECT_ERROR;
-    } 
-
     unsigned int waitTime = 0;
     ssize_t bytes_received = 0;
     while ((bytes_received = recv(mSock, outbuf, 1024, 0)) < 0 && waitTime < mCommandTimeOut)
@@ -385,15 +426,39 @@ int SSLSmtpClient::startTLSNegotiation()
     SSL_set_mode(mSSL, SSL_MODE_AUTO_RETRY); /* robustness */
     BIO_set_conn_hostname(mBIO, name); /* prepare to connect */
 
-    /* Specifies the locations for ctx, at which CA certificates 
-       for verification purposes are located */
-    if (!SSL_CTX_load_verify_locations(mCTX,
-            "/etc/ssl/certs/ca-certificates.crt", 
-            "/etc/ssl/certs/")) {
-        mLastSocketErrNo = ERR_get_error();
-        return SSL_CLIENT_STARTTLS_CTX_LOAD_VERIFY_LOCATIONS_ERROR;
-    }
+    #ifdef _WIN32
+        /* On Windows, we need to import all the ROOT certificates to
+        the OpenSSL Store */
+        PCCERT_CONTEXT pContext = nullptr;
+        X509_STORE *store = SSL_CTX_get_cert_store(mCTX);
+        HCERTSTORE hStore = CertOpenSystemStore(NULL, "ROOT");
 
+        if (!hStore) {
+            mLastSocketErrNo = GetLastError();
+            return SSL_CLIENT_STARTTLS_WIN_CERTOPENSYSTEMSTORE_ERROR;
+        }
+
+        while (pContext = CertEnumCertificatesInStore(hStore, pContext))
+        {
+            X509 *x509 = nullptr;
+            x509 = d2i_X509(nullptr, (const unsigned char **)&pContext->pbCertEncoded, pContext->cbCertEncoded);
+            if (x509)
+            {
+                X509_STORE_add_cert(store, x509);
+                X509_free(x509);
+            }
+        }
+        //SSL_CTX_set_default_verify_paths(mCTX);
+    #else
+        /* Specifies the locations for ctx, at which CA certificates 
+       for verification purposes are located */
+        if (!SSL_CTX_load_verify_locations(mCTX,
+                "/etc/ssl/certs/ca-certificates.crt", 
+                "/etc/ssl/certs/")) {
+            mLastSocketErrNo = ERR_get_error();
+            return SSL_CLIENT_STARTTLS_CTX_LOAD_VERIFY_LOCATIONS_ERROR;
+        }
+    #endif
     long verify_flag = SSL_get_verify_result(mSSL);
     if (verify_flag != X509_V_OK) {
         fprintf(stderr,
@@ -438,6 +503,10 @@ int SSLSmtpClient::startTLSNegotiation()
 
     addCommunicationLogItem("TLS session ready!");    
 
+    #ifdef _WIN32
+        CertFreeCertificateContext(pContext);
+        CertCloseStore(hStore, 0);
+    #endif
     return 0;
 }
 
