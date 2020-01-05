@@ -93,3 +93,43 @@ TEST(TrimBoth, TrimTwoWordsTwoSpacesLeftAndRight)
     string s = "  Test 123  ";
     ASSERT_EQ("Test 123", StringUtils::trim(s));
 }
+
+TEST(ToLower, EmptyString)
+{
+    ASSERT_EQ("", StringUtils::toLower(""));
+}
+
+TEST(ToLower, OnlySpaces)
+{
+    ASSERT_EQ("  ", StringUtils::toLower("  "));
+}
+
+TEST(ToLower, AllCaps)
+{
+    ASSERT_EQ("test", StringUtils::toLower("TEST"));
+}
+
+TEST(ToLower, AllLowerCase)
+{
+    ASSERT_EQ("test", StringUtils::toLower("test"));
+}
+
+TEST(ToUpper, EmptyString)
+{
+    ASSERT_EQ("", StringUtils::toUpper(""));
+}
+
+TEST(ToUpper, OnlySpaces)
+{
+    ASSERT_EQ("  ", StringUtils::toUpper("  "));
+}
+
+TEST(ToUpper, AllCaps)
+{
+    ASSERT_EQ("TEST", StringUtils::toUpper("TEST"));
+}
+
+TEST(ToUpper, AllLowerCase)
+{
+    ASSERT_EQ("TEST", StringUtils::toUpper("test"));
+}

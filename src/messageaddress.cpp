@@ -129,6 +129,6 @@ const char *MessageAddress::getDisplayName() const
 bool MessageAddress::isEmailAddressValid(const string &pEmailAddress) const
 {
     regex emailPattern("^[_a-z0-9-]+(.[_a-z0-9-]+)*@[a-z0-9-]+(.[a-z0-9-]+)*(.[a-z]{2,4})$");
-    return regex_match(pEmailAddress, emailPattern);
+    return regex_match(StringUtils::toLower(pEmailAddress), emailPattern);
 }
 

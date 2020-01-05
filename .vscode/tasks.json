@@ -4,64 +4,26 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "g++",
-            "args": [
-                "-v",
-                "-std=c++11",
-                "-I",
-                "Include",
-                "-DSMTPCLIENT_EXPORTS",
-                "Source/Attachment.cpp",
-                "Source/AttachmentError.cpp",
-                "Source/Base64.cpp",
-                "Source/CommunicationError.cpp",
-                "-o",
-                "Release\\SMTPClient.o"
-            ],
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
-        },
-        {
-            "label": "build tests",
-            "type": "shell",
-            "command": "g++",
-            "args": [
-                "-g",
-                "-std=c++1y",
-                "-I",
-                "d:/Programmation/GoogleTest/googletest/include",
-                "-L",
-                "d:/Programmation/GoogleTest/googletest/lib",
-                "test/smtpclient_unittest/main.cpp",
-                "test/smtpclient_unittest/smtpclient_unittest.cpp",
-                "test/smtpclient_unittest/smtpclient_unittest.cpp",
-                "source/prime.cpp",
-                "source/divisor.cpp",
-                "-lgtest_main",
-                "-lpthread",
-                "-o",
-                "tests.exe"
-            ],
-            "group": {
-                "kind": "test",
-                "isDefault": true
-            }
-        },
-        {
-            "type": "shell",
-            "label": "clang++-6.0 build active file",
-            "command": "/usr/bin/clang++-6.0",
-            "args": [
-                "-g",
-                "${file}",
-                "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
-            ],
+            },
             "options": {
-                "cwd": "/usr/bin"
-            }
+                "cwd": "${workspaceFolder}/build"
+            },
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug",
+                "--target",
+                "all", 
+                "--", 
+                "-j", 
+                "10"
+            ],
+            "problemMatcher": []
         }
     ]
 }

@@ -1,17 +1,19 @@
 # Jed# C++ SMTP Client Library
 
-## A simple SMTP client library built in C++.
+## A simple SMTP client library built in C++ that support authentication and TLS  1.2 encryption
 
 ### How to build the SMTP client or integrate it in your application
 
-Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-build-the-SMTP-client-or-integrate-it-in-your-application) for a quick guide on how to build the SMTP client or integrate it in your application.
+Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-build-the-SMTP-client-or-integrate-it-in-your-application) for a quick guide on how to build the SMTP client and integrate it in your application.
+#
+## How it works
 
 ### Some examples
 
 #### Send a plaintext email
 
 ```c++
-#include "SMTPClient.h"
+#include "smtpclient.h"
 #include <iostream>
 
 using namespace jed_utils;
@@ -46,7 +48,7 @@ int main()
 #### Send an html email to 2 recipients with an attachment
 
 ```c++
-#include "SMTPClient.h"
+#include "smtpclient.h"
 #include <iostream>
 
 using namespace jed_utils;
@@ -86,7 +88,68 @@ int main()
     return 0;
 }
 ```
+
+#### Send a plaintext email via a secure server
+
+```c++
+#include "sslsmtpclient.h"
+#include <iostream>
+
+using namespace jed_utils;
+using namespace std;
+
+int main()
+{
+	SSLSmtpClient client("<your smtp server address>", 587);
+	client.setCredentials(Credential("myfromaddress@test.com", "mypassword"));
+	try
+	{
+		PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
+			MessageAddress("youraddress@domain.com", "Another Adresse display"),
+			"This is a test (Subject)",
+			"Hello\nHow are you?");
+
+		int err_no = client.sendMail(msg);
+		if (err_no != 0) {
+			cerr << "An error occurred. Return code : " << err_no;
+			return 1;
+		}
+		cout << client.getCommunicationLog() << endl;
+		cout << "Operation completed!" << endl;
+	}
+	catch (invalid_argument &err)
+	{
+		cerr << err.what() << endl;
+	}
+    return 0;
+}
+```
+
+#
+## Documentation
 ### Classes
+
+#### SSLSmtpClient class
+##### *OpenSSL is required
+
+##### Available methods
+```c++
+SSLSmtpClient(const char *pServerName, unsigned int pPort);
+unsigned int getCommandTimeout() const;
+const char *getCommunicationLog() const;
+const Credential *getCredentials() const;
+const char *getServerName() const;
+unsigned int getServerPort() const;
+int sendMail(const Message &pMsg);
+void setCommandTimeout(unsigned int pTimeOutInSeconds);
+void setCredentials(const Credential &pCredential);
+void setServerName(const char *pServerName);
+void setServerPort(unsigned int pPort);
+```
+
+##### sendMail method Return Codes
+
+See the files [socketerrors.h](https://github.com/jeremydumais/CPP-SMTPClient-library/blob/master/socketerrors.h) and [sslerrors.h](https://github.com/jeremydumais/CPP-SMTPClient-library/blob/master/sslerrors.h)
 
 #### SmtpClient class
 
@@ -204,3 +267,13 @@ Attachment **getAttachments() const;
 size_t getAttachmentsCount() const;
 ```	
 
+#### Credential class
+
+##### Available methods
+```c++
+Credential(const char *pUsername, const char *pPassword);
+const char *getUsername() const;
+const char *getPassword() const;
+void setUsername(const char *pUsername);
+void setPassword(const char *pPassword);
+```
