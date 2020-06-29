@@ -397,7 +397,7 @@ void SSLSmtpClient::initializeSSLContext()
 
     OpenSSL_add_all_algorithms();
     SSL_load_error_strings();
-    const SSL_METHOD *method = TLSv1_2_client_method();
+    const SSL_METHOD *method = TLS_client_method();
     mCTX = SSL_CTX_new(method);
 
     if (mCTX == nullptr) {
@@ -947,9 +947,11 @@ void SSLSmtpClient::addCommunicationLogItem(const char *pItem, const char *pPref
             start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
         }
     }
-    strncat(mCommunicationLog, "\n", 1);
+    string endOfLine { "\n" };
+    string separator { ": " };
+    strncat(mCommunicationLog, endOfLine.c_str(), strlen(endOfLine.c_str()));
     strncat(mCommunicationLog, pPrefix, strlen(pPrefix));
-    strncat(mCommunicationLog, ": ", 2);
+    strncat(mCommunicationLog, separator.c_str(), strlen(separator.c_str()));
     strncat(mCommunicationLog, item.c_str(), item.length());
 }
 
