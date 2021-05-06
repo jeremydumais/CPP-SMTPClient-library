@@ -9,6 +9,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
+#include <vector>
 
 #ifdef _WIN32
 	#include <WinSock2.h>
@@ -699,8 +701,26 @@ int SSLSmtpClient::setMailRecipients(const Message &pMsg)
     }
 
     //Send command for the recipients
+    vector<pair<MessageAddress **, size_t>> recipients {
+        pair<MessageAddress **, size_t>(pMsg.getTo(), pMsg.getToCount()),
+        pair<MessageAddress **, size_t>(pMsg.getCc(), pMsg.getCcCount()),
+        pair<MessageAddress **, size_t>(pMsg.getBcc(), pMsg.getBccCount())
+    };
+    for(const auto &item : recipients) {
+        if (item.first != nullptr) {
+            int rcpt_to_ret_code = addMailRecipients(item.first, item.second, RECIPIENT_OK);
+            if (rcpt_to_ret_code != RECIPIENT_OK) {
+                return rcpt_to_ret_code;
+            }
+        }
+    }
+    return 0;
+}
+
+int SSLSmtpClient::addMailRecipients(jed_utils::MessageAddress **list, size_t count, const int RECIPIENT_OK) 
+{
     int rcpt_to_ret_code = RECIPIENT_OK;
-    for_each(pMsg.getTo(), pMsg.getTo() + pMsg.getToCount(), [this, &rcpt_to_ret_code, &RECIPIENT_OK](MessageAddress *address) {
+    for_each(list, list + count, [this, &rcpt_to_ret_code, &RECIPIENT_OK](MessageAddress *address) {
         stringstream ss_rcpt_to;
         ss_rcpt_to << "RCPT TO: <"s << address->getEmailAddress() << ">\r\n"s;
         addCommunicationLogItem(ss_rcpt_to.str().c_str());
@@ -709,10 +729,7 @@ int SSLSmtpClient::setMailRecipients(const Message &pMsg)
             rcpt_to_ret_code = ret_code;
         }
     });
-    if (rcpt_to_ret_code != RECIPIENT_OK) {
-        return rcpt_to_ret_code;
-    }
-    return 0;
+    return rcpt_to_ret_code;
 }
 
 int SSLSmtpClient::setMailHeaders(const Message &pMsg)
@@ -727,27 +744,26 @@ int SSLSmtpClient::setMailHeaders(const Message &pMsg)
 
     // Mail headers
     // From
-    stringstream ss_header_from;
-    ss_header_from << "From: " << pMsg.getFrom().getEmailAddress() << "\r\n";
-    addCommunicationLogItem(ss_header_from.str().c_str());
-    int header_from_ret_code = sendTLSCommand(ss_header_from.str().c_str(), SSL_CLIENT_SENDMAIL_HEADERFROM_ERROR);
+    int header_from_ret_code = addMailHeader("From", pMsg.getFrom().getEmailAddress(), SSL_CLIENT_SENDMAIL_HEADERFROM_ERROR);
     if (header_from_ret_code != 0) {
         return header_from_ret_code;
     }
 
-    // To
-    int header_to_ret_code { 0 };
-    for_each(pMsg.getTo(), pMsg.getTo() + pMsg.getToCount(), [this, &header_to_ret_code](MessageAddress *address) {
-        stringstream ss_header_to;
-        ss_header_to << "To: " << address->getEmailAddress() << "\r\n";
-        addCommunicationLogItem(ss_header_to.str().c_str());
-        int ret_code = sendTLSCommand(ss_header_to.str().c_str(), SSL_CLIENT_SENDMAIL_HEADERTO_ERROR);
-        if (ret_code != 0) {
-            header_to_ret_code = ret_code;
+    // To and Cc. 
+    //Note : Bcc are not included in the header
+    vector<tuple<MessageAddress **, size_t, const char *>> recipients {
+        tuple<MessageAddress **, size_t, const char *>(pMsg.getTo(), pMsg.getToCount(), "To"),
+        tuple<MessageAddress **, size_t, const char *>(pMsg.getCc(), pMsg.getCcCount(), "Cc")
+    };
+    for(const auto &item : recipients) {
+        MessageAddress **list = get<0>(item);
+        size_t count = get<1>(item);
+        const char *field = get<2>(item);
+        if (list != nullptr) {
+            for_each(list, list + count, [this, &field](MessageAddress *address) {
+                return addMailHeader(field, address->getEmailAddress(), SSL_CLIENT_SENDMAIL_HEADERTOANDCC_ERROR);
+            });
         }
-    });
-    if (header_to_ret_code != 0) {
-        return header_to_ret_code;
     }
 
     // Subject
@@ -768,6 +784,14 @@ int SSLSmtpClient::setMailHeaders(const Message &pMsg)
     }
 
     return 0;
+}
+
+int SSLSmtpClient::addMailHeader(const char *field, const char *value, int pErrorCode)
+{
+    stringstream ss_header_item;
+    ss_header_item << field << ": " << value << "\r\n";
+    addCommunicationLogItem(ss_header_item.str().c_str());
+    return sendTLSCommand(ss_header_item.str().c_str(), pErrorCode);
 }
 
 int SSLSmtpClient::setMailBody(const Message &pMsg)

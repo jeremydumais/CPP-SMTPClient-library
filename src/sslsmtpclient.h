@@ -75,7 +75,9 @@ namespace jed_utils
 		//Methods to send an email
 		int establishConnectionWithServer();
 		int setMailRecipients(const Message &pMsg);
+		int addMailRecipients(jed_utils::MessageAddress **list, size_t count, const int RECIPIENT_OK);
 		int setMailHeaders(const Message &pMsg);
+		int addMailHeader(const char *field, const char *value, int pErrorCode);
 		int setMailBody(const Message &pMsg);
 		//Methods to send commands to the server
 		void setLastServerResponse(const char *pResponse);
