@@ -84,6 +84,7 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/message.cpp
     ${SRC_PATH}/messageaddress.cpp
     ${SRC_PATH}/plaintextmessage.cpp
+    ${SRC_PATH}/smtpclientbase.cpp
     ${SRC_PATH}/smtpclient.cpp
 	${SRC_PATH}/sslsmtpclient.cpp
 	${SRC_PATH}/stringutils.cpp)
@@ -178,4 +179,4 @@ install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 install(DIRECTORY src/ DESTINATION include/smtpclient
             FILES_MATCHING PATTERN "*.h")
 
-#add_subdirectory("simpleclient")
+add_subdirectory("simpleclient")
