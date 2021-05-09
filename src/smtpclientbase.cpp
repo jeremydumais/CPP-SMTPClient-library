@@ -356,13 +356,23 @@ int SmtpClientBase::sendServerIdentification()
         SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT);
 }
 
-int SmtpClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode)
+int SmtpClientBase::sendRawCommand(const char *pCommand, int pErrorCode) 
 {
-    unsigned int waitTime {0};
-    ssize_t bytes_received {0};
-    char outbuf[1024];
+    
     if (send(mSock, pCommand, strlen(pCommand), 0) == -1) {
         mLastSocketErrNo = errno;
+        cleanup();
+        return pErrorCode;
+    }
+    return 0;
+}   
+
+int SmtpClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode)
+{
+    char outbuf[1024];
+    unsigned int waitTime {0};
+    ssize_t bytes_received {0};
+    if (sendRawCommand(pCommand, pErrorCode) != 0) {
         return pErrorCode;
     }
 
@@ -377,6 +387,7 @@ int SmtpClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTi
         return extractReturnCode(outbuf);
     }
     
+    cleanup();
     return pTimeoutCode;
 }
 
@@ -387,8 +398,7 @@ void SmtpClientBase::setLastServerResponse(const char *pResponse)
 	mLastServerResponse = new char[response_len + 1];
 	strncpy(mLastServerResponse, pResponse, response_len);
     mLastServerResponse[response_len] = '\0';
-}        
-
+}
 
 int SmtpClientBase::authenticateClient()
 {

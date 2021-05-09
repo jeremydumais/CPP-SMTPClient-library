@@ -47,8 +47,7 @@ SSLSmtpClient::SSLSmtpClient(const SSLSmtpClient& other)
 //Assignment operator
 SSLSmtpClient& SSLSmtpClient::operator=(const SSLSmtpClient& other)
 {
-	if (this != &other)
-	{
+	if (this != &other) {
         SmtpClientBase::operator=(other);
         mBIO = nullptr;
         mCTX = nullptr;
@@ -74,8 +73,7 @@ SSLSmtpClient::SSLSmtpClient(SSLSmtpClient&& other) noexcept
 //Move assignement operator
 SSLSmtpClient& SSLSmtpClient::operator=(SSLSmtpClient&& other) noexcept
 {
-	if (this != &other)
-	{
+	if (this != &other) {
         SmtpClientBase::operator=(move(other));
 		// Copy the data pointer and its length from the source object.
         mBIO = other.mBIO;

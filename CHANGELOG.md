@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.1.1]
+
+### Added
+- Add support for the cc and bcc field in the sendMail method
+
 ## [1.1.0]
 
 ### Added
