@@ -43,15 +43,25 @@ Message::Message(const MessageAddress &pFrom,
     mAttachments(nullptr),
     mAttachmentCount(pAttachmentsSize)
 {
-    size_t subject_len = strlen(pSubject);
-	mSubject = new char[subject_len + 1];
-	strncpy(mSubject, pSubject, subject_len);
-    mSubject[subject_len] = '\0';
+	if (pSubject == nullptr) {
+		mSubject = new char('\0');
+	}
+	else {
+		size_t subject_len = strlen(pSubject);
+		mSubject = new char[subject_len + 1];
+		strncpy(mSubject, pSubject, subject_len);
+		mSubject[subject_len] = '\0';
+	}
 
-    size_t body_len = strlen(pBody);
-	mBody = new char[body_len + 1];
-	strncpy(mBody, pBody, body_len);
-    mBody[body_len] = '\0';
+	if (pBody == nullptr) {
+		mBody = new char('\0');
+	}
+	else {
+		size_t body_len = strlen(pBody);
+		mBody = new char[body_len + 1];
+		strncpy(mBody, pBody, body_len);
+		mBody[body_len] = '\0';
+	}
 
     if (pTo != nullptr) {
         mTo = new MessageAddress*[mToCount];

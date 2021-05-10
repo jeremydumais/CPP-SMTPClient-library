@@ -1,23 +1,23 @@
-#include "../../src/sslsmtpclient.h"
+#include "../../src/smtpclient.h"
 #include <gtest/gtest.h>
 
 using namespace jed_utils;
 using namespace std;
 
-class FakeSSLSMTPClient : public ::testing::Test, public SSLSmtpClient
+class FakeSMTPClient : public ::testing::Test, public SmtpClient
 {
 public:
-    FakeSSLSMTPClient()
-        : SSLSmtpClient("127.0.0.1", 587)
+    FakeSMTPClient()
+        : SmtpClient("127.0.0.1", 587)
     {
     }
 };
 
-TEST(SSLSmtpClient_Constructor, NullServerName_ThrowInvalidArgument)
+TEST(SmtpClient_Constructor, NullServerName_ThrowInvalidArgument)
 {
 	try
 	{
-		SSLSmtpClient client(nullptr, 587);
+		SmtpClient client(nullptr, 587);
 		FAIL();
 	}
 	catch(invalid_argument &err) 
@@ -26,11 +26,11 @@ TEST(SSLSmtpClient_Constructor, NullServerName_ThrowInvalidArgument)
 	}
 }
 
-TEST(SSLSmtpClient_Constructor, EmptyServerName_ThrowInvalidArgument)
+TEST(SmtpClient_Constructor, EmptyServerName_ThrowInvalidArgument)
 {
 	try
 	{
-		SSLSmtpClient client("", 587);
+		SmtpClient client("", 587);
 		FAIL();
 	}
 	catch(invalid_argument &err) 
@@ -39,11 +39,11 @@ TEST(SSLSmtpClient_Constructor, EmptyServerName_ThrowInvalidArgument)
 	}
 }
 
-TEST(SSLSmtpClient_Constructor, OnlySpacesServerName_ThrowInvalidArgument)
+TEST(SmtpClient_Constructor, OnlySpacesServerName_ThrowInvalidArgument)
 {
 	try
 	{
-		SSLSmtpClient client("   ", 587);
+		SmtpClient client("   ", 587);
 		FAIL();
 	}
 	catch(invalid_argument &err) 
@@ -52,19 +52,19 @@ TEST(SSLSmtpClient_Constructor, OnlySpacesServerName_ThrowInvalidArgument)
 	}
 }
 
-TEST(SSLSmtpClient_Constructor, ValidArguments_ReturnSuccess)
+TEST(SmtpClient_Constructor, ValidArguments_ReturnSuccess)
 {
-	SSLSmtpClient client("test", 587);	
+	SmtpClient client("test", 587);	
     ASSERT_STREQ("test", client.getServerName());
     ASSERT_EQ(587, client.getServerPort());
 }
 
-TEST(SSLSmtpClient_CopyConstructor, SSLSmtpClientCopyConstructorValid)
+TEST(SmtpClient_CopyConstructor, SmtpClientCopyConstructorValid)
 {
-	SSLSmtpClient* client1 = new SSLSmtpClient("server1", 123);
+	SmtpClient* client1 = new SmtpClient("server1", 123);
     client1->setCredentials(Credential("user1", "pass1"));
     client1->setCommandTimeout(8);
-	SSLSmtpClient client2(*client1);
+	SmtpClient client2(*client1);
 	delete client1;
 	ASSERT_STREQ("server1", client2.getServerName());
 	ASSERT_EQ(123, client2.getServerPort());
@@ -73,12 +73,12 @@ TEST(SSLSmtpClient_CopyConstructor, SSLSmtpClientCopyConstructorValid)
 	ASSERT_STREQ("pass1", client2.getCredentials()->getPassword());
 }
 
-TEST(SSLSmtpClient_CopyAssignment, SSLSmtpClientCopyAssignmentValid)
+TEST(SmtpClient_CopyAssignment, SmtpClientCopyAssignmentValid)
 {
-	SSLSmtpClient* client1 = new SSLSmtpClient("test", 123);
+	SmtpClient* client1 = new SmtpClient("test", 123);
     client1->setCredentials(Credential("user1", "pass1"));
     client1->setCommandTimeout(8);
-	SSLSmtpClient client2("aaa", 456);
+	SmtpClient client2("aaa", 456);
 	client2 = *client1;
 	delete client1;
 	ASSERT_STREQ("test", client2.getServerName());
@@ -88,12 +88,12 @@ TEST(SSLSmtpClient_CopyAssignment, SSLSmtpClientCopyAssignmentValid)
 	ASSERT_STREQ("pass1", client2.getCredentials()->getPassword());
 }
 
-TEST(SSLSmtpClient_MoveConstructor, SSLSmtpClientMoveConstructorValid)
+TEST(SmtpClient_MoveConstructor, SmtpClientMoveConstructorValid)
 {
-	SSLSmtpClient client1("test", 123);
+	SmtpClient client1("test", 123);
     client1.setCredentials(Credential("user1", "pass1"));
     client1.setCommandTimeout(8);
-	SSLSmtpClient client2(move(client1));
+	SmtpClient client2(move(client1));
 	ASSERT_STREQ("test", client2.getServerName());
 	ASSERT_EQ(123, client2.getServerPort());
     ASSERT_EQ(8, client2.getCommandTimeout());
@@ -106,12 +106,12 @@ TEST(SSLSmtpClient_MoveConstructor, SSLSmtpClientMoveConstructorValid)
 	ASSERT_EQ(nullptr, client1.getCredentials());
 }
 
-TEST(SSLSmtpClient_MoveAssignment, SSLSmtpClientMoveAssignmentValid)
+TEST(SmtpClient_MoveAssignment, SmtpClientMoveAssignmentValid)
 {
-	SSLSmtpClient client1("test", 123);
+	SmtpClient client1("test", 123);
     client1.setCredentials(Credential("user1", "pass1"));
     client1.setCommandTimeout(8);
-	SSLSmtpClient client2("aaa", 456);
+	SmtpClient client2("aaa", 456);
 	client2 = move(client1);
 	ASSERT_STREQ("test", client2.getServerName());
 	ASSERT_EQ(123, client2.getServerPort());

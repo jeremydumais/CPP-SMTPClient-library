@@ -57,7 +57,7 @@ namespace jed_utils
 		size_t getBccCount() const;
 		Attachment **getAttachments() const;
 		size_t getAttachmentsCount() const;
-	protected:
+	private:
 		MessageAddress mFrom;
 		MessageAddress **mTo;
 		size_t mToCount;

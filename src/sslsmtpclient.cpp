@@ -140,7 +140,7 @@ int SSLSmtpClient::establishConnectionWithServer()
         return client_initSecure_return_code;
     }
 
-    if (mCredential != nullptr) {
+    if (getCredentials() != nullptr) {
         int client_auth_return_code = authenticateClient();
         if (client_auth_return_code != 235) {
             return client_auth_return_code;

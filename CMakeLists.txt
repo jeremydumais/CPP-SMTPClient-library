@@ -23,7 +23,7 @@ if(NOT CLANG_TIDY_EXE)
     message(STATUS "clang-tidy not found.")
 else()
     message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-    set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;-line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];-checks=*,-llvm-header-guard,-google-build-using-namespace,-fuchsia-default-arguments,-modernize-pass-by-value,-fuchsia-overloaded-operator,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory")
+    set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;-line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];-checks=*,-llvm-header-guard,-google-build-using-namespace,-fuchsia-default-arguments,-modernize-pass-by-value,-fuchsia-overloaded-operator,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory,-modernize-use-trailing-return-type")
 endif()
 
 set(CMAKE_BUILD_TYPE Debug)
@@ -166,11 +166,14 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 add_executable(${PROJECT_UNITTEST_NAME} ${INCLUDE_PATH}
 	${TEST_SRC_PATH}/main.cpp
 	${TEST_SRC_PATH}/messageaddress_unittest.cpp
+	${TEST_SRC_PATH}/message_unittest.cpp
 	${TEST_SRC_PATH}/attachment_unittest.cpp
 	${TEST_SRC_PATH}/credential_unittest.cpp
 	${TEST_SRC_PATH}/plaintextmessage_unittest.cpp
 	${TEST_SRC_PATH}/stringutils_unittest.cpp
-	${TEST_SRC_PATH}/sslsmtpclient_unittest.cpp)
+	${TEST_SRC_PATH}/sslsmtpclient_unittest.cpp
+	${TEST_SRC_PATH}/smtpclientbase_unittest.cpp
+	${TEST_SRC_PATH}/smtpclient_unittest.cpp)
 
 target_link_libraries(${PROJECT_UNITTEST_NAME} ${PROJECT_NAME} gtest gtest_main ${PTHREAD})
 add_test(AllTestsInMain ${PROJECT_UNITTEST_NAME})
