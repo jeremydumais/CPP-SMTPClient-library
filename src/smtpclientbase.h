@@ -9,7 +9,7 @@
 #include "messageaddress.h"
 #include "plaintextmessage.h"
 #include "serverauthoptions.h"
-
+#include <tuple>
 #include <vector>
 
 #ifdef _WIN32
