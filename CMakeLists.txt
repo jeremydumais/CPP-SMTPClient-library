@@ -26,8 +26,6 @@ else()
     set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;-line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];-checks=*,-llvm-header-guard,-google-build-using-namespace,-fuchsia-default-arguments,-modernize-pass-by-value,-fuchsia-overloaded-operator,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory,-modernize-use-trailing-return-type")
 endif()
 
-set(CMAKE_BUILD_TYPE Debug)
-
 # Set directories
 set(PROJECT_PATH    "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SRC_PATH        "${PROJECT_PATH}/src")
