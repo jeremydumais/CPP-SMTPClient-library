@@ -1,5 +1,16 @@
 # Changelog
-All notable changes to this project will be documented in this file.
+All notable changes to this project will be documented in this file
+
+## [1.1.2]
+
+### Updated
+- Refactor the code of the SmtpClient class to inherit the SmtpClientBase class.
+- You must now call the method getCommunicationLog() instead of getServerReply()
+
+## [1.1.1]
+
+### Added
+- Add support for the cc and bcc field in the sendMail method
 
 ## [1.1.0]
 

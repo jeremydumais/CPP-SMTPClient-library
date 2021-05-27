@@ -36,7 +36,6 @@ namespace jed_utils
 		Attachment() = default;
 		char *mName;
 		char *mFilename;
-		std::string toUppercase(const std::string &pValue) const;
 	};
 } // namespace jed_utils
 

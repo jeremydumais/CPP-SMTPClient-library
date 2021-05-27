@@ -1,14 +1,7 @@
 #ifndef SMTPCLIENT_H
 #define SMTPCLIENT_H
 
-#include "attachment.h"
-#include "attachmenterror.h"
-#include "communicationerror.h"
-#include "htmlmessage.h"
-#include "messageaddress.h"
-#include "plaintextmessage.h"
-#include <string>
-#include <vector>
+#include "smtpclientbase.h"
 
 #ifdef _WIN32
 	#ifdef SMTPCLIENT_EXPORTS  
@@ -22,7 +15,7 @@
 
 namespace jed_utils
 {
-	class SMTPCLIENT_API SmtpClient
+	class SMTPCLIENT_API SmtpClient : public SmtpClientBase
 	{
 	public:
 		SmtpClient(const char *pServerName, unsigned int pPort);
@@ -31,17 +24,13 @@ namespace jed_utils
         SmtpClient& operator=(const SmtpClient &other); //Copy assignment
         SmtpClient(SmtpClient &&other) noexcept; //Move constructor
         SmtpClient& operator=(SmtpClient &&other) noexcept; //Move assignement
-		int sendMail(const Message &pMsg);
-		const char *getServerReply() const;
 	protected:
-		char *mServerName;
-		unsigned int mPort;
-		char *mServerReply;
-		int writeCommand(unsigned int pSock,
-			const char *pStr,
-			const char *pArg,
-			bool pAskForReply = true);
-		std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments);
+		void cleanup() override;
+		//Methods used to establish the connection with server
+		int establishConnectionWithServer() override;
+		//Methods to send commands to the server
+		int sendCommand(const char *pCommand, int pErrorCode) override;
+		int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) override;
 	};
 } // namespace jed_utils
 

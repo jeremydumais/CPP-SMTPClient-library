@@ -126,7 +126,7 @@ const char *Attachment::getBase64EncodedFile() const
 const char *Attachment::getMimeType() const
 {
     string filename_str { mFilename };
-    const string extension = toUppercase(filename_str.substr(filename_str.find_last_of('.') + 1));
+    const string extension = StringUtils::toUpper(filename_str.substr(filename_str.find_last_of('.') + 1));
     //Images
     if (extension == "PNG") {
         return "image/png";
@@ -283,11 +283,4 @@ const char *Attachment::getMimeType() const
     }
 
     return "";
-}
-
-string Attachment::toUppercase(const string &pValue) const
-{
-    string retval;
-    std::transform(pValue.begin(), pValue.end(), std::back_inserter(retval), ::toupper);
-    return retval;
 }

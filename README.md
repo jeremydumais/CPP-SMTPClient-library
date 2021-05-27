@@ -34,7 +34,7 @@ int main()
 			cerr << "An error occurred. Return code : " << err_no;
 			return 1;
 		}
-		cout << client.getServerReply() << endl;
+		cout << client.getCommunicationLog() << endl;
 		cout << "Operation completed!" << endl;
 	}
 	catch (invalid_argument &err)
@@ -78,7 +78,7 @@ int main()
 			cerr << "An error occurred. Return code : " << err_no;
 			return 1;
 		}
-		cout << client.getServerReply() << endl;
+		cout << client.getCommunicationLog() << endl;
 		cout << "Operation completed!" << endl;
 	}
 	catch (invalid_argument &err)
