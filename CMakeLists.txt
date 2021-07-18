@@ -85,6 +85,7 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/smtpclientbase.cpp
     ${SRC_PATH}/smtpclient.cpp
 	${SRC_PATH}/sslsmtpclient.cpp
+	${SRC_PATH}/implicitsslsmtpclient.cpp
 	${SRC_PATH}/stringutils.cpp)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -180,4 +181,6 @@ install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 install(DIRECTORY src/ DESTINATION include/smtpclient
             FILES_MATCHING PATTERN "*.h")
 
-add_subdirectory("simpleclient")
+if(EXISTS ${PROJECT_PATH}/simpleclient AND IS_DIRECTORY ${PROJECT_PATH}/simpleclient)
+	add_subdirectory(${PROJECT_PATH}/simpleclient)
+endif()

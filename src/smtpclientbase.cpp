@@ -326,8 +326,10 @@ int SmtpClientBase::initializeSession()
             return SOCKET_INIT_SESSION_CONNECT_ERROR;
         } 
     #endif
+    return 0;
 
-    char outbuf[1024];
+    //TODO Must be moved to another method
+    /*char outbuf[1024];
     unsigned int waitTime = 0;
     ssize_t bytes_received = 0;
     while ((bytes_received = recv(mSock, outbuf, 1024, 0)) < 0 && waitTime < mCommandTimeOut)
@@ -344,7 +346,7 @@ int SmtpClientBase::initializeSession()
         }
         return status_code;
     }
-    return SOCKET_INIT_SESSION_CONNECT_TIMEOUT;
+    return SOCKET_INIT_SESSION_CONNECT_TIMEOUT;*/
 }
 
 int SmtpClientBase::sendServerIdentification() 
