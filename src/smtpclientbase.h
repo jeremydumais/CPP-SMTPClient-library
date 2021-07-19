@@ -24,15 +24,15 @@
 
 namespace jed_utils
 {
-	class SMTPCLIENTBASE_API SmtpClientBase
+	class SMTPCLIENTBASE_API SMTPClientBase
 	{
 	public:
-		SmtpClientBase(const char *pServerName, unsigned int pPort);
-		virtual ~SmtpClientBase();
-		SmtpClientBase(const SmtpClientBase& other); //Copy constructor
-        SmtpClientBase& operator=(const SmtpClientBase& other); //Copy assignment
-		SmtpClientBase(SmtpClientBase&& other) noexcept; //Move constructor
-		SmtpClientBase& operator=(SmtpClientBase&& other) noexcept; //Move assignement
+		SMTPClientBase(const char *pServerName, unsigned int pPort);
+		virtual ~SMTPClientBase();
+		SMTPClientBase(const SMTPClientBase& other); //Copy constructor
+        SMTPClientBase& operator=(const SMTPClientBase& other); //Copy assignment
+		SMTPClientBase(SMTPClientBase&& other) noexcept; //Move constructor
+		SMTPClientBase& operator=(SMTPClientBase&& other) noexcept; //Move assignement
 		const char *getServerName() const;
 		unsigned int getServerPort() const;
 		unsigned int getCommandTimeout() const;

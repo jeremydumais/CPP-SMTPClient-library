@@ -22,22 +22,22 @@
 using namespace std;
 using namespace jed_utils;
 
-SecureSmtpClientBase::SecureSmtpClientBase(const char *pServerName, unsigned int pPort)
-    : SmtpClientBase(pServerName, pPort),
+SecureSMTPClientBase::SecureSMTPClientBase(const char *pServerName, unsigned int pPort)
+    : SMTPClientBase(pServerName, pPort),
       mBIO(nullptr),
       mCTX(nullptr),
       mSSL(nullptr)
 {
 }
 
-SecureSmtpClientBase::~SecureSmtpClientBase()
+SecureSMTPClientBase::~SecureSMTPClientBase()
 {    
     cleanup();
 }
 
 //Copy constructor
-SecureSmtpClientBase::SecureSmtpClientBase(const SecureSmtpClientBase& other)
-	: SmtpClientBase(other),
+SecureSMTPClientBase::SecureSMTPClientBase(const SecureSMTPClientBase& other)
+	: SMTPClientBase(other),
       mBIO(nullptr),
       mCTX(nullptr),
       mSSL(nullptr)
@@ -45,10 +45,10 @@ SecureSmtpClientBase::SecureSmtpClientBase(const SecureSmtpClientBase& other)
 }
 
 //Assignment operator
-SecureSmtpClientBase& SecureSmtpClientBase::operator=(const SecureSmtpClientBase& other)
+SecureSMTPClientBase& SecureSMTPClientBase::operator=(const SecureSMTPClientBase& other)
 {
 	if (this != &other) {
-        SmtpClientBase::operator=(other);
+        SMTPClientBase::operator=(other);
         mBIO = nullptr;
         mCTX = nullptr;
         mSSL = nullptr;
@@ -57,8 +57,8 @@ SecureSmtpClientBase& SecureSmtpClientBase::operator=(const SecureSmtpClientBase
 }
 
 //Move constructor
-SecureSmtpClientBase::SecureSmtpClientBase(SecureSmtpClientBase&& other) noexcept
-	: SmtpClientBase(move(other)),
+SecureSMTPClientBase::SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcept
+	: SMTPClientBase(move(other)),
       mBIO(other.mBIO),
       mCTX(other.mCTX),
       mSSL(other.mSSL)
@@ -71,10 +71,10 @@ SecureSmtpClientBase::SecureSmtpClientBase(SecureSmtpClientBase&& other) noexcep
 }
 
 //Move assignement operator
-SecureSmtpClientBase& SecureSmtpClientBase::operator=(SecureSmtpClientBase&& other) noexcept
+SecureSMTPClientBase& SecureSMTPClientBase::operator=(SecureSMTPClientBase&& other) noexcept
 {
 	if (this != &other) {
-        SmtpClientBase::operator=(move(other));
+        SMTPClientBase::operator=(move(other));
 		// Copy the data pointer and its length from the source object.
         mBIO = other.mBIO;
         mCTX = other.mCTX;
@@ -88,7 +88,7 @@ SecureSmtpClientBase& SecureSmtpClientBase::operator=(SecureSmtpClientBase&& oth
 	return *this;
 }
 
-void SecureSmtpClientBase::cleanup()
+void SecureSMTPClientBase::cleanup()
 {
     if (mCTX != nullptr) {
         SSL_CTX_free(mCTX);
@@ -114,7 +114,7 @@ void SecureSmtpClientBase::cleanup()
 }
 
 
-void SecureSmtpClientBase::initializeSSLContext()
+void SecureSMTPClientBase::initializeSSLContext()
 {
     SSL_library_init();
 
@@ -128,7 +128,7 @@ void SecureSmtpClientBase::initializeSSLContext()
     }
 }
 
-int SecureSmtpClientBase::startTLSNegotiation()
+int SecureSMTPClientBase::startTLSNegotiation()
 {
     addCommunicationLogItem("<Start TLS negotiation>");    
     initializeSSLContext();
@@ -227,7 +227,7 @@ int SecureSmtpClientBase::startTLSNegotiation()
     return 0;
 }
 
-int SecureSmtpClientBase::getServerSecureIdentification()
+int SecureSMTPClientBase::getServerSecureIdentification()
 {
     const int EHLO_SUCCESS_CODE = 250;
     addCommunicationLogItem("Contacting the server again but via the secure channel...");
@@ -241,11 +241,11 @@ int SecureSmtpClientBase::getServerSecureIdentification()
     }
     //Inspect the returned values for authentication options
     delete mAuthOptions;
-    mAuthOptions = SmtpClientBase::extractAuthenticationOptions(mLastServerResponse);
+    mAuthOptions = SMTPClientBase::extractAuthenticationOptions(mLastServerResponse);
     return EHLO_SUCCESS_CODE;
 }
 
-int SecureSmtpClientBase::sendCommand(const char *pCommand, int pErrorCode)
+int SecureSMTPClientBase::sendCommand(const char *pCommand, int pErrorCode)
 {
     if (const int status = BIO_puts(mBIO, pCommand) < 0) {
         mLastSocketErrNo = ERR_get_error();
@@ -255,7 +255,7 @@ int SecureSmtpClientBase::sendCommand(const char *pCommand, int pErrorCode)
     return 0;
 }
 
-int SecureSmtpClientBase::sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode)
+int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode)
 {
     unsigned int waitTime {0};
     int bytes_received {0};

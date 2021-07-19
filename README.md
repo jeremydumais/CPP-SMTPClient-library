@@ -1,7 +1,7 @@
 # Jed# C++ SMTP Client Library
 
-## A simple SMTP client library built in C++ that support authentication and TLS 1.3 encryption*
-###### * For TLS 1.3 support you must build the library against OpenSSL 1.1.1
+## A simple SMTP client library built in C++ that support authentication and secure connections (Forced SSL and Opportunistic SSL/TLS encryption).
+##### For TLS 1.3 support you must build the library against OpenSSL 1.1.1
 \
 \### How to build the SMTP client or integrate it in your application
 
@@ -10,8 +10,14 @@ Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/H
 ## How it works
 
 ### Some examples
+- [Send a plaintext email via an unsecured server](#send-a-plaintext-email-via-an-unsecured-server)
+- [Send an html email to 2 recipients with an attachment via an unsecured server](#send-an-html-email-to-2-recipients-with-an-attachment-via-an-unsecured-server)
+- [Send a plaintext email via a secure server (opportunistic) -> SSL/TLS Port 587](#send-a-plaintext-email-via-a-secure-server-opportunistic)
+- [Send a plaintext email via a secure server (forced) -> SSL/TLS Port 465](#send-a-plaintext-email-via-a-secure-server-forced)
 
-#### Send a plaintext email
+<br/>
+
+#### Send a plaintext email via an unsecured server
 
 ```c++
 #include "smtpclient.h"
@@ -46,7 +52,7 @@ int main()
 }
 ```
 
-#### Send an html email to 2 recipients with an attachment
+#### Send an html email to 2 recipients with an attachment via an unsecured server
 
 ```c++
 #include "smtpclient.h"
@@ -90,10 +96,10 @@ int main()
 }
 ```
 
-#### Send a plaintext email via a secure server
+#### Send a plaintext email via a secure server (opportunistic)
 
 ```c++
-#include "sslsmtpclient.h"
+#include "opportunisticsecuresmtpclient.h"
 #include <iostream>
 
 using namespace jed_utils;
@@ -101,7 +107,43 @@ using namespace std;
 
 int main()
 {
-	SSLSmtpClient client("<your smtp server address>", 587);
+	OpportunisticSecureSMTPClient client("<your smtp server address>", 587);
+	client.setCredentials(Credential("myfromaddress@test.com", "mypassword"));
+	try
+	{
+		PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
+			MessageAddress("youraddress@domain.com", "Another Adresse display"),
+			"This is a test (Subject)",
+			"Hello\nHow are you?");
+
+		int err_no = client.sendMail(msg);
+		if (err_no != 0) {
+			cerr << "An error occurred. Return code : " << err_no;
+			return 1;
+		}
+		cout << client.getCommunicationLog() << endl;
+		cout << "Operation completed!" << endl;
+	}
+	catch (invalid_argument &err)
+	{
+		cerr << err.what() << endl;
+	}
+    return 0;
+}
+```
+
+#### Send a plaintext email via a secure server (forced)
+
+```c++
+#include "forcedsecuresmtpclient.h"
+#include <iostream>
+
+using namespace jed_utils;
+using namespace std;
+
+int main()
+{
+	ForcedSecureSMTPClient client("<your smtp server address>", 465);
 	client.setCredentials(Credential("myfromaddress@test.com", "mypassword"));
 	try
 	{

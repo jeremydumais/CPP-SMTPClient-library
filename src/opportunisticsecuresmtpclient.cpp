@@ -23,7 +23,7 @@ using namespace std;
 using namespace jed_utils;
 
 OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(const char *pServerName, unsigned int pPort)
-    : SecureSmtpClientBase(pServerName, pPort)
+    : SecureSMTPClientBase(pServerName, pPort)
 {
 }
 
@@ -33,7 +33,7 @@ OpportunisticSecureSMTPClient::~OpportunisticSecureSMTPClient()
 
 //Copy constructor
 OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(const OpportunisticSecureSMTPClient& other)
-	: SecureSmtpClientBase(other)
+	: SecureSMTPClientBase(other)
 {    
 }
 
@@ -41,14 +41,14 @@ OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(const Opportunistic
 OpportunisticSecureSMTPClient& OpportunisticSecureSMTPClient::operator=(const OpportunisticSecureSMTPClient& other)
 {
 	if (this != &other) {
-        SecureSmtpClientBase::operator=(other);
+        SecureSMTPClientBase::operator=(other);
 	}
 	return *this;
 }
 
 //Move constructor
 OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(OpportunisticSecureSMTPClient&& other) noexcept
-	: SecureSmtpClientBase(move(other))
+	: SecureSMTPClientBase(move(other))
 {
 }
 
@@ -56,7 +56,7 @@ OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(OpportunisticSecure
 OpportunisticSecureSMTPClient& OpportunisticSecureSMTPClient::operator=(OpportunisticSecureSMTPClient&& other) noexcept
 {
 	if (this != &other) {
-        SecureSmtpClientBase::operator=(move(other));
+        SecureSMTPClientBase::operator=(move(other));
 	}
 	return *this;
 }

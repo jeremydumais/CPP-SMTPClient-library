@@ -15,7 +15,7 @@
 
 namespace jed_utils
 {
-	class FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : public SecureSmtpClientBase
+	class FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : public SecureSMTPClientBase
 	{
 	public:
 		ForcedSecureSMTPClient(const char *pServerName, unsigned int pPort);

@@ -15,7 +15,7 @@
 
 namespace jed_utils
 {
-	class SMTPCLIENT_API SmtpClient : public SmtpClientBase
+	class SMTPCLIENT_API SmtpClient : public SMTPClientBase
 	{
 	public:
 		SmtpClient(const char *pServerName, unsigned int pPort);

@@ -6,16 +6,16 @@ using namespace std;
 
 
 
-class FakeSMTPClientBase : public ::testing::Test, public SmtpClientBase
+class FakeSMTPClientBase : public ::testing::Test, public SMTPClientBase
 {
 public:   
     FakeSMTPClientBase()
-        : SmtpClientBase("127.0.0.1", 587)
+        : SMTPClientBase("127.0.0.1", 587)
     {
     }
 
     FakeSMTPClientBase(const char *pServerName, unsigned int pPort)
-        : SmtpClientBase(pServerName, pPort)
+        : SMTPClientBase(pServerName, pPort)
     {
     }
     void TestBody() override {}

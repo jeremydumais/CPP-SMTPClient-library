@@ -23,7 +23,7 @@ using namespace std;
 using namespace jed_utils;
 
 ForcedSecureSMTPClient::ForcedSecureSMTPClient(const char *pServerName, unsigned int pPort)
-    : SecureSmtpClientBase(pServerName, pPort)
+    : SecureSMTPClientBase(pServerName, pPort)
 {
 }
 
@@ -33,7 +33,7 @@ ForcedSecureSMTPClient::~ForcedSecureSMTPClient()
 
 //Copy constructor
 ForcedSecureSMTPClient::ForcedSecureSMTPClient(const ForcedSecureSMTPClient& other)
-	: SecureSmtpClientBase(other)
+	: SecureSMTPClientBase(other)
 {    
 }
 
@@ -41,14 +41,14 @@ ForcedSecureSMTPClient::ForcedSecureSMTPClient(const ForcedSecureSMTPClient& oth
 ForcedSecureSMTPClient& ForcedSecureSMTPClient::operator=(const ForcedSecureSMTPClient& other)
 {
 	if (this != &other) {
-        SecureSmtpClientBase::operator=(other);
+        SecureSMTPClientBase::operator=(other);
 	}
 	return *this;
 }
 
 //Move constructor
 ForcedSecureSMTPClient::ForcedSecureSMTPClient(ForcedSecureSMTPClient&& other) noexcept
-	: SecureSmtpClientBase(move(other))
+	: SecureSMTPClientBase(move(other))
 {
 }
 
@@ -56,7 +56,7 @@ ForcedSecureSMTPClient::ForcedSecureSMTPClient(ForcedSecureSMTPClient&& other) n
 ForcedSecureSMTPClient& ForcedSecureSMTPClient::operator=(ForcedSecureSMTPClient&& other) noexcept
 {
 	if (this != &other) {
-        SecureSmtpClientBase::operator=(move(other));
+        SecureSMTPClientBase::operator=(move(other));
 	}
 	return *this;
 }

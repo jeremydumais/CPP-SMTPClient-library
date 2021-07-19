@@ -15,7 +15,7 @@
 
 namespace jed_utils
 {
-	class OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : public SecureSmtpClientBase
+	class OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : public SecureSMTPClientBase
 	{
 	public:
 		OpportunisticSecureSMTPClient(const char *pServerName, unsigned int pPort);

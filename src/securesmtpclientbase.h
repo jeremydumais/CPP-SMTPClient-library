@@ -16,15 +16,15 @@
 
 namespace jed_utils
 {
-	class SECURESMTPCLIENTBASE_API SecureSmtpClientBase : public SmtpClientBase
+	class SECURESMTPCLIENTBASE_API SecureSMTPClientBase : public SMTPClientBase
 	{
 	public:
-    	SecureSmtpClientBase(const char *pServerName, unsigned int pPort);
-		~SecureSmtpClientBase();
-		SecureSmtpClientBase(const SecureSmtpClientBase& other); //Copy constructor
-        SecureSmtpClientBase& operator=(const SecureSmtpClientBase& other); //Copy assignment
-		SecureSmtpClientBase(SecureSmtpClientBase&& other) noexcept; //Move constructor
-		SecureSmtpClientBase& operator=(SecureSmtpClientBase&& other) noexcept; //Move assignement
+    	SecureSMTPClientBase(const char *pServerName, unsigned int pPort);
+		~SecureSMTPClientBase();
+		SecureSMTPClientBase(const SecureSMTPClientBase& other); //Copy constructor
+        SecureSMTPClientBase& operator=(const SecureSMTPClientBase& other); //Copy assignment
+		SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcept; //Move constructor
+		SecureSMTPClientBase& operator=(SecureSMTPClientBase&& other) noexcept; //Move assignement
 	protected:
     	//Attributes used to communicate with the server
 		BIO *mBIO;

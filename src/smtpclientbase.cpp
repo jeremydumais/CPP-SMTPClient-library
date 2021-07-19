@@ -30,7 +30,7 @@
 using namespace jed_utils;
 using namespace std;
 
-SmtpClientBase::SmtpClientBase(const char *pServerName, unsigned int pPort) 
+SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort) 
     : mServerName(nullptr),
       mPort(pPort),
       mCommunicationLog(nullptr),
@@ -51,7 +51,7 @@ SmtpClientBase::SmtpClientBase(const char *pServerName, unsigned int pPort)
     mServerName[server_name_len] = '\0';
 }
 
-SmtpClientBase::~SmtpClientBase() 
+SMTPClientBase::~SMTPClientBase() 
 {
     delete[] mServerName;
     mServerName = nullptr;
@@ -65,7 +65,7 @@ SmtpClientBase::~SmtpClientBase()
 }
 
 //Copy constructor
-SmtpClientBase::SmtpClientBase(const SmtpClientBase& other)
+SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
     :  mServerName(new char[strlen(other.mServerName) + 1]),
        mPort(other.mPort),
        mCommunicationLog(other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr),
@@ -91,7 +91,7 @@ SmtpClientBase::SmtpClientBase(const SmtpClientBase& other)
 }
 
 //Assignment operator
-SmtpClientBase& SmtpClientBase::operator=(const SmtpClientBase& other)
+SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other)
 {
     if (this != &other) {
         //mServerName
@@ -126,7 +126,7 @@ SmtpClientBase& SmtpClientBase::operator=(const SmtpClientBase& other)
 }
 
 //Move constructor
-SmtpClientBase::SmtpClientBase(SmtpClientBase&& other) noexcept
+SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     : mServerName(other.mServerName),
       mPort(other.mPort),
       mCommunicationLog(other.mCommunicationLog),
@@ -149,7 +149,7 @@ SmtpClientBase::SmtpClientBase(SmtpClientBase&& other) noexcept
 }
 
 //Move assignement operator
-SmtpClientBase& SmtpClientBase::operator=(SmtpClientBase&& other) noexcept
+SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept
 {
     if (this != &other) {
         delete[] mServerName;
@@ -182,37 +182,37 @@ SmtpClientBase& SmtpClientBase::operator=(SmtpClientBase&& other) noexcept
 	return *this;
 }
 
-const char *SmtpClientBase::getServerName() const
+const char *SMTPClientBase::getServerName() const
 {
     return mServerName;
 }
 
-unsigned int SmtpClientBase::getServerPort() const
+unsigned int SMTPClientBase::getServerPort() const
 {
     return mPort;
 }
 
-unsigned int SmtpClientBase::getCommandTimeout() const
+unsigned int SMTPClientBase::getCommandTimeout() const
 {
     return mCommandTimeOut;
 }
 
-const char *SmtpClientBase::getCommunicationLog() const
+const char *SMTPClientBase::getCommunicationLog() const
 {
     return mCommunicationLog == nullptr ? "" : mCommunicationLog;
 }
 
-const Credential *SmtpClientBase::getCredentials() const
+const Credential *SMTPClientBase::getCredentials() const
 {
     return mCredential;
 }
 
-void SmtpClientBase::setServerPort(unsigned int pPort)
+void SMTPClientBase::setServerPort(unsigned int pPort)
 {
     mPort = pPort;
 }
 
-void SmtpClientBase::setServerName(const char *pServerName)
+void SMTPClientBase::setServerName(const char *pServerName)
 {
     string servername_str { pServerName == nullptr ? "" : pServerName };
     if (pServerName == nullptr || strcmp(pServerName, "") == 0  || StringUtils::trim(servername_str).empty()) {
@@ -225,18 +225,18 @@ void SmtpClientBase::setServerName(const char *pServerName)
     mServerName[server_name_len] = '\0';
 }
 
-void SmtpClientBase::setCommandTimeout(unsigned int pTimeOutInSeconds)
+void SMTPClientBase::setCommandTimeout(unsigned int pTimeOutInSeconds)
 {
     mCommandTimeOut = pTimeOutInSeconds;
 }
 
-void SmtpClientBase::setCredentials(const Credential &pCredential)
+void SMTPClientBase::setCredentials(const Credential &pCredential)
 {
     delete mCredential;
     mCredential = new Credential(pCredential);
 }
 
-int SmtpClientBase::sendMail(const Message &pMsg)
+int SMTPClientBase::sendMail(const Message &pMsg)
 {
     int client_connect_ret_code = establishConnectionWithServer();
     if (client_connect_ret_code != 0) {
@@ -263,7 +263,7 @@ int SmtpClientBase::sendMail(const Message &pMsg)
 }
 
 
-int SmtpClientBase::initializeSession() 
+int SMTPClientBase::initializeSession() 
 {
     delete[] mCommunicationLog;
     mCommunicationLog = new char[4096];
@@ -330,7 +330,7 @@ int SmtpClientBase::initializeSession()
    
 }
 
-int SmtpClientBase::sendServerIdentification() 
+int SMTPClientBase::sendServerIdentification() 
 {
     string ehlo { "ehlo localhost\r\n" };
     addCommunicationLogItem(ehlo.c_str());
@@ -339,7 +339,7 @@ int SmtpClientBase::sendServerIdentification()
         SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT);
 }
 
-int SmtpClientBase::checkServerGreetings() 
+int SMTPClientBase::checkServerGreetings() 
 {
     char outbuf[1024];
     unsigned int waitTime = 0;
@@ -361,7 +361,7 @@ int SmtpClientBase::checkServerGreetings()
     return SOCKET_INIT_SESSION_CONNECT_TIMEOUT;
 }
 
-int SmtpClientBase::sendRawCommand(const char *pCommand, int pErrorCode) 
+int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode) 
 {
     
     if (send(mSock, pCommand, strlen(pCommand), 0) == -1) {
@@ -372,7 +372,7 @@ int SmtpClientBase::sendRawCommand(const char *pCommand, int pErrorCode)
     return 0;
 }   
 
-int SmtpClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode)
+int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode)
 {
     char outbuf[1024];
     unsigned int waitTime {0};
@@ -396,7 +396,7 @@ int SmtpClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTi
     return pTimeoutCode;
 }
 
-void SmtpClientBase::setLastServerResponse(const char *pResponse)
+void SMTPClientBase::setLastServerResponse(const char *pResponse)
 {
     delete[] mLastServerResponse;
     size_t response_len = strlen(pResponse);
@@ -405,7 +405,7 @@ void SmtpClientBase::setLastServerResponse(const char *pResponse)
     mLastServerResponse[response_len] = '\0';
 }
 
-int SmtpClientBase::authenticateClient()
+int SMTPClientBase::authenticateClient()
 {
     if (mCredential != nullptr) {
         if (mAuthOptions->Plain == true) {
@@ -423,7 +423,7 @@ int SmtpClientBase::authenticateClient()
     }
 }
 
-int SmtpClientBase::authenticateWithMethodPlain() {
+int SMTPClientBase::authenticateWithMethodPlain() {
     addCommunicationLogItem("AUTH PLAIN ***************\r\n");
     stringstream ss_credentials;
     //Format : \0username\0password
@@ -437,7 +437,7 @@ int SmtpClientBase::authenticateWithMethodPlain() {
     return sendCommandWithFeedback(ss.str().c_str(), CLIENT_AUTHENTICATE_ERROR, CLIENT_AUTHENTICATE_TIMEOUT);
 }
 
-int SmtpClientBase::authenticateWithMethodLogin()
+int SMTPClientBase::authenticateWithMethodLogin()
 {
     addCommunicationLogItem("AUTH LOGIN ***************\r\n");
     int login_return_code = sendCommandWithFeedback("AUTH LOGIN\r\n",  
@@ -464,7 +464,7 @@ int SmtpClientBase::authenticateWithMethodLogin()
     return sendCommandWithFeedback(ss_password.str().c_str(), CLIENT_AUTHENTICATE_ERROR, CLIENT_AUTHENTICATE_TIMEOUT);
 }
 
-int SmtpClientBase::setMailRecipients(const Message &pMsg) 
+int SMTPClientBase::setMailRecipients(const Message &pMsg) 
 {
     const int INVALID_ADDRESS { 501 };
     const int SENDER_OK { 250 };
@@ -509,7 +509,7 @@ int SmtpClientBase::setMailRecipients(const Message &pMsg)
     return 0;
 }
 
-int SmtpClientBase::addMailRecipients(jed_utils::MessageAddress **list, size_t count, const int RECIPIENT_OK) 
+int SMTPClientBase::addMailRecipients(jed_utils::MessageAddress **list, size_t count, const int RECIPIENT_OK) 
 {
     int rcpt_to_ret_code = RECIPIENT_OK;
     for_each(list, list + count, [this, &rcpt_to_ret_code, &RECIPIENT_OK](MessageAddress *address) {
@@ -524,7 +524,7 @@ int SmtpClientBase::addMailRecipients(jed_utils::MessageAddress **list, size_t c
     return rcpt_to_ret_code;
 }
 
-int SmtpClientBase::setMailHeaders(const Message &pMsg)
+int SMTPClientBase::setMailHeaders(const Message &pMsg)
 {
     // Data section
     string data_cmd = "DATA\r\n";
@@ -578,7 +578,7 @@ int SmtpClientBase::setMailHeaders(const Message &pMsg)
     return 0;
 }
 
-int SmtpClientBase::addMailHeader(const char *field, const char *value, int pErrorCode)
+int SMTPClientBase::addMailHeader(const char *field, const char *value, int pErrorCode)
 {
     stringstream ss_header_item;
     ss_header_item << field << ": " << value << "\r\n";
@@ -586,7 +586,7 @@ int SmtpClientBase::addMailHeader(const char *field, const char *value, int pErr
     return sendCommand(ss_header_item.str().c_str(), pErrorCode);
 }
 
-int SmtpClientBase::setMailBody(const Message &pMsg)
+int SMTPClientBase::setMailBody(const Message &pMsg)
 {
     // Body part
     ostringstream body_ss;
@@ -640,7 +640,7 @@ int SmtpClientBase::setMailBody(const Message &pMsg)
     return 0;
 }
 
-void SmtpClientBase::addCommunicationLogItem(const char *pItem, const char *pPrefix)
+void SMTPClientBase::addCommunicationLogItem(const char *pItem, const char *pPrefix)
 {
     string item { pItem };
     if (strcmp(pPrefix, "c") == 0) {
@@ -661,7 +661,7 @@ void SmtpClientBase::addCommunicationLogItem(const char *pItem, const char *pPre
     strncat(mCommunicationLog, item.c_str(), item.length());
 }
 
-string SmtpClientBase::createAttachmentsText(const vector<Attachment*> &pAttachments) const
+string SMTPClientBase::createAttachmentsText(const vector<Attachment*> &pAttachments) const
 {
     string retval;	
     for (auto &item : pAttachments)
@@ -677,7 +677,7 @@ string SmtpClientBase::createAttachmentsText(const vector<Attachment*> &pAttachm
     return retval;
 }
 
-int SmtpClientBase::extractReturnCode(const char *pOutput) const
+int SMTPClientBase::extractReturnCode(const char *pOutput) const
 {
     if (pOutput != nullptr && strlen(pOutput) >= 3) {
         string code_str { pOutput };
@@ -691,7 +691,7 @@ int SmtpClientBase::extractReturnCode(const char *pOutput) const
     return -1;
 }
 
-ServerAuthOptions *SmtpClientBase::extractAuthenticationOptions(const char *pEhloOutput)
+ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhloOutput)
 {
     ServerAuthOptions *retVal = nullptr;
     const string AUTH_LINE_PREFIX = "250-AUTH";
