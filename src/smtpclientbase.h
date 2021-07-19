@@ -58,6 +58,7 @@ namespace jed_utils
 		int initializeSession();
 		int sendServerIdentification();
 		virtual int establishConnectionWithServer() = 0;
+		virtual int checkServerGreetings();
 		//Methods to send commands to the server
 		void setLastServerResponse(const char *pResponse);
 		int sendRawCommand(const char *pCommand, int pErrorCode);

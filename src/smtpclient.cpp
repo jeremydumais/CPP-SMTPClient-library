@@ -76,8 +76,13 @@ void SmtpClient::cleanup()
 int SmtpClient::establishConnectionWithServer() 
 {
     int session_init_return_code = initializeSession();
-    if (session_init_return_code != 220) {
+    if (session_init_return_code != 0) {
         return session_init_return_code;
+    }
+
+    int server_greetings_return_code = checkServerGreetings();
+    if (server_greetings_return_code != 220) {
+        return server_greetings_return_code;
     }
 
     int client_init_return_code = sendServerIdentification();

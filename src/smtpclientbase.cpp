@@ -327,9 +327,21 @@ int SmtpClientBase::initializeSession()
         } 
     #endif
     return 0;
+   
+}
 
-    //TODO Must be moved to another method
-    /*char outbuf[1024];
+int SmtpClientBase::sendServerIdentification() 
+{
+    string ehlo { "ehlo localhost\r\n" };
+    addCommunicationLogItem(ehlo.c_str());
+    return sendRawCommand(ehlo.c_str(), 
+        SOCKET_INIT_CLIENT_SEND_EHLO_ERROR, 
+        SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT);
+}
+
+int SmtpClientBase::checkServerGreetings() 
+{
+    char outbuf[1024];
     unsigned int waitTime = 0;
     ssize_t bytes_received = 0;
     while ((bytes_received = recv(mSock, outbuf, 1024, 0)) < 0 && waitTime < mCommandTimeOut)
@@ -346,16 +358,7 @@ int SmtpClientBase::initializeSession()
         }
         return status_code;
     }
-    return SOCKET_INIT_SESSION_CONNECT_TIMEOUT;*/
-}
-
-int SmtpClientBase::sendServerIdentification() 
-{
-    string ehlo { "ehlo localhost\r\n" };
-    addCommunicationLogItem(ehlo.c_str());
-    return sendRawCommand(ehlo.c_str(), 
-        SOCKET_INIT_CLIENT_SEND_EHLO_ERROR, 
-        SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT);
+    return SOCKET_INIT_SESSION_CONNECT_TIMEOUT;
 }
 
 int SmtpClientBase::sendRawCommand(const char *pCommand, int pErrorCode) 

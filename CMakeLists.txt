@@ -84,8 +84,9 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/plaintextmessage.cpp
     ${SRC_PATH}/smtpclientbase.cpp
     ${SRC_PATH}/smtpclient.cpp
-	${SRC_PATH}/sslsmtpclient.cpp
-	${SRC_PATH}/implicitsslsmtpclient.cpp
+	${SRC_PATH}/securesmtpclientbase.cpp
+	${SRC_PATH}/opportunisticsecuresmtpclient.cpp
+	${SRC_PATH}/forcedsecuresmtpclient.cpp
 	${SRC_PATH}/stringutils.cpp)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -170,7 +171,7 @@ add_executable(${PROJECT_UNITTEST_NAME} ${INCLUDE_PATH}
 	${TEST_SRC_PATH}/credential_unittest.cpp
 	${TEST_SRC_PATH}/plaintextmessage_unittest.cpp
 	${TEST_SRC_PATH}/stringutils_unittest.cpp
-	${TEST_SRC_PATH}/sslsmtpclient_unittest.cpp
+	${TEST_SRC_PATH}/opportunisticsecuresmtpclient_unittest.cpp
 	${TEST_SRC_PATH}/smtpclientbase_unittest.cpp
 	${TEST_SRC_PATH}/smtpclient_unittest.cpp)
 

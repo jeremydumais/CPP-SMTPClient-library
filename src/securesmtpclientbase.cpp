@@ -1,7 +1,7 @@
+#include "securesmtpclientbase.h"
 #include "smtpclienterrors.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
-#include "sslsmtpclient.h"
 #include <openssl/err.h>
 
 #ifdef _WIN32
@@ -22,7 +22,7 @@
 using namespace std;
 using namespace jed_utils;
 
-SSLSmtpClient::SSLSmtpClient(const char *pServerName, unsigned int pPort)
+SecureSmtpClientBase::SecureSmtpClientBase(const char *pServerName, unsigned int pPort)
     : SmtpClientBase(pServerName, pPort),
       mBIO(nullptr),
       mCTX(nullptr),
@@ -30,13 +30,13 @@ SSLSmtpClient::SSLSmtpClient(const char *pServerName, unsigned int pPort)
 {
 }
 
-SSLSmtpClient::~SSLSmtpClient()
+SecureSmtpClientBase::~SecureSmtpClientBase()
 {    
     cleanup();
 }
 
 //Copy constructor
-SSLSmtpClient::SSLSmtpClient(const SSLSmtpClient& other)
+SecureSmtpClientBase::SecureSmtpClientBase(const SecureSmtpClientBase& other)
 	: SmtpClientBase(other),
       mBIO(nullptr),
       mCTX(nullptr),
@@ -45,7 +45,7 @@ SSLSmtpClient::SSLSmtpClient(const SSLSmtpClient& other)
 }
 
 //Assignment operator
-SSLSmtpClient& SSLSmtpClient::operator=(const SSLSmtpClient& other)
+SecureSmtpClientBase& SecureSmtpClientBase::operator=(const SecureSmtpClientBase& other)
 {
 	if (this != &other) {
         SmtpClientBase::operator=(other);
@@ -57,7 +57,7 @@ SSLSmtpClient& SSLSmtpClient::operator=(const SSLSmtpClient& other)
 }
 
 //Move constructor
-SSLSmtpClient::SSLSmtpClient(SSLSmtpClient&& other) noexcept
+SecureSmtpClientBase::SecureSmtpClientBase(SecureSmtpClientBase&& other) noexcept
 	: SmtpClientBase(move(other)),
       mBIO(other.mBIO),
       mCTX(other.mCTX),
@@ -71,7 +71,7 @@ SSLSmtpClient::SSLSmtpClient(SSLSmtpClient&& other) noexcept
 }
 
 //Move assignement operator
-SSLSmtpClient& SSLSmtpClient::operator=(SSLSmtpClient&& other) noexcept
+SecureSmtpClientBase& SecureSmtpClientBase::operator=(SecureSmtpClientBase&& other) noexcept
 {
 	if (this != &other) {
         SmtpClientBase::operator=(move(other));
@@ -88,7 +88,7 @@ SSLSmtpClient& SSLSmtpClient::operator=(SSLSmtpClient&& other) noexcept
 	return *this;
 }
 
-void SSLSmtpClient::cleanup()
+void SecureSmtpClientBase::cleanup()
 {
     if (mCTX != nullptr) {
         SSL_CTX_free(mCTX);
@@ -113,52 +113,8 @@ void SSLSmtpClient::cleanup()
     #endif
 }
 
-int SSLSmtpClient::establishConnectionWithServer()
-{
-    int session_init_return_code = initializeSession();
-    if (session_init_return_code != 220) {
-        return session_init_return_code;
-    }
 
-    int client_init_return_code = sendServerIdentification();
-    if (client_init_return_code != 250) {
-        return client_init_return_code;
-    }
-
-    int tls_init_return_code = upgradeToSecureConnection();
-    if (tls_init_return_code != 220) {
-        return tls_init_return_code;
-    }
-
-    int tls_start_return_code = startTLSNegotiation();
-    if (tls_start_return_code != 0) {
-        return tls_start_return_code;
-    }
-
-    int client_initSecure_return_code = getServerSecureIdentification();
-    if (client_initSecure_return_code != 250) {
-        return client_initSecure_return_code;
-    }
-
-    if (getCredentials() != nullptr) {
-        int client_auth_return_code = authenticateClient();
-        if (client_auth_return_code != 235) {
-            return client_auth_return_code;
-        }
-    }
-    return 0;
-}
-
-int SSLSmtpClient::upgradeToSecureConnection()
-{
-    string start_tls_cmd { "STARTTLS\r\n" };
-    addCommunicationLogItem(start_tls_cmd.c_str());
-    return sendRawCommand(start_tls_cmd.c_str(), 
-        SOCKET_INIT_CLIENT_SEND_STARTTLS_ERROR, 
-        SOCKET_INIT_CLIENT_SEND_STARTTLS_TIMEOUT);
-}
-
-void SSLSmtpClient::initializeSSLContext()
+void SecureSmtpClientBase::initializeSSLContext()
 {
     SSL_library_init();
 
@@ -172,7 +128,7 @@ void SSLSmtpClient::initializeSSLContext()
     }
 }
 
-int SSLSmtpClient::startTLSNegotiation()
+int SecureSmtpClientBase::startTLSNegotiation()
 {
     addCommunicationLogItem("<Start TLS negotiation>");    
     initializeSSLContext();
@@ -271,7 +227,7 @@ int SSLSmtpClient::startTLSNegotiation()
     return 0;
 }
 
-int SSLSmtpClient::getServerSecureIdentification()
+int SecureSmtpClientBase::getServerSecureIdentification()
 {
     const int EHLO_SUCCESS_CODE = 250;
     addCommunicationLogItem("Contacting the server again but via the secure channel...");
@@ -289,7 +245,7 @@ int SSLSmtpClient::getServerSecureIdentification()
     return EHLO_SUCCESS_CODE;
 }
 
-int SSLSmtpClient::sendCommand(const char *pCommand, int pErrorCode)
+int SecureSmtpClientBase::sendCommand(const char *pCommand, int pErrorCode)
 {
     if (const int status = BIO_puts(mBIO, pCommand) < 0) {
         mLastSocketErrNo = ERR_get_error();
@@ -299,7 +255,7 @@ int SSLSmtpClient::sendCommand(const char *pCommand, int pErrorCode)
     return 0;
 }
 
-int SSLSmtpClient::sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode)
+int SecureSmtpClientBase::sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode)
 {
     unsigned int waitTime {0};
     int bytes_received {0};
