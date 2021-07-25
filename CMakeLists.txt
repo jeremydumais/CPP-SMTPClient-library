@@ -100,7 +100,14 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		PRIVATE SMTPCLIENT_EXPORTS
 		INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
 		INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
-	target_link_libraries(${PROJECT_NAME} Ws2_32 libsslMD libcryptoMD crypt32 cryptui)
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)	
+    	# 64 bits
+		set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE "libsslMD" "libcryptoMD")
+	elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    	# 32 bits
+		set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE ${OPENSSL_LIBRARIES})
+	endif()
+	target_link_libraries(${PROJECT_NAME} Ws2_32 ${OPENSSL_LIBRARIES_BY_MACHINE_TYPE} crypt32 cryptui)
 else()
 	#For other compiler create the library as a static library
 	add_library(${PROJECT_NAME}
@@ -130,6 +137,24 @@ else()
 			"-pedantic" # Issue all the warnings demanded by strict ISO C and ISO C++
 			"-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
 			)
+	endif()
+endif()
+
+if (WIN32)
+	# Copy the OpenSSL dependency files
+	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+		set(BUILD_MODE_OUTPUT_FOLDER "Debug")
+	else()
+		set(BUILD_MODE_OUTPUT_FOLDER "Release")
+	endif()
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    	# 64 bits
+		configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libsslMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMD.dll COPYONLY)
+		configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libcryptoMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMD.dll COPYONLY)
+	elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    	# 32 bits
+		configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libsslMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMD.dll COPYONLY)
+		configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libcryptoMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMD.dll COPYONLY)
 	endif()
 endif()
 

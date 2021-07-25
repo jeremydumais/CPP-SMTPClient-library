@@ -163,7 +163,7 @@ int SecureSMTPClientBase::startTLSNegotiation()
         HCERTSTORE hStore = CertOpenSystemStore(NULL, "ROOT");
 
         if (!hStore) {
-            mLastSocketErrNo = GetLastError();
+            setLastSocketErrNo(static_cast<int>(GetLastError()));
             return SSL_CLIENT_STARTTLS_WIN_CERTOPENSYSTEMSTORE_ERROR;
         }
 
