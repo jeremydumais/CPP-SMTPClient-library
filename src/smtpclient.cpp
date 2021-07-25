@@ -1,8 +1,5 @@
 #include "smtpclient.h"
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
+#include "smtpserverstatuscodes.h"
 #ifdef _WIN32
 	#include <WinSock2.h>
     #include <ws2tcpip.h>
@@ -24,13 +21,7 @@ SmtpClient::SmtpClient(const char *pServerName, unsigned int pPort)
 
 SmtpClient::~SmtpClient()
 {
-    cleanup();
-}
-
-//Copy constructor
-SmtpClient::SmtpClient(const SmtpClient &other)
-    : SMTPClientBase(other)
-{
+    SmtpClient::cleanup();
 }
 
 //Assignment operator
@@ -59,15 +50,16 @@ SmtpClient& SmtpClient::operator=(SmtpClient &&other) noexcept
 
 void SmtpClient::cleanup()
 {
-    if (mSock != 0) {
+    int socket { getSocketFileDescriptor() };
+    if (socket != 0) {
         #ifdef _WIN32
-            shutdown(mSock, SD_BOTH);
-            closesocket(mSock);
+            shutdown(socket, SD_BOTH);
+            closesocket(socket);
         #else
-            close(mSock);
+            close(socket);
         #endif 
     }
-    mSock = 0;
+    clearSocketFileDescriptor();
     #ifdef _WIN32
         WSACleanup();
     #endif
@@ -81,12 +73,12 @@ int SmtpClient::establishConnectionWithServer()
     }
 
     int server_greetings_return_code = checkServerGreetings();
-    if (server_greetings_return_code != 220) {
+    if (server_greetings_return_code != STATUS_CODE_SERVICE_READY) {
         return server_greetings_return_code;
     }
 
     int client_init_return_code = sendServerIdentification();
-    if (client_init_return_code != 250) {
+    if (client_init_return_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
         return client_init_return_code;
     }
 

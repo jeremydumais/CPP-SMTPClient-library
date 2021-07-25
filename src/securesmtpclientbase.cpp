@@ -14,9 +14,9 @@
 #else
     #include <fcntl.h>
     #include <netdb.h>
-    #include <unistd.h>
     #include <netinet/in.h>
     #include <openssl/bio.h> /* BasicInput/Output streams */
+    #include <unistd.h>
 #endif
 
 using namespace std;
@@ -32,7 +32,7 @@ SecureSMTPClientBase::SecureSMTPClientBase(const char *pServerName, unsigned int
 
 SecureSMTPClientBase::~SecureSMTPClientBase()
 {    
-    cleanup();
+    SecureSMTPClientBase::cleanup();
 }
 
 //Copy constructor
@@ -74,7 +74,6 @@ SecureSMTPClientBase::SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcep
 SecureSMTPClientBase& SecureSMTPClientBase::operator=(SecureSMTPClientBase&& other) noexcept
 {
 	if (this != &other) {
-        SMTPClientBase::operator=(move(other));
 		// Copy the data pointer and its length from the source object.
         mBIO = other.mBIO;
         mCTX = other.mCTX;
@@ -84,6 +83,7 @@ SecureSMTPClientBase& SecureSMTPClientBase::operator=(SecureSMTPClientBase&& oth
         other.mBIO = nullptr;
         other.mCTX = nullptr;
         other.mSSL = nullptr;
+        SMTPClientBase::operator=(move(other));
 	}
 	return *this;
 }
@@ -98,21 +98,26 @@ void SecureSMTPClientBase::cleanup()
         BIO_free_all(mBIO);
     }
     mBIO = nullptr;
-    if (mSock != 0) {
+    int socketFileDescriptor {getSocketFileDescriptor() };
+    if (socketFileDescriptor != 0) {
         #ifdef _WIN32
-            shutdown(mSock, SD_BOTH);
-            closesocket(mSock);
+            shutdown(socketFileDescriptor, SD_BOTH);
+            closesocket(socketFileDescriptor);
         #else
-            close(mSock);
+            close(socketFileDescriptor);
         #endif 
     }
-    mSock = 0;
+    clearSocketFileDescriptor();
     mSSL = nullptr;
     #ifdef _WIN32
         WSACleanup();
     #endif
 }
 
+BIO* SecureSMTPClientBase::getBIO() const
+{
+    return mBIO;
+}
 
 void SecureSMTPClientBase::initializeSSLContext()
 {
@@ -124,7 +129,7 @@ void SecureSMTPClientBase::initializeSSLContext()
     mCTX = SSL_CTX_new(method);
 
     if (mCTX == nullptr) {
-        mLastSocketErrNo = ERR_get_error();
+        setLastSocketErrNo(static_cast<int>(ERR_get_error()));
     }
 }
 
@@ -142,10 +147,11 @@ int SecureSMTPClientBase::startTLSNegotiation()
     }
 
     /* Link bio channel, SSL session, and server endpoint */
-    char name[1024];
+    const int SERVERNAMEANDPORT_LENGTH = 1024;
+    char name[SERVERNAMEANDPORT_LENGTH];
     sprintf(name, "%s:%i", getServerName(), getServerPort());
     BIO_get_ssl(mBIO, &mSSL); /* session */
-    SSL_set_fd(mSSL, mSock);
+    SSL_set_fd(mSSL, getSocketFileDescriptor());
     SSL_set_mode(mSSL, SSL_MODE_AUTO_RETRY); /* robustness */
     BIO_set_conn_hostname(mBIO, name); /* prepare to connect */
 
@@ -180,13 +186,13 @@ int SecureSMTPClientBase::startTLSNegotiation()
     if (verify_flag != X509_V_OK) {
         fprintf(stderr,
             "##### Certificate verification error (%i) but continuing...\n",
-            (int)verify_flag);
+            static_cast<int>(verify_flag));
     }
 
     /* Try to connect */
     if (BIO_do_connect(mBIO) <= 0) {
         cleanup();
-        mLastSocketErrNo = ERR_get_error();
+        setLastSocketErrNo(static_cast<int>(ERR_get_error()));
         return SSL_CLIENT_STARTTLS_BIO_CONNECT_ERROR;
     }
 
@@ -194,7 +200,7 @@ int SecureSMTPClientBase::startTLSNegotiation()
     addCommunicationLogItem("<Negotiate a TLS session>", "c & s");    
     if (BIO_do_handshake(mBIO) <= 0) {
         cleanup();
-        mLastSocketErrNo = ERR_get_error();
+        setLastSocketErrNo(static_cast<int>(ERR_get_error()));
         return SSL_CLIENT_STARTTLS_BIO_HANDSHAKE_ERROR;
     }
 
@@ -212,8 +218,9 @@ int SecureSMTPClientBase::startTLSNegotiation()
 
     /* Step 2: verify the result of chain verification */
     /* Verification performed according to RFC 4158    */
-    int res = SSL_get_verify_result(mSSL);
+    int res = static_cast<int>(SSL_get_verify_result(mSSL));
     if(!(X509_V_OK == res)) {
+        addCommunicationLogItem(X509_verify_cert_error_string(res), "s");
         cleanup();
         return SSL_CLIENT_STARTTLS_VERIFY_RESULT_ERROR;
     }
@@ -240,15 +247,14 @@ int SecureSMTPClientBase::getServerSecureIdentification()
         return tls_command_return_code;
     }
     //Inspect the returned values for authentication options
-    delete mAuthOptions;
-    mAuthOptions = SMTPClientBase::extractAuthenticationOptions(mLastServerResponse);
+    setAuthenticationOptions(SMTPClientBase::extractAuthenticationOptions(getLastServerResponse()));
     return EHLO_SUCCESS_CODE;
 }
 
 int SecureSMTPClientBase::sendCommand(const char *pCommand, int pErrorCode)
 {
-    if (const int status = BIO_puts(mBIO, pCommand) < 0) {
-        mLastSocketErrNo = ERR_get_error();
+    if (BIO_puts(mBIO, pCommand) < 0) {
+        setLastSocketErrNo(static_cast<int>(ERR_get_error()));
         cleanup();
         return pErrorCode;
     }
@@ -259,19 +265,19 @@ int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErr
 {
     unsigned int waitTime {0};
     int bytes_received {0};
-    char outbuf[1024];
+    char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
 
-    if (const int status = BIO_puts(mBIO, pCommand) < 0) {
-        mLastSocketErrNo = ERR_get_error();
+    if (BIO_puts(mBIO, pCommand) < 0) {
+        setLastSocketErrNo(static_cast<int>(ERR_get_error()));
         cleanup();
         return pErrorCode;
     }
     
-    while ((bytes_received = BIO_read(mBIO, outbuf, 1024)) <= 0 && waitTime < mCommandTimeOut) {
+    while ((bytes_received = BIO_read(mBIO, outbuf, SERVERRESPONSE_BUFFER_LENGTH)) <= 0 && waitTime < getCommandTimeout()) {
         sleep(1);
         waitTime += 1;
     }
-    if (waitTime < mCommandTimeOut) {
+    if (waitTime < getCommandTimeout()) {
         outbuf[bytes_received-1] = '\0';
         setLastServerResponse(outbuf);
         addCommunicationLogItem(outbuf, "s");

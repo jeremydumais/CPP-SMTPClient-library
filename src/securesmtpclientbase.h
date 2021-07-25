@@ -26,12 +26,9 @@ namespace jed_utils
 		SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcept; //Move constructor
 		SecureSMTPClientBase& operator=(SecureSMTPClientBase&& other) noexcept; //Move assignement
 	protected:
-    	//Attributes used to communicate with the server
-		BIO *mBIO;
-		SSL_CTX *mCTX;
-		SSL *mSSL;
 		//Methods
 		void cleanup() override;
+		BIO *getBIO() const;
 		//Methods used to establish the connection with server
 		int getServerSecureIdentification();
 		int startTLSNegotiation();
@@ -39,6 +36,11 @@ namespace jed_utils
 		//Methods to send commands to the server
 		int sendCommand(const char *pCommand, int pErrorCode) override;
 		int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) override;
+	private:
+		//Attributes used to communicate with the server
+		BIO *mBIO;
+		SSL_CTX *mCTX;
+		SSL *mSSL;
     };
 } // namespace jed_utils
 

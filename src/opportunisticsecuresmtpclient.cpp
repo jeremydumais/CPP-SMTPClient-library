@@ -1,7 +1,10 @@
+#include "opportunisticsecuresmtpclient.h"
 #include "smtpclienterrors.h"
+#include "smtpserverstatuscodes.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
-#include "opportunisticsecuresmtpclient.h"
+#include "stringutils.h"
+#include <algorithm>
 #include <openssl/err.h>
 
 #ifdef _WIN32
@@ -14,9 +17,9 @@
 #else
     #include <fcntl.h>
     #include <netdb.h>
-    #include <unistd.h>
     #include <netinet/in.h>
     #include <openssl/bio.h> /* BasicInput/Output streams */
+    #include <unistd.h>
 #endif
 
 using namespace std;
@@ -25,16 +28,6 @@ using namespace jed_utils;
 OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(const char *pServerName, unsigned int pPort)
     : SecureSMTPClientBase(pServerName, pPort)
 {
-}
-
-OpportunisticSecureSMTPClient::~OpportunisticSecureSMTPClient()
-{    
-}
-
-//Copy constructor
-OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(const OpportunisticSecureSMTPClient& other)
-	: SecureSMTPClientBase(other)
-{    
 }
 
 //Assignment operator
@@ -69,35 +62,39 @@ int OpportunisticSecureSMTPClient::establishConnectionWithServer()
     }
 
     int server_greetings_return_code = checkServerGreetings();
-    if (server_greetings_return_code != 220) {
+    if (server_greetings_return_code != STATUS_CODE_SERVICE_READY) {
         return server_greetings_return_code;
     }
 
     int client_init_return_code = sendServerIdentification();
-    if (client_init_return_code != 250) {
+    if (client_init_return_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
         return client_init_return_code;
     }
 
-    int tls_init_return_code = upgradeToSecureConnection();
-    if (tls_init_return_code != 220) {
-        return tls_init_return_code;
-    }
-
-    int tls_start_return_code = startTLSNegotiation();
-    if (tls_start_return_code != 0) {
-        return tls_start_return_code;
-    }
-
-    int client_initSecure_return_code = getServerSecureIdentification();
-    if (client_initSecure_return_code != 250) {
-        return client_initSecure_return_code;
-    }
-
-    if (getCredentials() != nullptr) {
-        int client_auth_return_code = authenticateClient();
-        if (client_auth_return_code != 235) {
-            return client_auth_return_code;
+    if (isStartTLSSupported(getLastServerResponse())) {
+        addCommunicationLogItem("Info: STARTTLS is available by the server, the communication will be encrypted.");
+        int tls_init_return_code = upgradeToSecureConnection();
+        if (tls_init_return_code != STATUS_CODE_SERVICE_READY) {
+            return tls_init_return_code;
         }
+        int tls_start_return_code = startTLSNegotiation();
+        if (tls_start_return_code != 0) {
+            return tls_start_return_code;
+        }
+        int client_initSecure_return_code = getServerSecureIdentification();
+        if (client_initSecure_return_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
+            return client_initSecure_return_code;
+        }
+        if (getCredentials() != nullptr) {
+            int client_auth_return_code = authenticateClient();
+            if (client_auth_return_code != STATUS_CODE_AUTHENTICATION_SUCCEEDED) {
+                return client_auth_return_code;
+            }
+        }
+    }
+    else {
+        addCommunicationLogItem("Info: STARTTLS is not an available option by the server, the communication will then remain unencrypted.");
+        setKeepUsingBaseSendCommands(true); 
     }
     return 0;
 }
@@ -109,4 +106,19 @@ int OpportunisticSecureSMTPClient::upgradeToSecureConnection()
     return sendRawCommand(start_tls_cmd.c_str(), 
         SOCKET_INIT_CLIENT_SEND_STARTTLS_ERROR, 
         SOCKET_INIT_CLIENT_SEND_STARTTLS_TIMEOUT);
+}
+
+
+bool OpportunisticSecureSMTPClient::isStartTLSSupported(const char *pServerResponse)
+{
+    if (pServerResponse == nullptr) {
+        return false;
+    }
+    string serverResponse { pServerResponse };
+    if (serverResponse.length() == 0 || StringUtils::trim(serverResponse).empty()) {
+        return false;
+    }
+    
+    const string STARTTLS_LINE_PREFIX { "250-STARTTLS" };
+    return serverResponse.find(STARTTLS_LINE_PREFIX) != string::npos;
 }

@@ -19,8 +19,8 @@ namespace jed_utils
 	{
 	public:
 		ForcedSecureSMTPClient(const char *pServerName, unsigned int pPort);
-		~ForcedSecureSMTPClient();
-		ForcedSecureSMTPClient(const ForcedSecureSMTPClient& other); //Copy constructor
+		~ForcedSecureSMTPClient() = default;
+		ForcedSecureSMTPClient(const ForcedSecureSMTPClient& other) = default; //Copy constructor
         ForcedSecureSMTPClient& operator=(const ForcedSecureSMTPClient& other); //Copy assignment
 		ForcedSecureSMTPClient(ForcedSecureSMTPClient&& other) noexcept; //Move constructor
 		ForcedSecureSMTPClient& operator=(ForcedSecureSMTPClient&& other) noexcept; //Move assignement

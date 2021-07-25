@@ -1,19 +1,19 @@
-#include "../../src/sslsmtpclient.h"
+#include "../../src/opportunisticsecuresmtpclient.h"
 #include <gtest/gtest.h>
 
 using namespace jed_utils;
 using namespace std;
 
-class FakeSSLSMTPClient : public ::testing::Test, public OpportunisticSecureSMTPClient
+class FakeOpportunisticSecureSMTPClient : public ::testing::Test, public OpportunisticSecureSMTPClient
 {
 public:
-    FakeSSLSMTPClient()
+    FakeOpportunisticSecureSMTPClient()
         : OpportunisticSecureSMTPClient("127.0.0.1", 587)
     {
     }
 };
 
-TEST(SSLSmtpClient_Constructor, NullServerName_ThrowInvalidArgument)
+TEST(OpportunisticSecureSMTPClient_Constructor, NullServerName_ThrowInvalidArgument)
 {
 	try
 	{
@@ -26,7 +26,7 @@ TEST(SSLSmtpClient_Constructor, NullServerName_ThrowInvalidArgument)
 	}
 }
 
-TEST(SSLSmtpClient_Constructor, EmptyServerName_ThrowInvalidArgument)
+TEST(OpportunisticSecureSMTPClient_Constructor, EmptyServerName_ThrowInvalidArgument)
 {
 	try
 	{
@@ -39,7 +39,7 @@ TEST(SSLSmtpClient_Constructor, EmptyServerName_ThrowInvalidArgument)
 	}
 }
 
-TEST(SSLSmtpClient_Constructor, OnlySpacesServerName_ThrowInvalidArgument)
+TEST(OpportunisticSecureSMTPClient_Constructor, OnlySpacesServerName_ThrowInvalidArgument)
 {
 	try
 	{
@@ -52,14 +52,14 @@ TEST(SSLSmtpClient_Constructor, OnlySpacesServerName_ThrowInvalidArgument)
 	}
 }
 
-TEST(SSLSmtpClient_Constructor, ValidArguments_ReturnSuccess)
+TEST(OpportunisticSecureSMTPClient_Constructor, ValidArguments_ReturnSuccess)
 {
 	OpportunisticSecureSMTPClient client("test", 587);	
     ASSERT_STREQ("test", client.getServerName());
     ASSERT_EQ(587, client.getServerPort());
 }
 
-TEST(SSLSmtpClient_CopyConstructor, SSLSmtpClientCopyConstructorValid)
+TEST(OpportunisticSecureSMTPClient_CopyConstructor, OpportunisticSecureSMTPClientCopyConstructorValid)
 {
 	OpportunisticSecureSMTPClient* client1 = new OpportunisticSecureSMTPClient("server1", 123);
     client1->setCredentials(Credential("user1", "pass1"));
@@ -73,7 +73,7 @@ TEST(SSLSmtpClient_CopyConstructor, SSLSmtpClientCopyConstructorValid)
 	ASSERT_STREQ("pass1", client2.getCredentials()->getPassword());
 }
 
-TEST(SSLSmtpClient_CopyAssignment, SSLSmtpClientCopyAssignmentValid)
+TEST(OpportunisticSecureSMTPClient_CopyAssignment, OpportunisticSecureSMTPClientCopyAssignmentValid)
 {
 	OpportunisticSecureSMTPClient* client1 = new OpportunisticSecureSMTPClient("test", 123);
     client1->setCredentials(Credential("user1", "pass1"));
@@ -88,7 +88,7 @@ TEST(SSLSmtpClient_CopyAssignment, SSLSmtpClientCopyAssignmentValid)
 	ASSERT_STREQ("pass1", client2.getCredentials()->getPassword());
 }
 
-TEST(SSLSmtpClient_MoveConstructor, SSLSmtpClientMoveConstructorValid)
+TEST(OpportunisticSecureSMTPClient_MoveConstructor, OpportunisticSecureSMTPClientMoveConstructorValid)
 {
 	OpportunisticSecureSMTPClient client1("test", 123);
     client1.setCredentials(Credential("user1", "pass1"));
@@ -106,7 +106,7 @@ TEST(SSLSmtpClient_MoveConstructor, SSLSmtpClientMoveConstructorValid)
 	ASSERT_EQ(nullptr, client1.getCredentials());
 }
 
-TEST(SSLSmtpClient_MoveAssignment, SSLSmtpClientMoveAssignmentValid)
+TEST(OpportunisticSecureSMTPClient_MoveAssignment, OpportunisticSecureSMTPClientMoveAssignmentValid)
 {
 	OpportunisticSecureSMTPClient client1("test", 123);
     client1.setCredentials(Credential("user1", "pass1"));
@@ -123,4 +123,40 @@ TEST(SSLSmtpClient_MoveAssignment, SSLSmtpClientMoveAssignmentValid)
 	ASSERT_EQ(0, client1.getServerPort());
     ASSERT_EQ(0, client1.getCommandTimeout());
 	ASSERT_EQ(nullptr, client1.getCredentials());
+}
+
+TEST_F(FakeOpportunisticSecureSMTPClient, isStartTLSSupported_WithNullServerReponse_ReturnFalse)
+{
+	ASSERT_FALSE(isStartTLSSupported(nullptr));
+}
+
+TEST_F(FakeOpportunisticSecureSMTPClient, isStartTLSSupported_WithEmptyServerReponse_ReturnFalse)
+{
+	ASSERT_FALSE(isStartTLSSupported(""));
+}
+
+TEST_F(FakeOpportunisticSecureSMTPClient, isStartTLSSupported_WithWhiteSpacesServerReponse_ReturnFalse)
+{
+	ASSERT_FALSE(isStartTLSSupported("   "));
+}
+
+TEST_F(FakeOpportunisticSecureSMTPClient, isStartTLSSupported_WithServerReponseContainingSTARTTLS_ReturnTrue)
+{
+	ASSERT_TRUE(isStartTLSSupported("250-SIZE 35882577\r\n"
+"250-8BITMIME\r\n"
+"250-STARTTLS\r\n"
+"250-ENHANCEDSTATUSCODES\r\n"
+"250-PIPELINING\r\n"
+"250-CHUNKING\r\n"
+"250 SMTPUTF8"));
+}
+
+TEST_F(FakeOpportunisticSecureSMTPClient, isStartTLSSupported_WithoutServerReponseContainingSTARTTLS_ReturnFalse)
+{
+	ASSERT_FALSE(isStartTLSSupported("250-SIZE 35882577\r\n"
+"250-8BITMIME\r\n"
+"250-ENHANCEDSTATUSCODES\r\n"
+"250-PIPELINING\r\n"
+"250-CHUNKING\r\n"
+"250 SMTPUTF8"));
 }

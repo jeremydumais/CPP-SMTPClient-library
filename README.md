@@ -38,7 +38,8 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cerr << "An error occurred. Return code : " << err_no;
+			cout << client.getCommunicationLog() << '\n';
+			cerr << "An error occurred. Return code : " << err_no << '\n';
 			return 1;
 		}
 		cout << client.getCommunicationLog() << endl;
@@ -82,7 +83,8 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cerr << "An error occurred. Return code : " << err_no;
+			cout << client.getCommunicationLog() << '\n';
+			cerr << "An error occurred. Return code : " << err_no << '\n';
 			return 1;
 		}
 		cout << client.getCommunicationLog() << endl;
@@ -118,7 +120,8 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cerr << "An error occurred. Return code : " << err_no;
+			cout << client.getCommunicationLog() << '\n';
+			cerr << "An error occurred. Return code : " << err_no << '\n';
 			return 1;
 		}
 		cout << client.getCommunicationLog() << endl;
@@ -154,7 +157,8 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cerr << "An error occurred. Return code : " << err_no;
+			cout << client.getCommunicationLog() << '\n';
+			cerr << "An error occurred. Return code : " << err_no << '\n';
 			return 1;
 		}
 		cout << client.getCommunicationLog() << endl;
@@ -167,7 +171,7 @@ int main()
     return 0;
 }
 ```
-
+#
 ## Download latest binaries
 
 ### Windows
@@ -175,7 +179,7 @@ int main()
 [v1.1.2 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x64.zip)
 
 [v1.1.2 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x86.zip)
-
+#
 ## Documentation
 
 See the classes documentation [here](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Classes-Documentation)

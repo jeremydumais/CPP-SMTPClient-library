@@ -22,6 +22,9 @@
 	#define SMTPCLIENTBASE_API
 #endif
 
+#define COMMUNICATIONLOG_LENGTH			4096	/* The max length of the communication log */
+#define SERVERRESPONSE_BUFFER_LENGTH	1024	/* The max length of the server response buffer */
+
 namespace jed_utils
 {
 	class SMTPCLIENTBASE_API SMTPClientBase
@@ -42,18 +45,15 @@ namespace jed_utils
 		void setServerPort(unsigned int pPort);
 		void setCommandTimeout(unsigned int pTimeOutInSeconds);
 		void setCredentials(const Credential &pCredential);
+		void setKeepUsingBaseSendCommands(bool pValue);
 		int sendMail(const Message &pMsg);
-	protected:
-		char *mServerName;
-		unsigned int mPort;
-		char *mCommunicationLog;
-		char *mLastServerResponse;
-		unsigned int mCommandTimeOut;
-		int mLastSocketErrNo;
-		ServerAuthOptions *mAuthOptions;
-		Credential *mCredential;
-		int mSock;
+	protected:  
 		virtual void cleanup() = 0;
+		int getSocketFileDescriptor() const;
+		void clearSocketFileDescriptor();
+		const char *getLastServerResponse() const;
+		void setLastSocketErrNo(int lastError);
+		void setAuthenticationOptions(ServerAuthOptions *authOptions);
 		//Methods used to establish the connection with server
 		int initializeSession();
 		int sendServerIdentification();
@@ -77,10 +77,26 @@ namespace jed_utils
 		int setMailBody(const Message &pMsg);
 
 		void addCommunicationLogItem(const char *pItem, const char *pPrefix = "c");
-		std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments) const;
-		int extractReturnCode(const char *pOutput) const;
+		static std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments);
+		static int extractReturnCode(const char *pOutput);
 		static ServerAuthOptions *extractAuthenticationOptions(const char *pEhloOutput);
-
+	private:
+		char *mServerName;
+		unsigned int mPort;
+		char *mCommunicationLog;
+		char *mLastServerResponse;
+		unsigned int mCommandTimeOut;
+		int mLastSocketErrNo;
+		ServerAuthOptions *mAuthOptions;
+		Credential *mCredential;
+		int mSock;
+		// This field indicate the class will keep using base send command even if a child class
+		// as overriden the sendCommand and sendCommandWithFeedback.
+		// This is used for example if you are using a secure client class but the STARTTLS
+		// feature is not available. The communication will then remain unsecured.
+		bool mKeepUsingBaseSendCommands;
+	    int (SMTPClientBase::*sendCommandPtr)(const char *pCommand, int pErrorCode);
+    	int (SMTPClientBase::*sendCommandWithFeedbackPtr)(const char *pCommand, int pErrorCode, int pTimeoutCode);
     };
 } // namespace jed_utils
 

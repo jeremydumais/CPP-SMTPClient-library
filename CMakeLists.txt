@@ -23,7 +23,7 @@ if(NOT CLANG_TIDY_EXE)
     message(STATUS "clang-tidy not found.")
 else()
     message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-    set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;-line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];-checks=*,-llvm-header-guard,-google-build-using-namespace,-fuchsia-default-arguments,-modernize-pass-by-value,-fuchsia-overloaded-operator,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory,-modernize-use-trailing-return-type")
+    set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;-line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];-checks=*,-llvm-header-guard,-google-build-using-namespace,-fuchsia-default-arguments,-modernize-pass-by-value,-fuchsia-overloaded-operator,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory,-modernize-use-trailing-return-type,-fuchsia-default-arguments-calls")
 endif()
 
 # Set directories
@@ -117,6 +117,8 @@ else()
 			"-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
 			"-ftrack-macro-expansion=0"
 			"-fno-diagnostics-show-caret"
+			"-Wno-stringop-truncation"
+			"-Wno-stringop-overflow"
 			)
 	elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 		target_compile_options(${PROJECT_NAME}
@@ -162,6 +164,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
                  ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
                  EXCLUDE_FROM_ALL)
+include(GoogleTest)
 
 add_executable(${PROJECT_UNITTEST_NAME} ${INCLUDE_PATH}
 	${TEST_SRC_PATH}/main.cpp
@@ -176,7 +179,7 @@ add_executable(${PROJECT_UNITTEST_NAME} ${INCLUDE_PATH}
 	${TEST_SRC_PATH}/smtpclient_unittest.cpp)
 
 target_link_libraries(${PROJECT_UNITTEST_NAME} ${PROJECT_NAME} gtest gtest_main ${PTHREAD})
-add_test(AllTestsInMain ${PROJECT_UNITTEST_NAME})
+gtest_discover_tests(${PROJECT_UNITTEST_NAME})
 
 install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 install(DIRECTORY src/ DESTINATION include/smtpclient

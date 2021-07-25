@@ -19,14 +19,15 @@ namespace jed_utils
 	{
 	public:
 		OpportunisticSecureSMTPClient(const char *pServerName, unsigned int pPort);
-		~OpportunisticSecureSMTPClient();
-		OpportunisticSecureSMTPClient(const OpportunisticSecureSMTPClient& other); //Copy constructor
+		~OpportunisticSecureSMTPClient() = default;
+		OpportunisticSecureSMTPClient(const OpportunisticSecureSMTPClient& other) = default; //Copy constructor
         OpportunisticSecureSMTPClient& operator=(const OpportunisticSecureSMTPClient& other); //Copy assignment
 		OpportunisticSecureSMTPClient(OpportunisticSecureSMTPClient&& other) noexcept; //Move constructor
 		OpportunisticSecureSMTPClient& operator=(OpportunisticSecureSMTPClient&& other) noexcept; //Move assignement
 	protected:
 		int establishConnectionWithServer() override;
 		int upgradeToSecureConnection();
+		static bool isStartTLSSupported(const char *pServerResponse);
 	};
 } // namespace jed_utils
 

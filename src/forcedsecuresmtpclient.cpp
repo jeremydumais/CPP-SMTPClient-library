@@ -1,7 +1,8 @@
+#include "forcedsecuresmtpclient.h"
 #include "smtpclienterrors.h"
+#include "smtpserverstatuscodes.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
-#include "forcedsecuresmtpclient.h"
 #include <openssl/err.h>
 
 #ifdef _WIN32
@@ -14,9 +15,9 @@
 #else
     #include <fcntl.h>
     #include <netdb.h>
-    #include <unistd.h>
     #include <netinet/in.h>
     #include <openssl/bio.h> /* BasicInput/Output streams */
+    #include <unistd.h>
 #endif
 
 using namespace std;
@@ -25,16 +26,6 @@ using namespace jed_utils;
 ForcedSecureSMTPClient::ForcedSecureSMTPClient(const char *pServerName, unsigned int pPort)
     : SecureSMTPClientBase(pServerName, pPort)
 {
-}
-
-ForcedSecureSMTPClient::~ForcedSecureSMTPClient()
-{    
-}
-
-//Copy constructor
-ForcedSecureSMTPClient::ForcedSecureSMTPClient(const ForcedSecureSMTPClient& other)
-	: SecureSMTPClientBase(other)
-{    
 }
 
 //Assignment operator
@@ -74,18 +65,18 @@ int ForcedSecureSMTPClient::establishConnectionWithServer()
     }
 
     int server_greetings_return_code = checkServerGreetings();
-    if (server_greetings_return_code != 220) {
+    if (server_greetings_return_code != STATUS_CODE_SERVICE_READY) {
         return server_greetings_return_code;
     }
 
     int client_initSecure_return_code = getServerSecureIdentification();
-    if (client_initSecure_return_code != 250) {
+    if (client_initSecure_return_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
         return client_initSecure_return_code;
     }
 
     if (getCredentials() != nullptr) {
         int client_auth_return_code = authenticateClient();
-        if (client_auth_return_code != 235) {
+        if (client_auth_return_code != STATUS_CODE_AUTHENTICATION_SUCCEEDED) {
             return client_auth_return_code;
         }
     }
@@ -94,19 +85,19 @@ int ForcedSecureSMTPClient::establishConnectionWithServer()
 
 int ForcedSecureSMTPClient::checkServerGreetings() 
 {
-    char outbuf[1024];
+    char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
     unsigned int waitTime = 0;
     ssize_t bytes_received = 0;
-    while ((bytes_received = BIO_read(mBIO, outbuf, 1024)) <= 0 && waitTime < mCommandTimeOut)
+    while ((bytes_received = BIO_read(getBIO(), outbuf, SERVERRESPONSE_BUFFER_LENGTH)) <= 0 && waitTime < getCommandTimeout())
     {
         sleep(1);
         waitTime += 1;
     }
-    if (waitTime < mCommandTimeOut) {
+    if (waitTime < getCommandTimeout()) {
         outbuf[bytes_received-1] = '\0';
         addCommunicationLogItem(outbuf, "s");
         int status_code = extractReturnCode(outbuf);
-        if (status_code == 220) {
+        if (status_code == STATUS_CODE_SERVICE_READY) {
             addCommunicationLogItem("Connected!");
         }
         return status_code;

@@ -20,7 +20,7 @@ namespace jed_utils
 	public:
 		SmtpClient(const char *pServerName, unsigned int pPort);
 		virtual ~SmtpClient();
-        SmtpClient(const SmtpClient &other); //Copy constructor
+        SmtpClient(const SmtpClient &other) = default; //Copy constructor
         SmtpClient& operator=(const SmtpClient &other); //Copy assignment
         SmtpClient(SmtpClient &&other) noexcept; //Move constructor
         SmtpClient& operator=(SmtpClient &&other) noexcept; //Move assignement
