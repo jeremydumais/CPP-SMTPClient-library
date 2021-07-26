@@ -6,6 +6,16 @@
 \### How to build the SMTP client or integrate it in your application
 
 Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-build-the-SMTP-client-or-integrate-it-in-your-application) for a quick guide on how to build the SMTP client and integrate it in your application.
+
+#
+## Download latest binaries
+
+### Windows
+
+[v1.1.2 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x64.zip)
+
+[v1.1.2 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x86.zip)
+
 #
 ## How it works
 
@@ -171,15 +181,10 @@ int main()
     return 0;
 }
 ```
-#
-## Download latest binaries
 
-### Windows
+## Unit tests
+[How to run the unit tests](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Run-the-unit-tests)
 
-[v1.1.2 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x64.zip)
-
-[v1.1.2 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x86.zip)
-#
 ## Documentation
 
 See the classes documentation [here](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Classes-Documentation)
