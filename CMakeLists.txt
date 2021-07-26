@@ -155,6 +155,10 @@ if (WIN32)
     	# 32 bits
 		configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libsslMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMD.dll COPYONLY)
 		configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libcryptoMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMD.dll COPYONLY)
+		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+			configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libsslMDd.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMDd.dll COPYONLY)
+			configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libcryptoMDd.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMDd.dll COPYONLY)
+		endif()
 	endif()
 endif()
 
