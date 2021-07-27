@@ -89,6 +89,10 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
 	${SRC_PATH}/forcedsecuresmtpclient.cpp
 	${SRC_PATH}/stringutils.cpp)
 
+if (DEFINED OPENSSL_INCLUDE_DIR)
+    include_directories(${OPENSSL_INCLUDE_DIR})
+endif()
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	#For MSVC create the library as a shared library
 	include_directories($ENV{OPENSSL_INCLUDE_DIR})
