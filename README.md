@@ -16,6 +16,20 @@ Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/H
 
 [v1.1.2 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x86.zip)
 
+# 
+## The 3 client classes
+
+### OpportunisticSecureSMTPClient
+##### The OpportunisticSecureSMTPClient should be your default choice for communicating with modern SMTP servers. The communication is usually done via port 587.
+<br/>
+
+### ForcedSecureSMTPClient
+##### The ForcedSecureSMTPClient is useful to communicate with legacy systems which requires that the communication be encrypted from the initial connection. The communication is usually done via port 465.
+<br/>
+
+### SmtpClient
+##### The SmtpClient should be used to communicate with internal relay servers. The communication is usually done via port 25.
+
 #
 ## How it works
 
