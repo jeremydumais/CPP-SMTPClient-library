@@ -89,12 +89,26 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
 	${SRC_PATH}/forcedsecuresmtpclient.cpp
 	${SRC_PATH}/stringutils.cpp)
 
+if (WIN32)
+	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules)
+	include(generate_product_version)
+	generate_product_version(
+		VersionFilesOutputVariable
+		NAME "CPP-SMTPClient-library"
+		ICON "${PATH_TO_APPLICATION_ICON}"
+		VERSION_MAJOR 1
+		VERSION_MINOR 1
+		VERSION_PATCH 3
+		VERSION_REVISION ${BUILD_REVISION}
+	)
+endif()
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	#For MSVC create the library as a shared library
 	include_directories($ENV{OPENSSL_INCLUDE_DIR})
 	link_directories($ENV{OPENSSL_CRYPTO_LIBRARY})
 	add_library(${PROJECT_NAME} SHARED
-		${PROJECT_SOURCE_FILES})
+		${PROJECT_SOURCE_FILES} ${VersionFilesOutputVariable})
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	target_compile_definitions(${PROJECT_NAME}
 		PRIVATE SMTPCLIENT_EXPORTS
