@@ -23,7 +23,7 @@ if(NOT CLANG_TIDY_EXE)
     message(STATUS "clang-tidy not found.")
 else()
     message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-    set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;-line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];-checks=*,-llvm-header-guard,-google-build-using-namespace,-fuchsia-default-arguments,-modernize-pass-by-value,-fuchsia-overloaded-operator,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory,-modernize-use-trailing-return-type")
+    set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;-line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];-checks=*,-llvm-header-guard,-google-build-using-namespace,-fuchsia-default-arguments,-modernize-pass-by-value,-fuchsia-overloaded-operator,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-owning-memory,-modernize-use-trailing-return-type,-fuchsia-default-arguments-calls")
 endif()
 
 # Set directories
@@ -84,21 +84,44 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/plaintextmessage.cpp
     ${SRC_PATH}/smtpclientbase.cpp
     ${SRC_PATH}/smtpclient.cpp
-	${SRC_PATH}/sslsmtpclient.cpp
+	${SRC_PATH}/securesmtpclientbase.cpp
+	${SRC_PATH}/opportunisticsecuresmtpclient.cpp
+	${SRC_PATH}/forcedsecuresmtpclient.cpp
 	${SRC_PATH}/stringutils.cpp)
+
+if (WIN32)
+	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules)
+	include(generate_product_version)
+	generate_product_version(
+		VersionFilesOutputVariable
+		NAME "CPP-SMTPClient-library"
+		ICON "${PATH_TO_APPLICATION_ICON}"
+		VERSION_MAJOR 1
+		VERSION_MINOR 1
+		VERSION_PATCH 3
+		VERSION_REVISION ${BUILD_REVISION}
+	)
+endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	#For MSVC create the library as a shared library
 	include_directories($ENV{OPENSSL_INCLUDE_DIR})
 	link_directories($ENV{OPENSSL_CRYPTO_LIBRARY})
 	add_library(${PROJECT_NAME} SHARED
-		${PROJECT_SOURCE_FILES})
+		${PROJECT_SOURCE_FILES} ${VersionFilesOutputVariable})
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	target_compile_definitions(${PROJECT_NAME}
 		PRIVATE SMTPCLIENT_EXPORTS
 		INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
 		INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
-	target_link_libraries(${PROJECT_NAME} Ws2_32 libsslMD libcryptoMD crypt32 cryptui)
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)	
+    	# 64 bits
+		set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE "libsslMD" "libcryptoMD")
+	elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    	# 32 bits
+		set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE ${OPENSSL_LIBRARIES})
+	endif()
+	target_link_libraries(${PROJECT_NAME} Ws2_32 ${OPENSSL_LIBRARIES_BY_MACHINE_TYPE} crypt32 cryptui)
 else()
 	#For other compiler create the library as a static library
 	add_library(${PROJECT_NAME}
@@ -115,6 +138,8 @@ else()
 			"-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
 			"-ftrack-macro-expansion=0"
 			"-fno-diagnostics-show-caret"
+			"-Wno-stringop-truncation"
+			"-Wno-stringop-overflow"
 			)
 	elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 		target_compile_options(${PROJECT_NAME}
@@ -126,6 +151,28 @@ else()
 			"-pedantic" # Issue all the warnings demanded by strict ISO C and ISO C++
 			"-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
 			)
+	endif()
+endif()
+
+if (WIN32)
+	# Copy the OpenSSL dependency files
+	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+		set(BUILD_MODE_OUTPUT_FOLDER "Debug")
+	else()
+		set(BUILD_MODE_OUTPUT_FOLDER "Release")
+	endif()
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    	# 64 bits
+		configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libsslMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMD.dll COPYONLY)
+		configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libcryptoMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMD.dll COPYONLY)
+	elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    	# 32 bits
+		configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libsslMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMD.dll COPYONLY)
+		configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libcryptoMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMD.dll COPYONLY)
+		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+			configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libsslMDd.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMDd.dll COPYONLY)
+			configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libcryptoMDd.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMDd.dll COPYONLY)
+		endif()
 	endif()
 endif()
 
@@ -160,6 +207,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
                  ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
                  EXCLUDE_FROM_ALL)
+include(GoogleTest)
 
 add_executable(${PROJECT_UNITTEST_NAME} ${INCLUDE_PATH}
 	${TEST_SRC_PATH}/main.cpp
@@ -169,15 +217,17 @@ add_executable(${PROJECT_UNITTEST_NAME} ${INCLUDE_PATH}
 	${TEST_SRC_PATH}/credential_unittest.cpp
 	${TEST_SRC_PATH}/plaintextmessage_unittest.cpp
 	${TEST_SRC_PATH}/stringutils_unittest.cpp
-	${TEST_SRC_PATH}/sslsmtpclient_unittest.cpp
+	${TEST_SRC_PATH}/opportunisticsecuresmtpclient_unittest.cpp
 	${TEST_SRC_PATH}/smtpclientbase_unittest.cpp
 	${TEST_SRC_PATH}/smtpclient_unittest.cpp)
 
 target_link_libraries(${PROJECT_UNITTEST_NAME} ${PROJECT_NAME} gtest gtest_main ${PTHREAD})
-add_test(AllTestsInMain ${PROJECT_UNITTEST_NAME})
+gtest_discover_tests(${PROJECT_UNITTEST_NAME})
 
 install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 install(DIRECTORY src/ DESTINATION include/smtpclient
             FILES_MATCHING PATTERN "*.h")
 
-add_subdirectory("simpleclient")
+if(EXISTS ${PROJECT_PATH}/simpleclient AND IS_DIRECTORY ${PROJECT_PATH}/simpleclient)
+	add_subdirectory(${PROJECT_PATH}/simpleclient)
+endif()

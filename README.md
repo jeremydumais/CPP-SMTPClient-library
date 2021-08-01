@@ -1,17 +1,80 @@
 # Jed# C++ SMTP Client Library
 
-## A simple SMTP client library built in C++ that support authentication and TLS 1.3 encryption*
-###### * For TLS 1.3 support you must build the library against OpenSSL 1.1.1
+## A simple SMTP client library built in C++ that support authentication and secure connections (Forced SSL and Opportunistic SSL/TLS encryption).
+##### For TLS 1.3 support you must build the library against OpenSSL 1.1.1
+<br/>
+
+### The library is cross-platform and has been tested on Linux and Windows.
 \
 \### How to build the SMTP client or integrate it in your application
 
 Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-build-the-SMTP-client-or-integrate-it-in-your-application) for a quick guide on how to build the SMTP client and integrate it in your application.
+
+#
+## Download latest binaries
+
+### Windows
+
+<table>
+<tr>
+<th> Release </th>
+<th> MD5 </th>
+</tr>
+<tr>
+<td>
+
+[v1.1.3 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.3/CPP-SMTPClient-Library.1.1.3.x64.zip)
+
+</td>
+<td>
+
+e448f3ddcf910df50d9d22633523b5e6
+
+</td>
+</tr>
+<tr>
+<td>
+
+[v1.1.3 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.3/CPP-SMTPClient-Library.1.1.3.x86.zip)
+
+</td>
+<td>
+
+a931bde4ccb4f272a2fa2c257c0f56fc
+
+</td>
+</tr>
+
+</table>
+
+See the section [Releases](https://github.com/jeremydumais/CPP-SMTPClient-library/releases) for previous versions.
+
+# 
+## The 3 client classes
+
+### OpportunisticSecureSMTPClient
+##### The OpportunisticSecureSMTPClient should be your default choice for communicating with modern SMTP servers. The communication is usually done via port 587.
+<br/>
+
+### ForcedSecureSMTPClient
+##### The ForcedSecureSMTPClient is useful to communicate with legacy systems which requires that the communication be encrypted from the initial connection. The communication is usually done via port 465.
+<br/>
+
+### SmtpClient
+##### The SmtpClient should be used to communicate with internal relay servers. The communication is usually done via port 25.
+
 #
 ## How it works
 
 ### Some examples
+- [Send a plaintext email via an unsecured server](#send-a-plaintext-email-via-an-unsecured-server)
+- [Send an html email to 2 recipients with an attachment via an unsecured server](#send-an-html-email-to-2-recipients-with-an-attachment-via-an-unsecured-server)
+- [Send a plaintext email via a secure server (opportunistic) -> SSL/TLS Port 587](#send-a-plaintext-email-via-a-secure-server-opportunistic)
+- [Send a plaintext email via a secure server (forced) -> SSL/TLS Port 465](#send-a-plaintext-email-via-a-secure-server-forced)
 
-#### Send a plaintext email
+<br/>
+
+#### Send a plaintext email via an unsecured server
 
 ```c++
 #include "smtpclient.h"
@@ -32,7 +95,8 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cerr << "An error occurred. Return code : " << err_no;
+			cout << client.getCommunicationLog() << '\n';
+			cerr << "An error occurred. Return code : " << err_no << '\n';
 			return 1;
 		}
 		cout << client.getCommunicationLog() << endl;
@@ -46,7 +110,7 @@ int main()
 }
 ```
 
-#### Send an html email to 2 recipients with an attachment
+#### Send an html email to 2 recipients with an attachment via an unsecured server
 
 ```c++
 #include "smtpclient.h"
@@ -76,7 +140,8 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cerr << "An error occurred. Return code : " << err_no;
+			cout << client.getCommunicationLog() << '\n';
+			cerr << "An error occurred. Return code : " << err_no << '\n';
 			return 1;
 		}
 		cout << client.getCommunicationLog() << endl;
@@ -90,10 +155,10 @@ int main()
 }
 ```
 
-#### Send a plaintext email via a secure server
+#### Send a plaintext email via a secure server (opportunistic)
 
 ```c++
-#include "sslsmtpclient.h"
+#include "opportunisticsecuresmtpclient.h"
 #include <iostream>
 
 using namespace jed_utils;
@@ -101,7 +166,7 @@ using namespace std;
 
 int main()
 {
-	SSLSmtpClient client("<your smtp server address>", 587);
+	OpportunisticSecureSMTPClient client("<your smtp server address>", 587);
 	client.setCredentials(Credential("myfromaddress@test.com", "mypassword"));
 	try
 	{
@@ -112,7 +177,8 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cerr << "An error occurred. Return code : " << err_no;
+			cout << client.getCommunicationLog() << '\n';
+			cerr << "An error occurred. Return code : " << err_no << '\n';
 			return 1;
 		}
 		cout << client.getCommunicationLog() << endl;
@@ -126,13 +192,45 @@ int main()
 }
 ```
 
-## Download latest binaries
+#### Send a plaintext email via a secure server (forced)
 
-### Windows
+```c++
+#include "forcedsecuresmtpclient.h"
+#include <iostream>
 
-[v1.1.2 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x64.zip)
+using namespace jed_utils;
+using namespace std;
 
-[v1.1.2 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x86.zip)
+int main()
+{
+	ForcedSecureSMTPClient client("<your smtp server address>", 465);
+	client.setCredentials(Credential("myfromaddress@test.com", "mypassword"));
+	try
+	{
+		PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
+			MessageAddress("youraddress@domain.com", "Another Adresse display"),
+			"This is a test (Subject)",
+			"Hello\nHow are you?");
+
+		int err_no = client.sendMail(msg);
+		if (err_no != 0) {
+			cout << client.getCommunicationLog() << '\n';
+			cerr << "An error occurred. Return code : " << err_no << '\n';
+			return 1;
+		}
+		cout << client.getCommunicationLog() << endl;
+		cout << "Operation completed!" << endl;
+	}
+	catch (invalid_argument &err)
+	{
+		cerr << err.what() << endl;
+	}
+    return 0;
+}
+```
+
+## Unit tests
+[How to run the unit tests](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Run-the-unit-tests)
 
 ## Documentation
 

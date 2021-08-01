@@ -1,8 +1,5 @@
 #include "smtpclient.h"
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
+#include "smtpserverstatuscodes.h"
 #ifdef _WIN32
 	#include <WinSock2.h>
     #include <ws2tcpip.h>
@@ -18,33 +15,27 @@ using namespace std;
 using namespace jed_utils;
 
 SmtpClient::SmtpClient(const char *pServerName, unsigned int pPort)
-    : SmtpClientBase(pServerName, pPort)
+    : SMTPClientBase(pServerName, pPort)
 {
 }
 
 SmtpClient::~SmtpClient()
 {
-    cleanup();
-}
-
-//Copy constructor
-SmtpClient::SmtpClient(const SmtpClient &other)
-    : SmtpClientBase(other)
-{
+    SmtpClient::cleanup();
 }
 
 //Assignment operator
 SmtpClient& SmtpClient::operator=(const SmtpClient &other)
 {
     if (this != &other) {
-        SmtpClientBase::operator=(other);
+        SMTPClientBase::operator=(other);
     }
     return *this;
 }
 
 //Move constructor
 SmtpClient::SmtpClient(SmtpClient &&other) noexcept
-    : SmtpClientBase(move(other))
+    : SMTPClientBase(move(other))
 {
 }
 
@@ -52,22 +43,23 @@ SmtpClient::SmtpClient(SmtpClient &&other) noexcept
 SmtpClient& SmtpClient::operator=(SmtpClient &&other) noexcept
 {
     if (this != &other) {
-        SmtpClientBase::operator=(move(other));
+        SMTPClientBase::operator=(move(other));
     }
     return *this;
 }
 
 void SmtpClient::cleanup()
 {
-    if (mSock != 0) {
+    int socket { getSocketFileDescriptor() };
+    if (socket != 0) {
         #ifdef _WIN32
-            shutdown(mSock, SD_BOTH);
-            closesocket(mSock);
+            shutdown(socket, SD_BOTH);
+            closesocket(socket);
         #else
-            close(mSock);
+            close(socket);
         #endif 
     }
-    mSock = 0;
+    clearSocketFileDescriptor();
     #ifdef _WIN32
         WSACleanup();
     #endif
@@ -76,12 +68,17 @@ void SmtpClient::cleanup()
 int SmtpClient::establishConnectionWithServer() 
 {
     int session_init_return_code = initializeSession();
-    if (session_init_return_code != 220) {
+    if (session_init_return_code != 0) {
         return session_init_return_code;
     }
 
+    int server_greetings_return_code = checkServerGreetings();
+    if (server_greetings_return_code != STATUS_CODE_SERVICE_READY) {
+        return server_greetings_return_code;
+    }
+
     int client_init_return_code = sendServerIdentification();
-    if (client_init_return_code != 250) {
+    if (client_init_return_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
         return client_init_return_code;
     }
 

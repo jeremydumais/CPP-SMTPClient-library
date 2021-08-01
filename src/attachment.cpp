@@ -21,7 +21,7 @@ Attachment::Attachment(const char *pFilename, const char *pName)
     mFilename[filename_len] = '\0';
 
     size_t name_len = strlen(pName);
-    mName = new char[name_len +1];
+    mName = new char[name_len+1];
     strncpy(mName, pName, name_len);
     mName[name_len] = '\0'; 
 }
