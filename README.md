@@ -6,6 +6,30 @@
 \### How to build the SMTP client or integrate it in your application
 
 Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-build-the-SMTP-client-or-integrate-it-in-your-application) for a quick guide on how to build the SMTP client and integrate it in your application.
+
+#
+## Download latest binaries
+
+### Windows
+
+[v1.1.2 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x64.zip)
+
+[v1.1.2 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x86.zip)
+
+# 
+## The 3 client classes
+
+### OpportunisticSecureSMTPClient
+##### The OpportunisticSecureSMTPClient should be your default choice for communicating with modern SMTP servers. The communication is usually done via port 587.
+<br/>
+
+### ForcedSecureSMTPClient
+##### The ForcedSecureSMTPClient is useful to communicate with legacy systems which requires that the communication be encrypted from the initial connection. The communication is usually done via port 465.
+<br/>
+
+### SmtpClient
+##### The SmtpClient should be used to communicate with internal relay servers. The communication is usually done via port 25.
+
 #
 ## How it works
 
@@ -171,15 +195,10 @@ int main()
     return 0;
 }
 ```
-#
-## Download latest binaries
 
-### Windows
+## Unit tests
+[How to run the unit tests](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Run-the-unit-tests)
 
-[v1.1.2 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x64.zip)
-
-[v1.1.2 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x86.zip)
-#
 ## Documentation
 
 See the classes documentation [here](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Classes-Documentation)
