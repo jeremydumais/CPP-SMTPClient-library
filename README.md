@@ -2,6 +2,9 @@
 
 ## A simple SMTP client library built in C++ that support authentication and secure connections (Forced SSL and Opportunistic SSL/TLS encryption).
 ##### For TLS 1.3 support you must build the library against OpenSSL 1.1.1
+<br/>
+
+### The library is cross-platform and has been tested on Linux and Windows.
 \
 \### How to build the SMTP client or integrate it in your application
 
@@ -12,9 +15,39 @@ Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/H
 
 ### Windows
 
-[v1.1.2 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x64.zip)
+<table>
+<tr>
+<th> Release </th>
+<th> MD5 </th>
+</tr>
+<tr>
+<td>
 
-[v1.1.2 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.2/CPP-SMTPClient-Library.1.1.2.x86.zip)
+[v1.1.3 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.3/CPP-SMTPClient-Library.1.1.3.x64.zip)
+
+</td>
+<td>
+
+e448f3ddcf910df50d9d22633523b5e6
+
+</td>
+</tr>
+<tr>
+<td>
+
+[v1.1.3 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.3/CPP-SMTPClient-Library.1.1.3.x86.zip)
+
+</td>
+<td>
+
+a931bde4ccb4f272a2fa2c257c0f56fc
+
+</td>
+</tr>
+
+</table>
+
+See the section [Releases](https://github.com/jeremydumais/CPP-SMTPClient-library/releases) for previous versions.
 
 # 
 ## The 3 client classes
