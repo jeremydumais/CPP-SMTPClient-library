@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file
 
+## [1.1.4]
+
+### Added
+- Add the BUILD_TESTING flag in the CMake project so the unit tests are not build by default and Google Test is no longer required.
+- Add a new uninstall target in the CMake project.
+
 ## [1.1.3]
 
 ### Updated
