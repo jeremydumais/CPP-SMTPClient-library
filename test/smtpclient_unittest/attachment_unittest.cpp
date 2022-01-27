@@ -2,7 +2,6 @@
 #include "../../src/attachment.h"
 
 using namespace jed_utils;
-using namespace std;
 
 TEST(Attachment_Constructor, FailEmptyFileName)
 {
@@ -12,7 +11,7 @@ TEST(Attachment_Constructor, FailEmptyFileName)
 		Attachment att1("", "");
 		FAIL();
 	}
-	catch(invalid_argument) 
+	catch(std::invalid_argument) 
 	{
 	}
 }
@@ -25,7 +24,7 @@ TEST(Attachment_Constructor, FailWhiteSpaceFileName)
 		Attachment att1("   ", "");
 		FAIL();
 	}
-	catch(invalid_argument) 
+	catch(std::invalid_argument) 
 	{
 	}
 }

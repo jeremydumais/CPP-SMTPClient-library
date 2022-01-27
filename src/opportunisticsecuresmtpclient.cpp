@@ -22,7 +22,6 @@
     #include <unistd.h>
 #endif
 
-using namespace std;
 using namespace jed_utils;
 
 OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(const char *pServerName, unsigned int pPort)
@@ -41,7 +40,7 @@ OpportunisticSecureSMTPClient& OpportunisticSecureSMTPClient::operator=(const Op
 
 //Move constructor
 OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(OpportunisticSecureSMTPClient&& other) noexcept
-	: SecureSMTPClientBase(move(other))
+	: SecureSMTPClientBase(std::move(other))
 {
 }
 
@@ -49,7 +48,7 @@ OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(OpportunisticSecure
 OpportunisticSecureSMTPClient& OpportunisticSecureSMTPClient::operator=(OpportunisticSecureSMTPClient&& other) noexcept
 {
 	if (this != &other) {
-        SecureSMTPClientBase::operator=(move(other));
+        SecureSMTPClientBase::operator=(std::move(other));
 	}
 	return *this;
 }
@@ -101,7 +100,7 @@ int OpportunisticSecureSMTPClient::establishConnectionWithServer()
 
 int OpportunisticSecureSMTPClient::upgradeToSecureConnection()
 {
-    string start_tls_cmd { "STARTTLS\r\n" };
+    std::string start_tls_cmd { "STARTTLS\r\n" };
     addCommunicationLogItem(start_tls_cmd.c_str());
     return sendRawCommand(start_tls_cmd.c_str(), 
         SOCKET_INIT_CLIENT_SEND_STARTTLS_ERROR, 
@@ -114,11 +113,11 @@ bool OpportunisticSecureSMTPClient::isStartTLSSupported(const char *pServerRespo
     if (pServerResponse == nullptr) {
         return false;
     }
-    string serverResponse { pServerResponse };
+    std::string serverResponse { pServerResponse };
     if (serverResponse.length() == 0 || StringUtils::trim(serverResponse).empty()) {
         return false;
     }
     
-    const string STARTTLS_LINE_PREFIX { "250-STARTTLS" };
-    return serverResponse.find(STARTTLS_LINE_PREFIX) != string::npos;
+    const std::string STARTTLS_LINE_PREFIX { "250-STARTTLS" };
+    return serverResponse.find(STARTTLS_LINE_PREFIX) != std::string::npos;
 }

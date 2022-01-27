@@ -1,8 +1,6 @@
 #include "message.h"
 #include <iterator>
 
-using namespace std;
-
 using namespace jed_utils;
 
 Message::Message(const MessageAddress &pFrom,
@@ -262,7 +260,7 @@ Message& Message::operator=(const Message &other)
 
 //Move constructor
 Message::Message(Message &&other) noexcept
-    : mFrom(move(other.mFrom)),
+    : mFrom(std::move(other.mFrom)),
     mTo(other.mTo),
     mToCount(other.mToCount),
     mCc(other.mCc),

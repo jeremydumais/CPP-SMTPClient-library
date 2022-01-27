@@ -27,9 +27,8 @@
     #include <unistd.h>
 #endif
 
-
+using namespace std::literals::string_literals;
 using namespace jed_utils;
-using namespace std;
 
 SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort) 
     : mServerName(nullptr),
@@ -45,9 +44,9 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
       sendCommandPtr(&SMTPClientBase::sendCommand),
       sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback)
 {
-    string servername_str { pServerName == nullptr ? "" : pServerName };
+    std::string servername_str { pServerName == nullptr ? "" : pServerName };
     if (pServerName == nullptr || strcmp(pServerName, "") == 0  || StringUtils::trim(servername_str).empty()) {
-        throw invalid_argument("Server name cannot be null or empty");
+        throw std::invalid_argument("Server name cannot be null or empty");
     }
     size_t server_name_len = strlen(pServerName);
 	mServerName = new char[server_name_len + 1];
@@ -231,9 +230,9 @@ void SMTPClientBase::setServerPort(unsigned int pPort)
 
 void SMTPClientBase::setServerName(const char *pServerName)
 {
-    string servername_str { pServerName == nullptr ? "" : pServerName };
+    std::string servername_str { pServerName == nullptr ? "" : pServerName };
     if (pServerName == nullptr || strcmp(pServerName, "") == 0  || StringUtils::trim(servername_str).empty()) {
-        throw invalid_argument("Server name cannot be null or empty");
+        throw std::invalid_argument("Server name cannot be null or empty");
     }
     delete []mServerName;
     size_t server_name_len = strlen(pServerName);
@@ -375,7 +374,7 @@ int SMTPClientBase::initializeSession()
         saddr_in.sin_port = htons(static_cast<u_short>(getServerPort()));
         saddr_in.sin_addr.s_addr = 0;
         memcpy(reinterpret_cast<char*>(&(saddr_in.sin_addr)), host->h_addr, host->h_length);
-        stringstream ss;
+        std::stringstream ss;
         ss << "Trying to connect to " << getServerName() << " on port " << getServerPort();
         addCommunicationLogItem(ss.str().c_str());
         if (connect(mSock, reinterpret_cast<struct sockaddr*>(&saddr_in), sizeof(saddr_in)) == -1) {
@@ -390,7 +389,7 @@ int SMTPClientBase::initializeSession()
 
 int SMTPClientBase::sendServerIdentification() 
 {
-    string ehlo { "ehlo localhost\r\n" };
+    std::string ehlo { "ehlo localhost\r\n" };
     addCommunicationLogItem(ehlo.c_str());
     return sendRawCommand(ehlo.c_str(), 
         SOCKET_INIT_CLIENT_SEND_EHLO_ERROR, 
@@ -479,11 +478,11 @@ int SMTPClientBase::authenticateClient()
 
 int SMTPClientBase::authenticateWithMethodPlain() {
     addCommunicationLogItem("AUTH PLAIN ***************\r\n");
-    stringstream ss_credentials;
+    std::stringstream ss_credentials;
     //Format : \0username\0password
     ss_credentials << '\0' << mCredential->getUsername() << '\0' << mCredential->getPassword();
-    string str_credentials = ss_credentials.str();
-    stringstream ss;
+    std::string str_credentials = ss_credentials.str();
+    std::stringstream ss;
     ss << "AUTH PLAIN " 
     << Base64::Encode(reinterpret_cast<const unsigned char*>(str_credentials.c_str()),
             strlen(mCredential->getUsername()) + strlen(mCredential->getPassword()) + 2) // + 2 for the two null characters 
@@ -501,9 +500,9 @@ int SMTPClientBase::authenticateWithMethodLogin()
         return CLIENT_AUTHENTICATE_ERROR;
     }
     
-    string encoded_username { Base64::Encode(reinterpret_cast<const unsigned char*>(mCredential->getUsername()), 
+    std::string encoded_username { Base64::Encode(reinterpret_cast<const unsigned char*>(mCredential->getUsername()), 
         strlen(mCredential->getUsername())) };
-    stringstream ss_username;
+    std::stringstream ss_username;
     ss_username << encoded_username << "\r\n";
     int username_return_code = (*this.*sendCommandWithFeedbackPtr)(ss_username.str().c_str(), 
         CLIENT_AUTHENTICATE_ERROR, 
@@ -511,9 +510,9 @@ int SMTPClientBase::authenticateWithMethodLogin()
     if (username_return_code != STATUS_CODE_SERVER_CHALLENGE) {
         return CLIENT_AUTHENTICATE_ERROR;
     }
-    string encoded_password { Base64::Encode(reinterpret_cast<const unsigned char*>(mCredential->getPassword()), 
+    std::string encoded_password { Base64::Encode(reinterpret_cast<const unsigned char*>(mCredential->getPassword()), 
         strlen(mCredential->getPassword())) };
-    stringstream ss_password;
+    std::stringstream ss_password;
     ss_password << encoded_password << "\r\n";
     return (*this.*sendCommandWithFeedbackPtr)(ss_password.str().c_str(), CLIENT_AUTHENTICATE_ERROR, CLIENT_AUTHENTICATE_TIMEOUT);
 }
@@ -523,8 +522,8 @@ int SMTPClientBase::setMailRecipients(const Message &pMsg)
     const int INVALID_ADDRESS { 501 };
     const int SENDER_OK { 250 };
     const int RECIPIENT_OK { 250 };
-    vector<string> mailFormats;
-    stringstream ss_mail_from;
+    std::vector<std::string> mailFormats;
+    std::stringstream ss_mail_from;
     //Method 1, 2 and 3
     mailFormats.push_back("MAIL FROM: <"s + pMsg.getFrom().getDisplayName() + " " + pMsg.getFrom().getEmailAddress() + ">\r\n"s);
     mailFormats.push_back("MAIL FROM: "s + pMsg.getFrom().getEmailAddress() + "\r\n"s);
@@ -549,10 +548,10 @@ int SMTPClientBase::setMailRecipients(const Message &pMsg)
     }
 
     //Send command for the recipients
-    vector<pair<MessageAddress **, size_t>> recipients {
-        pair<MessageAddress **, size_t>(pMsg.getTo(), pMsg.getToCount()),
-        pair<MessageAddress **, size_t>(pMsg.getCc(), pMsg.getCcCount()),
-        pair<MessageAddress **, size_t>(pMsg.getBcc(), pMsg.getBccCount())
+    std::vector<std::pair<MessageAddress **, size_t>> recipients {
+        std::pair<MessageAddress **, size_t>(pMsg.getTo(), pMsg.getToCount()),
+        std::pair<MessageAddress **, size_t>(pMsg.getCc(), pMsg.getCcCount()),
+        std::pair<MessageAddress **, size_t>(pMsg.getBcc(), pMsg.getBccCount())
     };
     for(const auto &item : recipients) {
         if (item.first != nullptr) {
@@ -568,8 +567,8 @@ int SMTPClientBase::setMailRecipients(const Message &pMsg)
 int SMTPClientBase::addMailRecipients(jed_utils::MessageAddress **list, size_t count, const int RECIPIENT_OK) 
 {
     int rcpt_to_ret_code = RECIPIENT_OK;
-    for_each(list, list + count, [this, &rcpt_to_ret_code, &RECIPIENT_OK](MessageAddress *address) {
-        stringstream ss_rcpt_to;
+    std::for_each(list, list + count, [this, &rcpt_to_ret_code, &RECIPIENT_OK](MessageAddress *address) {
+        std::stringstream ss_rcpt_to;
         ss_rcpt_to << "RCPT TO: <"s << address->getEmailAddress() << ">\r\n"s;
         addCommunicationLogItem(ss_rcpt_to.str().c_str());
         int ret_code = (*this.*sendCommandWithFeedbackPtr)(ss_rcpt_to.str().c_str(), CLIENT_SENDMAIL_RCPTTO_ERROR, CLIENT_SENDMAIL_RCPTTO_TIMEOUT);
@@ -583,7 +582,7 @@ int SMTPClientBase::addMailRecipients(jed_utils::MessageAddress **list, size_t c
 int SMTPClientBase::setMailHeaders(const Message &pMsg)
 {
     // Data section
-    string data_cmd = "DATA\r\n";
+    std::string data_cmd = "DATA\r\n";
     addCommunicationLogItem(data_cmd.c_str());
     int data_ret_code = (*this.*sendCommandWithFeedbackPtr)(data_cmd.c_str(), CLIENT_SENDMAIL_DATA_ERROR, CLIENT_SENDMAIL_DATA_TIMEOUT);
     if (data_ret_code != STATUS_CODE_START_MAIL_INPUT) {
@@ -599,23 +598,23 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg)
 
     // To and Cc. 
     //Note : Bcc are not included in the header
-    vector<tuple<MessageAddress **, size_t, const char *>> recipients {
-        tuple<MessageAddress **, size_t, const char *>(pMsg.getTo(), pMsg.getToCount(), "To"),
-        tuple<MessageAddress **, size_t, const char *>(pMsg.getCc(), pMsg.getCcCount(), "Cc")
+    std::vector<std::tuple<MessageAddress **, size_t, const char *>> recipients {
+        std::tuple<MessageAddress **, size_t, const char *>(pMsg.getTo(), pMsg.getToCount(), "To"),
+        std::tuple<MessageAddress **, size_t, const char *>(pMsg.getCc(), pMsg.getCcCount(), "Cc")
     };
     for(const auto &item : recipients) {
-        MessageAddress **list = get<0>(item);
-        size_t count = get<1>(item);
-        const char *field = get<2>(item);
+        MessageAddress **list = std::get<0>(item);
+        size_t count = std::get<1>(item);
+        const char *field = std::get<2>(item);
         if (list != nullptr) {
-            for_each(list, list + count, [this, &field](MessageAddress *address) {
+            std::for_each(list, list + count, [this, &field](MessageAddress *address) {
                 return addMailHeader(field, address->getEmailAddress(), CLIENT_SENDMAIL_HEADERTOANDCC_ERROR);
             });
         }
     }
 
     // Subject
-    stringstream ss_header_subject;
+    std::stringstream ss_header_subject;
     ss_header_subject << "Subject: " << pMsg.getSubject() << "\r\n";
     addCommunicationLogItem(ss_header_subject.str().c_str());
     int header_subject_ret_code = (*this.*sendCommandPtr)(ss_header_subject.str().c_str(), CLIENT_SENDMAIL_HEADERSUBJECT_ERROR);
@@ -624,7 +623,7 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg)
     }
 
     //Content-Type
-    string content_type { "Content-Type: multipart/mixed; boundary=sep\r\n\r\n" };
+    std::string content_type { "Content-Type: multipart/mixed; boundary=sep\r\n\r\n" };
     addCommunicationLogItem(content_type.c_str());
     int header_content_type_ret_code = (*this.*sendCommandPtr)(content_type.c_str(), CLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR);
     if (header_content_type_ret_code != 0) {
@@ -636,7 +635,7 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg)
 
 int SMTPClientBase::addMailHeader(const char *field, const char *value, int pErrorCode)
 {
-    stringstream ss_header_item;
+    std::stringstream ss_header_item;
     ss_header_item << field << ": " << value << "\r\n";
     addCommunicationLogItem(ss_header_item.str().c_str());
     return (*this.*sendCommandPtr)(ss_header_item.str().c_str(), pErrorCode);
@@ -645,17 +644,17 @@ int SMTPClientBase::addMailHeader(const char *field, const char *value, int pErr
 int SMTPClientBase::setMailBody(const Message &pMsg)
 {
     // Body part
-    ostringstream body_ss;
+    std::ostringstream body_ss;
     body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
-    string body_real = body_ss.str();
+    std::string body_real = body_ss.str();
     addCommunicationLogItem(body_real.c_str());    
 
     //If there's attachments, prepare the attachments text content
     Attachment** arr_attachment = pMsg.getAttachments();
 
-    vector<Attachment*> vect_attachment(arr_attachment, arr_attachment + pMsg.getAttachmentsCount());
+    std::vector<Attachment*> vect_attachment(arr_attachment, arr_attachment + pMsg.getAttachmentsCount());
     if (pMsg.getAttachmentsCount() > 0) {
-        string attachments_text = createAttachmentsText(vect_attachment);
+        std::string attachments_text = createAttachmentsText(vect_attachment);
         body_real += attachments_text;
     }
 
@@ -681,14 +680,14 @@ int SMTPClientBase::setMailBody(const Message &pMsg)
     }
 
     //End of data
-    string end_data_command { "\r\n.\r\n" };
+    std::string end_data_command { "\r\n.\r\n" };
     addCommunicationLogItem(end_data_command.c_str());    
     int end_data_ret_code = (*this.*sendCommandWithFeedbackPtr)(end_data_command.c_str(), CLIENT_SENDMAIL_END_DATA_ERROR, CLIENT_SENDMAIL_END_DATA_TIMEOUT);
     if (end_data_ret_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
         return end_data_ret_code;
     }
 
-    string quit_command { "QUIT\r\n" };
+    std::string quit_command { "QUIT\r\n" };
     addCommunicationLogItem(quit_command.c_str());    
     int quit_ret_code = (*this.*sendCommandPtr)(quit_command.c_str(), CLIENT_SENDMAIL_QUIT_ERROR);
     if (quit_ret_code != 0) {
@@ -699,35 +698,35 @@ int SMTPClientBase::setMailBody(const Message &pMsg)
 
 void SMTPClientBase::addCommunicationLogItem(const char *pItem, const char *pPrefix)
 {
-    string item { pItem };
+    std::string item { pItem };
     if (strcmp(pPrefix, "c") == 0) {
         /* Replace the \ by \\ */
-        string from { "\r\n" };
-        string to { "\\r\\n" };
+        std::string from { "\r\n" };
+        std::string to { "\\r\\n" };
         size_t start_pos = 0;
         while((start_pos = item.find(from, start_pos)) != std::string::npos) {
             item.replace(start_pos, from.length(), to);
             start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
         }
     }
-    string endOfLine { "\n" };
-    string separator { ": " };
+    std::string endOfLine { "\n" };
+    std::string separator { ": " };
     strncat(mCommunicationLog, endOfLine.c_str(), strlen(endOfLine.c_str()));
     strncat(mCommunicationLog, pPrefix, strlen(pPrefix));
     strncat(mCommunicationLog, separator.c_str(), strlen(separator.c_str()));
     strncat(mCommunicationLog, item.c_str(), item.length());
 }
 
-string SMTPClientBase::createAttachmentsText(const vector<Attachment*> &pAttachments)
+std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*> &pAttachments)
 {
-    string retval;	
+    std::string retval;	
     for (const auto &item : pAttachments)
     {
         retval += "\r\n--sep\r\n";
-        retval += "Content-Type: " + string(item->getMimeType()) + "; file=\"" + string(item->getName()) + "\"\r\n";
-        retval += "Content-Disposition: Inline; filename=\"" + string(item->getName()) + "\"\r\n";
+        retval += "Content-Type: " + std::string(item->getMimeType()) + "; file=\"" + std::string(item->getName()) + "\"\r\n";
+        retval += "Content-Disposition: Inline; filename=\"" + std::string(item->getName()) + "\"\r\n";
         retval += "Content-Transfer-Encoding: base64\r\n\r\n";
-        retval += string((item->getBase64EncodedFile() != nullptr ? item->getBase64EncodedFile() : ""));
+        retval += std::string((item->getBase64EncodedFile() != nullptr ? item->getBase64EncodedFile() : ""));
 
     }
     retval += "\r\n--sep--";
@@ -737,7 +736,7 @@ string SMTPClientBase::createAttachmentsText(const vector<Attachment*> &pAttachm
 int SMTPClientBase::extractReturnCode(const char *pOutput)
 {
     if (pOutput != nullptr && strlen(pOutput) >= 3) {
-        string code_str { pOutput };
+        std::string code_str { pOutput };
         try {
             return std::stoi(code_str.substr(0, 3));
         } 
@@ -751,29 +750,29 @@ int SMTPClientBase::extractReturnCode(const char *pOutput)
 ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhloOutput)
 {
     ServerAuthOptions *retVal = nullptr;
-    const string AUTH_LINE_PREFIX = "250-AUTH";
+    const std::string AUTH_LINE_PREFIX = "250-AUTH";
     if (pEhloOutput == nullptr) {
         return retVal;
     }
-    const string DELIMITER { "\r\n" };
-    string ehlo_output { pEhloOutput }; 
+    const std::string DELIMITER { "\r\n" };
+    std::string ehlo_output { pEhloOutput }; 
     size_t ehlo_character_index { 0 };
-    while((ehlo_character_index = ehlo_output.find(DELIMITER)) != string::npos) {
-        string line { ehlo_output.substr(0, ehlo_character_index)};
+    while((ehlo_character_index = ehlo_output.find(DELIMITER)) != std::string::npos) {
+        std::string line { ehlo_output.substr(0, ehlo_character_index)};
         //Find the line that begin with 250-AUTH
         if (line.substr(0, AUTH_LINE_PREFIX.length()) == AUTH_LINE_PREFIX) {
             retVal = new ServerAuthOptions();
             //Find each options 
-            vector<string> options;
+            std::vector<std::string> options;
             size_t line_character_index { 0 };
-            while((line_character_index = line.find(' ')) != string::npos) {
-                string option { line.substr(0, line_character_index)};
+            while((line_character_index = line.find(' ')) != std::string::npos) {
+                std::string option { line.substr(0, line_character_index)};
                 options.push_back(option);
                 line.erase(0, line_character_index + 1);
             }
             options.push_back(line);
             //Try to match the string options with the ServerAuthOptions struct attributes
-            for_each(options.begin(), options.end(), [&retVal](const string &option) {
+            for_each(options.begin(), options.end(), [&retVal](const std::string &option) {
                 if (option == "PLAIN") {
                     retVal->Plain = true;
                 }

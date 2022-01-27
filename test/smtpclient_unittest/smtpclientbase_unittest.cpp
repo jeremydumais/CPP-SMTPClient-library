@@ -2,9 +2,6 @@
 #include <gtest/gtest.h>
 
 using namespace jed_utils;
-using namespace std;
-
-
 
 class FakeSMTPClientBase : public ::testing::Test, public SMTPClientBase
 {
@@ -51,7 +48,7 @@ TEST(SmtpClientBase_setServerName, NullServerName_ThrowInvalidArgument)
         client.setServerName(nullptr);
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Server name cannot be null or empty", err.what());
 	}
@@ -65,7 +62,7 @@ TEST(SmtpClientBase_setServerName, EmptyServerName_ThrowInvalidArgument)
         client.setServerName("");
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Server name cannot be null or empty", err.what());
 	}
@@ -79,7 +76,7 @@ TEST(SmtpClientBase_setServerName, OnlySpacesServerName_ThrowInvalidArgument)
         client.setServerName("    ");
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Server name cannot be null or empty", err.what());
 	}

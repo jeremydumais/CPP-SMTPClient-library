@@ -1,6 +1,5 @@
 #include "htmlmessage.h"
 
-using namespace std;
 using namespace jed_utils;
 
 HTMLMessage::HTMLMessage(const MessageAddress &pFrom,

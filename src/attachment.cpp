@@ -10,18 +10,18 @@ using namespace jed_utils;
 Attachment::Attachment(const char *pFilename, const char *pName)
     : mName(nullptr), mFilename(nullptr)
 {
-    if (std::strlen(pFilename) == 0 || StringUtils::trim(std::string(pFilename)).length() == 0) {
+    if (strlen(pFilename) == 0 || StringUtils::trim(std::string(pFilename)).length() == 0) {
         throw std::invalid_argument("filename");
     }
     
-    size_t filename_len = std::strlen(pFilename);
+    size_t filename_len = strlen(pFilename);
     mFilename = new char[filename_len+1];
-    std::strncpy(mFilename, pFilename, filename_len);
+    strncpy(mFilename, pFilename, filename_len);
     mFilename[filename_len] = '\0';
 
-    size_t name_len = std::strlen(pName);
+    size_t name_len = strlen(pName);
     mName = new char[name_len+1];
-    std::strncpy(mName, pName, name_len);
+    strncpy(mName, pName, name_len);
     mName[name_len] = '\0'; 
 }
 
@@ -38,9 +38,9 @@ Attachment::Attachment(const Attachment& other)
 	: mName(new char[strlen(other.mName) + 1]),
 	  mFilename(new char[strlen(other.mFilename) + 1])
 {
-    std::strncpy(mName, other.mName, std::strlen(other.mName) + 1);
+    strncpy(mName, other.mName, strlen(other.mName) + 1);
 	mName[strlen(other.mName)] = '\0';
-    std::strncpy(mFilename, other.mFilename, std::strlen(other.mFilename) + 1);
+    strncpy(mFilename, other.mFilename, strlen(other.mFilename) + 1);
 	mFilename[strlen(other.mFilename)] = '\0';
 }
 
@@ -53,11 +53,11 @@ Attachment& Attachment::operator=(const Attachment& other)
 		delete[] mFilename;
 		//mName
 		mName = new char[strlen(other.mName) + 1];
-        std::strncpy(mName, other.mName, std::strlen(other.mName) + 1);
+        strncpy(mName, other.mName, strlen(other.mName) + 1);
 		mName[strlen(other.mName)] = '\0';
 		//mFilename
 		mFilename = new char[strlen(other.mFilename) + 1];
-        std::strncpy(mFilename, other.mFilename, std::strlen(other.mFilename) + 1);
+        strncpy(mFilename, other.mFilename, strlen(other.mFilename) + 1);
 		mFilename[strlen(other.mFilename)] = '\0';
 	}
 	return *this;
@@ -114,7 +114,7 @@ const char *Attachment::getBase64EncodedFile() const
         in.close();
     	std::string base64_result = Base64::Encode(reinterpret_cast<const unsigned char*>(contents.c_str()), contents.length());
         auto *base64_file = new char[base64_result.length() + 1];
-	    std::strncpy(base64_file, base64_result.c_str(), base64_result.length() + 1);
+	    strncpy(base64_file, base64_result.c_str(), base64_result.length() + 1);
         return base64_file;
     }
     

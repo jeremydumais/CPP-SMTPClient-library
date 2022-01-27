@@ -6,9 +6,9 @@ using namespace jed_utils;
 CommunicationError::CommunicationError(const char *pErrMsg)
     : mErrorMessage(nullptr)
 {
-    size_t msg_len = std::strlen(pErrMsg);
+    size_t msg_len = strlen(pErrMsg);
     mErrorMessage = new char[msg_len+1];
-    std::strncpy(mErrorMessage, pErrMsg, msg_len);
+    strncpy(mErrorMessage, pErrMsg, msg_len);
     mErrorMessage[msg_len+1] = '\0';
 }
 
@@ -19,10 +19,10 @@ CommunicationError::~CommunicationError()
 
 //Copy constructor
 CommunicationError::CommunicationError(const CommunicationError& other)
-	: mErrorMessage(new char[std::strlen(other.mErrorMessage) + 1])
+	: mErrorMessage(new char[strlen(other.mErrorMessage) + 1])
 {
-    std::strncpy(mErrorMessage, other.mErrorMessage, std::strlen(other.mErrorMessage) + 1);
-	mErrorMessage[std::strlen(other.mErrorMessage)] = '\0';
+    strncpy(mErrorMessage, other.mErrorMessage, strlen(other.mErrorMessage) + 1);
+	mErrorMessage[strlen(other.mErrorMessage)] = '\0';
 }
 
 //Assignment operator
@@ -32,9 +32,9 @@ CommunicationError& CommunicationError::operator=(const CommunicationError& othe
 	{
 		delete[] mErrorMessage;
 		//mErrorMessage
-		mErrorMessage = new char[std::strlen(other.mErrorMessage) + 1];
-        std::strncpy(mErrorMessage, other.mErrorMessage, std::strlen(other.mErrorMessage) + 1);
-		mErrorMessage[std::strlen(other.mErrorMessage)] = '\0';
+		mErrorMessage = new char[strlen(other.mErrorMessage) + 1];
+        strncpy(mErrorMessage, other.mErrorMessage, strlen(other.mErrorMessage) + 1);
+		mErrorMessage[strlen(other.mErrorMessage)] = '\0';
 	}
 	return *this;
 }

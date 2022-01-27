@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 
 using namespace jed_utils;
-using namespace std;
 
 TEST(Credential_Constructor, NullUsername)
 {
@@ -11,7 +10,7 @@ TEST(Credential_Constructor, NullUsername)
 		Credential cred(nullptr, "123");
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -24,7 +23,7 @@ TEST(Credential_Constructor, EmptyUsername)
 		Credential cred("", "123");
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -37,7 +36,7 @@ TEST(Credential_Constructor, OnlySpacesUsername)
 		Credential cred("    ", "123");
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -50,7 +49,7 @@ TEST(Credential_Constructor, NullPassword)
 		Credential cred("test", nullptr);
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Password cannot be null or empty", err.what());
 	}
@@ -63,7 +62,7 @@ TEST(Credential_Constructor, EmptyPassword)
 		Credential cred("test", "");
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Password cannot be null or empty", err.what());
 	}
@@ -97,7 +96,7 @@ TEST(Credential_CopyAssignment, CredentialCopyAssignmentValid)
 TEST(Credential_MoveConstructor, CredentialMoveConstructorValid)
 {
 	Credential cred1("test", "123");
-	Credential cred2(move(cred1));
+	Credential cred2(std::move(cred1));
 	ASSERT_STREQ("test", cred2.getUsername());
 	ASSERT_STREQ("123", cred2.getPassword());
 	ASSERT_EQ(nullptr, cred1.getUsername());
@@ -108,7 +107,7 @@ TEST(Credential_MoveAssignment, CredentialMoveAssignmentValid)
 {
 	Credential cred1("test", "123");
 	Credential cred2("aaa", "bbb");
-	cred2 = move(cred1);
+	cred2 = std::move(cred1);
 	ASSERT_STREQ("test", cred2.getUsername());
 	ASSERT_STREQ("123", cred2.getPassword());
 	ASSERT_EQ(nullptr, cred1.getUsername());
@@ -142,7 +141,7 @@ TEST(Credential_setUsername, NullUsername)
 		cred.setUsername(nullptr);
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -156,7 +155,7 @@ TEST(Credential_setUsername, EmptyUsername)
 		cred.setUsername("");
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -170,7 +169,7 @@ TEST(Credential_setUsername, OnlySpacesUsername)
 		cred.setUsername("    ");
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -191,7 +190,7 @@ TEST(Credential_setPassword, NullPassword)
 		cred.setPassword(nullptr);
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Password cannot be null or empty", err.what());
 	}
@@ -205,7 +204,7 @@ TEST(Credential_setPassword, EmptyPassword)
 		cred.setPassword("");
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Password cannot be null or empty", err.what());
 	}

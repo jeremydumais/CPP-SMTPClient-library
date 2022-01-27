@@ -1,6 +1,5 @@
 #include "plaintextmessage.h"
 
-using namespace std;
 using namespace jed_utils;
 
 PlaintextMessage::PlaintextMessage(const MessageAddress &pFrom,

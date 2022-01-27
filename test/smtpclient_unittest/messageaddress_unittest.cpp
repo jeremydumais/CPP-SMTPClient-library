@@ -3,7 +3,6 @@
 #include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 TEST(MessageAddress_constructor, EmptyEmailAddrInvalidArgument)
 {
@@ -14,7 +13,7 @@ TEST(MessageAddress_constructor, EmptyEmailAddrInvalidArgument)
 		FAIL();
 
 	}
-	catch (invalid_argument)
+	catch (std::invalid_argument)
 	{
 	}
 }
@@ -26,7 +25,7 @@ TEST(MessageAddress_constructor, EmptyEmailAddressValidDNThrowInvalidArgument)
 		MessageAddress msg_add("", "Test Address");
 		FAIL();
 	}
-	catch(invalid_argument)
+	catch(std::invalid_argument)
 	{
 	}
 }
@@ -40,7 +39,7 @@ TEST(MessageAddress_constructor, WhiteSpacesEmailAddrInvalidArgument)
 		FAIL();
 
 	}
-	catch (invalid_argument)
+	catch (std::invalid_argument)
 	{
 	}
 }
@@ -54,7 +53,7 @@ TEST(MessageAddress_constructor, OnlyPrefixEmailAddrInvalidArgument)
 		FAIL();
 
 	}
-	catch (invalid_argument)
+	catch (std::invalid_argument)
 	{
 	}
 }
@@ -68,7 +67,7 @@ TEST(MessageAddress_constructor, OnlyAtSignEmailAddrInvalidArgument)
 		FAIL();
 
 	}
-	catch (invalid_argument)
+	catch (std::invalid_argument)
 	{
 	}
 }
@@ -82,7 +81,7 @@ TEST(MessageAddress_constructor, NoSuffixEmailAddrInvalidArgument)
 		FAIL();
 
 	}
-	catch (invalid_argument)
+	catch (std::invalid_argument)
 	{
 	}
 }

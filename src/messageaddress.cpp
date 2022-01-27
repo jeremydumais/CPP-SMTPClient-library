@@ -4,20 +4,19 @@
 #include <stdexcept>
 #include <string>
 
-using namespace std;
 using namespace jed_utils;
 
 MessageAddress::MessageAddress(const char *pEmailAddress, const char *pDisplayName)
     : mEmailAddress(nullptr), mDisplayName(nullptr)
 {
-    string email_address { pEmailAddress };
+    std::string email_address { pEmailAddress };
     //Check if the email address is not empty or white spaces
     if (email_address.length() == 0 || StringUtils::trim(email_address).empty()) {
-        throw invalid_argument("pEmailAddress");
+        throw std::invalid_argument("pEmailAddress");
     }
     //Check is the email address is valid
     if (!isEmailAddressValid(email_address)) {
-        throw invalid_argument("pEmailAddress");
+        throw std::invalid_argument("pEmailAddress");
     }
 
     size_t email_len = strlen(pEmailAddress);
@@ -103,10 +102,10 @@ bool MessageAddress::operator==(const MessageAddress &pMsgComp) const
             strcmp(mDisplayName, pMsgComp.mDisplayName) == 0);
 }
 
-MessageAddress::operator string() const
+MessageAddress::operator std::string() const
 {
-    ostringstream retval;
-    string display_name { mDisplayName };
+    std::ostringstream retval;
+    std::string display_name { mDisplayName };
     if (display_name.empty()) {
         retval << mEmailAddress;
     }
@@ -126,9 +125,9 @@ const char *MessageAddress::getDisplayName() const
     return mDisplayName;
 }
 
-bool MessageAddress::isEmailAddressValid(const string &pEmailAddress) const
+bool MessageAddress::isEmailAddressValid(const std::string &pEmailAddress) const
 {
-    regex emailPattern("^[_a-z0-9-]+(.[_a-z0-9-]+)*@[a-z0-9-]+(.[a-z0-9-]+)*(.[a-z]{2,4})$");
+    std::regex emailPattern("^[_a-z0-9-]+(.[_a-z0-9-]+)*@[a-z0-9-]+(.[a-z0-9-]+)*(.[a-z]{2,4})$");
     return regex_match(StringUtils::toLower(pEmailAddress), emailPattern);
 }
 

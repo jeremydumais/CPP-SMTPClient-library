@@ -4,19 +4,18 @@
 #include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 Credential::Credential(const char *pUsername, const char *pPassword)
     : mUsername(nullptr),
       mPassword(nullptr)
 {   
-    string username_str { pUsername == nullptr ? "" : pUsername };
+    std::string username_str { pUsername == nullptr ? "" : pUsername };
     if (pUsername == nullptr || strcmp(pUsername, "") == 0 || StringUtils::trim(username_str).empty()) {
-        throw invalid_argument("Username cannot be null or empty");
+        throw std::invalid_argument("Username cannot be null or empty");
     }
 
     if (pPassword == nullptr || strcmp(pPassword, "") == 0) {
-        throw invalid_argument("Password cannot be null or empty");
+        throw std::invalid_argument("Password cannot be null or empty");
     }
 
     size_t username_len = strlen(pUsername);
@@ -109,9 +108,9 @@ const char *Credential::getPassword() const
 
 void Credential::setUsername(const char *pUsername)
 {
-	string username_str { pUsername == nullptr ? "" : pUsername };
+	std::string username_str { pUsername == nullptr ? "" : pUsername };
     if (pUsername == nullptr || strcmp(pUsername, "") == 0 || StringUtils::trim(username_str).empty()) {
-        throw invalid_argument("Username cannot be null or empty");
+        throw std::invalid_argument("Username cannot be null or empty");
     }
 
 	delete []mUsername;
@@ -124,7 +123,7 @@ void Credential::setUsername(const char *pUsername)
 void Credential::setPassword(const char *pPassword)
 {
     if (pPassword == nullptr || strcmp(pPassword, "") == 0) {
-        throw invalid_argument("Password cannot be null or empty");
+        throw std::invalid_argument("Password cannot be null or empty");
     }
 
 	delete []mPassword;

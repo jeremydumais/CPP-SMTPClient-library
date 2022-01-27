@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 
 using namespace jed_utils;
-using namespace std;
 
 class FakeMessage : public Message
 {
