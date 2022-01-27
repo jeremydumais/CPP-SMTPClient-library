@@ -24,7 +24,7 @@ namespace jed_utils
 		explicit Attachment(const char *pFilename, const char *pName = "");
 		~Attachment();
 		Attachment(const Attachment& other); //Copy constructor
-                Attachment& operator=(const Attachment& other); //Copy assignment
+        Attachment& operator=(const Attachment& other); //Copy assignment
 		Attachment(Attachment&& other) noexcept; //Move constructor
 		Attachment& operator=(Attachment&& other) noexcept; //Move assignement
 		const char *getName() const;
