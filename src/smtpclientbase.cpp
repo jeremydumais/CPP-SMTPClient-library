@@ -369,11 +369,14 @@ int SMTPClientBase::initializeSession()
             return SOCKET_INIT_SESSION_CREATION_ERROR;
         }
         struct hostent *host = gethostbyname(getServerName());
+        if (host->h_length < 0) {
+            return SOCKET_INIT_SESSION_GETHOSTBYNAME_ERROR;
+        }
         struct sockaddr_in saddr_in {};
         saddr_in.sin_family = AF_INET;
         saddr_in.sin_port = htons(static_cast<u_short>(getServerPort()));
         saddr_in.sin_addr.s_addr = 0;
-        memcpy(reinterpret_cast<char*>(&(saddr_in.sin_addr)), host->h_addr, host->h_length);
+        memcpy(reinterpret_cast<char*>(&(saddr_in.sin_addr)), host->h_addr, static_cast<size_t>(host->h_length));
         std::stringstream ss;
         ss << "Trying to connect to " << getServerName() << " on port " << getServerPort();
         addCommunicationLogItem(ss.str().c_str());

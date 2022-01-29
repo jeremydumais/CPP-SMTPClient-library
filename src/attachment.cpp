@@ -1,7 +1,9 @@
 #include "attachment.h"
 #include "stringutils.h"
 #include <algorithm>
+#include <ios>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <string>
 
@@ -10,11 +12,12 @@ using namespace jed_utils;
 Attachment::Attachment(const char *pFilename, const char *pName)
     : mName(nullptr), mFilename(nullptr)
 {
-    if (strlen(pFilename) == 0 || StringUtils::trim(std::string(pFilename)).length() == 0) {
+    size_t pFileNameLength = strlen(pFilename);
+    if (pFileNameLength == 0 || StringUtils::trim(std::string(pFilename)).length() == 0) {
         throw std::invalid_argument("filename");
     }
     
-    size_t filename_len = strlen(pFilename);
+    size_t filename_len = pFileNameLength;
     mFilename = new char[filename_len+1];
     strncpy(mFilename, pFilename, filename_len);
     mFilename[filename_len] = '\0';
@@ -110,12 +113,15 @@ const char *Attachment::getBase64EncodedFile() const
         in.seekg(0, std::ios::end);
         contents.resize(static_cast<unsigned int>(in.tellg()));
         in.seekg(0, std::ios::beg);
-        in.read(&contents[0], contents.size());
+        if (static_cast<intmax_t>(contents.size()) <= std::numeric_limits<std::streamsize>::max()) {
+            in.read(&contents[0], static_cast<std::streamsize>(contents.size()));
+            in.close();
+            std::string base64_result = Base64::Encode(reinterpret_cast<const unsigned char*>(contents.c_str()), contents.length());
+            auto *base64_file = new char[base64_result.length() + 1];
+            strncpy(base64_file, base64_result.c_str(), base64_result.length() + 1);
+            return base64_file;
+        }
         in.close();
-    	std::string base64_result = Base64::Encode(reinterpret_cast<const unsigned char*>(contents.c_str()), contents.length());
-        auto *base64_file = new char[base64_result.length() + 1];
-	    strncpy(base64_file, base64_result.c_str(), base64_result.length() + 1);
-        return base64_file;
     }
     
     std::cerr << "Could not open file " << mFilename << std::endl;
