@@ -105,22 +105,39 @@ endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	#For MSVC create the library as a shared library
-	include_directories($ENV{OPENSSL_INCLUDE_DIR})
-	link_directories($ENV{OPENSSL_CRYPTO_LIBRARY})
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)	
+		# 64 bits
+		set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE "libsslMD" "libcryptoMD")
+		set(OPENSSL_ARCHITECTURE_SUFFIX "64")
+	elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+		# 32 bits
+		set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE ${OPENSSL_LIBRARIES})
+		set(OPENSSL_ARCHITECTURE_SUFFIX "")
+	endif()
+	#If OPENSSL_ROOT_DIR was not provided search for the environment variable
+	if (NOT DEFINED OPENSSL_ROOT_DIR)
+		message(STATUS "No OPENSSL_ROOT_DIR variable provided so searching for the OPENSSL_ROOT_DIR environment variable...")
+		if (NOT DEFINED ENV{OPENSSL_ROOT_DIR})
+			message(STATUS "No OPENSSL_ROOT_DIR environment variable found.")
+		else()
+			message(STATUS "Found OPENSSL_ROOT_DIR=$ENV{OPENSSL_ROOT_DIR} as an environment variable.")
+		endif()
+		set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
+	endif()
+	set(OPENSSL_INCLUDE_DIRECTORY ${OPENSSL_ROOT_DIR}/include${OPENSSL_ARCHITECTURE_SUFFIX})
+	message(STATUS "Will use OpenSSL include directory ${OPENSSL_INCLUDE_DIRECTORY}")
+	include_directories(${OPENSSL_INCLUDE_DIRECTORY})
+	set(OPENSSL_LIBRARY_DIRECTORY ${OPENSSL_ROOT_DIR}/lib${OPENSSL_ARCHITECTURE_SUFFIX})
+	message(STATUS "Will use OpenSSL lib directory ${OPENSSL_LIBRARY_DIRECTORY}")
+	link_directories(${OPENSSL_ROOT_DIR}/lib${OPENSSL_ARCHITECTURE_SUFFIX})
 	add_library(${PROJECT_NAME} SHARED
 		${PROJECT_SOURCE_FILES} ${VersionFilesOutputVariable})
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+	target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
 	target_compile_definitions(${PROJECT_NAME}
 		PRIVATE SMTPCLIENT_EXPORTS
 		INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
 		INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
-	if(CMAKE_SIZEOF_VOID_P EQUAL 8)	
-    	# 64 bits
-		set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE "libsslMD" "libcryptoMD")
-	elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    	# 32 bits
-		set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE ${OPENSSL_LIBRARIES})
-	endif()
 	target_link_libraries(${PROJECT_NAME} Ws2_32 ${OPENSSL_LIBRARIES_BY_MACHINE_TYPE} crypt32 cryptui)
 else()
 	#For other compiler create the library as a static library
@@ -176,6 +193,10 @@ if (WIN32)
     	# 64 bits
 		configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libsslMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMD.dll COPYONLY)
 		configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libcryptoMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMD.dll COPYONLY)
+		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+			configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libsslMDd.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMDd.dll COPYONLY)
+			configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libcryptoMDd.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMDd.dll COPYONLY)
+		endif()
 	elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
     	# 32 bits
 		configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libsslMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMD.dll COPYONLY)
@@ -249,3 +270,4 @@ CONFIGURE_FILE(
 ADD_CUSTOM_TARGET(uninstall
 	"${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/CMakeUninstall.cmake")
 
+add_subdirectory("simpleclient")

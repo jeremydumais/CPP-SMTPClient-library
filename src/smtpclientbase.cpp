@@ -8,6 +8,7 @@
 #include "socketerrors.h"
 #include "stringutils.h"
 #include <algorithm>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -331,7 +332,7 @@ int SMTPClientBase::initializeSession()
         WORD wVersionRequested = MAKEWORD(2, 2);
         int wsa_retVal = WSAStartup(wVersionRequested, &wsaData);
         if (wsa_retVal != 0) {
-            mLastSocketErrNo = wsa_retVal;
+            setLastSocketErrNo(wsa_retVal);
             return SOCKET_INIT_SESSION_WINSOCKET_STARTUP_ERROR;
         }
         struct addrinfo *result = nullptr;
@@ -340,32 +341,32 @@ int SMTPClientBase::initializeSession()
         hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
         hints.ai_socktype = SOCK_STREAM;
 
-        wsa_retVal = getaddrinfo(getServerName(), to_string(getServerPort()).c_str(), &hints, &result);
+        wsa_retVal = getaddrinfo(getServerName(), std::to_string(getServerPort()).c_str(), &hints, &result);
         if (wsa_retVal != 0) 
         {
             WSACleanup();
-            mLastSocketErrNo = wsa_retVal;
+            setLastSocketErrNo(wsa_retVal);
             return SOCKET_INIT_SESSION_WINSOCKET_GETADDRINFO_ERROR;
         }
 
         mSock = static_cast<unsigned int>(socket(result->ai_family, result->ai_socktype, result->ai_protocol));
         if (mSock == INVALID_SOCKET) {
             WSACleanup();
-            mLastSocketErrNo = WSAGetLastError();
+            setLastSocketErrNo(WSAGetLastError());
             return SOCKET_INIT_SESSION_CREATION_ERROR;
         }
         wsa_retVal = connect(mSock, result->ai_addr, static_cast<int>(result->ai_addrlen));
         if (wsa_retVal == SOCKET_ERROR) 
         {
             WSACleanup();
-            mLastSocketErrNo = WSAGetLastError();
+            setLastSocketErrNo(WSAGetLastError());
             return SOCKET_INIT_SESSION_CONNECT_ERROR;
         }
     #else
     //POSIX socket version
         mSock = socket(AF_INET, SOCK_STREAM, 0);
         if (mSock < 0) {
-            mLastSocketErrNo = errno;
+            setLastSocketErrNo(errno);
             return SOCKET_INIT_SESSION_CREATION_ERROR;
         }
         struct hostent *host = gethostbyname(getServerName());
@@ -381,7 +382,7 @@ int SMTPClientBase::initializeSession()
         ss << "Trying to connect to " << getServerName() << " on port " << getServerPort();
         addCommunicationLogItem(ss.str().c_str());
         if (connect(mSock, reinterpret_cast<struct sockaddr*>(&saddr_in), sizeof(saddr_in)) == -1) {
-            mLastSocketErrNo = errno;
+            setLastSocketErrNo(errno);
             return SOCKET_INIT_SESSION_CONNECT_ERROR;
         } 
     #endif
@@ -423,9 +424,12 @@ int SMTPClientBase::checkServerGreetings()
 
 int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode) 
 {
-    
-    if (send(mSock, pCommand, strlen(pCommand), 0) == -1) {
-        mLastSocketErrNo = errno;
+    size_t pCommandSize = strlen(pCommand);
+    if (pCommandSize > INT_MAX) {
+        return pErrorCode;
+    }
+    if (send(mSock, pCommand, static_cast<int>(pCommandSize), 0) == -1) {
+        setLastSocketErrNo(errno);
         cleanup();
         return pErrorCode;
     }
@@ -743,7 +747,7 @@ int SMTPClientBase::extractReturnCode(const char *pOutput)
         try {
             return std::stoi(code_str.substr(0, 3));
         } 
-        catch (std::exception const &e) {
+        catch (std::exception const &) {
             return -1;
         }
     }

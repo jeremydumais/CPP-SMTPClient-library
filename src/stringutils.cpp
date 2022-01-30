@@ -37,7 +37,7 @@ std::string StringUtils::toLower(const std::string &pString)
 {
     std::string transformed_string { pString };
     std::transform(pString.begin(), pString.end(), transformed_string.begin(),
-        [](unsigned char c){ return std::tolower(c); });
+        [](unsigned char c){ return static_cast<char>(std::tolower(c)); });
     return transformed_string;
 }
 
@@ -45,6 +45,6 @@ std::string StringUtils::toUpper(const std::string &pString)
 {
     std::string transformed_string { pString };
     std::transform(pString.begin(), pString.end(), transformed_string.begin(),
-        [](unsigned char c){ return std::toupper(c); });
+        [](unsigned char c){ return static_cast<char>(std::toupper(c)); });
     return transformed_string;
 }

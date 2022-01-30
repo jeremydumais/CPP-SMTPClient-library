@@ -167,7 +167,8 @@ int SecureSMTPClientBase::startTLSNegotiation()
             return SSL_CLIENT_STARTTLS_WIN_CERTOPENSYSTEMSTORE_ERROR;
         }
 
-        while (pContext = CertEnumCertificatesInStore(hStore, pContext))
+        pContext = CertEnumCertificatesInStore(hStore, pContext);
+        while (pContext)
         {
             X509 *x509 = nullptr;
             x509 = d2i_X509(nullptr, (const unsigned char **)&pContext->pbCertEncoded, pContext->cbCertEncoded);
@@ -176,6 +177,7 @@ int SecureSMTPClientBase::startTLSNegotiation()
                 X509_STORE_add_cert(store, x509);
                 X509_free(x509);
             }
+            pContext = CertEnumCertificatesInStore(hStore, pContext);
         }
     #else
         if (SSL_CTX_set_default_verify_paths(mCTX) == 0) {
