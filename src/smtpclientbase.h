@@ -46,7 +46,8 @@ namespace jed_utils
 		void setCommandTimeout(unsigned int pTimeOutInSeconds);
 		void setCredentials(const Credential &pCredential);
 		void setKeepUsingBaseSendCommands(bool pValue);
-		int sendMail(const Message &pMsg);
+        static char *getErrorMessage(int errorCode); 
+        int sendMail(const Message &pMsg);
 	protected:  
 		virtual void cleanup() = 0;
 		int getSocketFileDescriptor() const;

@@ -87,7 +87,8 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
 	${SRC_PATH}/securesmtpclientbase.cpp
 	${SRC_PATH}/opportunisticsecuresmtpclient.cpp
 	${SRC_PATH}/forcedsecuresmtpclient.cpp
-	${SRC_PATH}/stringutils.cpp)
+	${SRC_PATH}/stringutils.cpp
+    ${SRC_PATH}/errorresolver.cpp)
 
 if (WIN32)
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules)
@@ -252,7 +253,8 @@ if (BUILD_TESTING)
 		${TEST_SRC_PATH}/stringutils_unittest.cpp
 		${TEST_SRC_PATH}/opportunisticsecuresmtpclient_unittest.cpp
 		${TEST_SRC_PATH}/smtpclientbase_unittest.cpp
-		${TEST_SRC_PATH}/smtpclient_unittest.cpp)
+		${TEST_SRC_PATH}/smtpclient_unittest.cpp
+        ${TEST_SRC_PATH}/errorresolver_unittest.cpp)
 
 	target_link_libraries(${PROJECT_UNITTEST_NAME} ${PROJECT_NAME} gtest gtest_main ${PTHREAD})
 	gtest_discover_tests(${PROJECT_UNITTEST_NAME})
@@ -269,5 +271,3 @@ CONFIGURE_FILE(
   IMMEDIATE @ONLY)
 ADD_CUSTOM_TARGET(uninstall
 	"${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/CMakeUninstall.cmake")
-
-add_subdirectory("simpleclient")

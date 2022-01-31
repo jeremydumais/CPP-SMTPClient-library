@@ -292,6 +292,10 @@ void SMTPClientBase::setAuthenticationOptions(ServerAuthOptions *authOptions)
     mAuthOptions = authOptions;
 }
 
+char *SMTPClientBase::getErrorMessage(int errorCode)
+{
+    
+}
 
 int SMTPClientBase::sendMail(const Message &pMsg)
 {
@@ -371,6 +375,7 @@ int SMTPClientBase::initializeSession()
         }
         struct hostent *host = gethostbyname(getServerName());
         if (host->h_length < 0) {
+            
             return SOCKET_INIT_SESSION_GETHOSTBYNAME_ERROR;
         }
         struct sockaddr_in saddr_in {};
@@ -424,11 +429,16 @@ int SMTPClientBase::checkServerGreetings()
 
 int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode) 
 {
-    size_t pCommandSize = strlen(pCommand);
-    if (pCommandSize > INT_MAX) {
-        return pErrorCode;
-    }
-    if (send(mSock, pCommand, static_cast<int>(pCommandSize), 0) == -1) {
+    #ifdef _WIN32
+        size_t pCommandSize = strlen(pCommand);
+        if (static_cast<intmax_t>(pCommandSize) > std::numeric_limits<int>::max()) {
+            return pErrorCode;
+        }
+        int commandSize = static_cast<int>(pCommandSize);
+    #else
+        size_t commandSize = strlen(pCommand);
+    #endif
+    if (send(mSock, pCommand, commandSize, 0) == -1) {
         setLastSocketErrNo(errno);
         cleanup();
         return pErrorCode;
