@@ -104,6 +104,42 @@ ErrorResolver::ErrorResolver(int pErrorCode)
         case CLIENT_SENDMAIL_HEADERFROM_ERROR:
             mErrorMessage = "The From header command return an error"s;
         break;
+        case CLIENT_SENDMAIL_HEADERTOANDCC_ERROR:
+            mErrorMessage = "The To and CC header command return an error"s;
+        break;
+        case CLIENT_SENDMAIL_HEADERSUBJECT_ERROR:
+            mErrorMessage = "The Subject header command return an error"s;
+        break;
+        case CLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR:
+            mErrorMessage = "The Content type header command return an error"s;
+        break;
+        case CLIENT_SENDMAIL_BODYPART_ERROR:
+            mErrorMessage = "The Body part return an error"s;
+        break;
+        case CLIENT_SENDMAIL_BODY_ERROR:
+            mErrorMessage = "The Body command return an error"s;
+        break;
+        case CLIENT_SENDMAIL_END_DATA_ERROR:
+            mErrorMessage = "The End data command return an error"s;
+        break;
+        case CLIENT_SENDMAIL_END_DATA_TIMEOUT:
+            mErrorMessage = "The End data command timed out"s;
+        break;
+        case CLIENT_SENDMAIL_QUIT_ERROR:
+            mErrorMessage = "The QUIT command return an error"s;
+        break;
+        case SMTPSERVER_AUTHENTICATIONREQUIRED_ERROR:
+            mErrorMessage = "Authentication required"s;
+        break; 
+        case SMTPSERVER_AUTHENTICATIONTOOWEAK_ERROR:
+            mErrorMessage = "Authentication mechanism is too weak"s;
+        break;
+        case SMTPSERVER_CREDENTIALSINVALID_ERROR:
+            mErrorMessage = "Authentication credentials invalid"s;
+        break; 
+        case SMTPSERVER_ENCRYPTIONREQUIREDFORAUTH_ERROR:
+            mErrorMessage = "Encryption required for requested authentication mechanism"s;
+        break;   
         default:
             mErrorMessage = "No message correspond to this error code"s;
     }

@@ -1,4 +1,5 @@
 #include "base64.h"
+#include "errorresolver.h"
 #include "message.h"
 #include "messageaddress.h"
 #include "serverauthoptions.h"
@@ -294,8 +295,22 @@ void SMTPClientBase::setAuthenticationOptions(ServerAuthOptions *authOptions)
 
 char *SMTPClientBase::getErrorMessage(int errorCode)
 {
-    
+    ErrorResolver errorResolver(errorCode);
+    auto errorMessageStr = errorResolver.getErrorMessage();
+    char *errorMessage = new char[errorMessageStr.size()+1];
+    strcpy(errorMessage, errorMessageStr.c_str());
+    return errorMessage;
 }
+
+static int getErrorMessage_r(int errorCode, 
+                               char *errorMessagePtr, 
+                               const size_t maxLength)
+{
+    if (!errorMessagePtr) {
+        return -1;
+    }
+}
+
 
 int SMTPClientBase::sendMail(const Message &pMsg)
 {
@@ -374,7 +389,7 @@ int SMTPClientBase::initializeSession()
             return SOCKET_INIT_SESSION_CREATION_ERROR;
         }
         struct hostent *host = gethostbyname(getServerName());
-        if (host->h_length < 0) {
+        if (!host || host->h_length < 0) {
             
             return SOCKET_INIT_SESSION_GETHOSTBYNAME_ERROR;
         }

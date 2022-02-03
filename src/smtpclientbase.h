@@ -46,7 +46,32 @@ namespace jed_utils
 		void setCommandTimeout(unsigned int pTimeOutInSeconds);
 		void setCredentials(const Credential &pCredential);
 		void setKeepUsingBaseSendCommands(bool pValue);
-        static char *getErrorMessage(int errorCode); 
+        
+		/**
+		 *  @brief  This method return error message string that correspond to
+		 *  the error code provided.
+		 *  @return A pointer to an allocated char array that pointed to the
+		 *  error message. The user is responsible to delete this pointer after
+		 *  usage.
+		 *
+		 */
+		static char *getErrorMessage(int errorCode); 
+        
+		/**
+		 *  @brief  This is the reentrant version of the getErrorMessage method
+		 *  @param  errorCode  The error code return by the SMTP client.
+		 *  @param  errorMessagePtr  A pointer to an allocated char array
+		 *  @param  maxLength  The size of the allocated char array.
+		 *  @return Return 0 for success, -1 if an error occurred and a positive
+		 *  number representing the number of characters copied to errorMessagePtr 
+		 *  if the message was longer than that allocated char array.
+		 * 
+		 *  This method retreive the error message string that correspond to
+		 *  the error code provided.
+		 */
+	  	static int getErrorMessage_r(int errorCode, 
+									   char *errorMessagePtr, 
+									   const size_t maxLength); 
         int sendMail(const Message &pMsg);
 	protected:  
 		virtual void cleanup() = 0;

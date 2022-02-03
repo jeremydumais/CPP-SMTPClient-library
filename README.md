@@ -79,9 +79,10 @@ See the section [Releases](https://github.com/jeremydumais/CPP-SMTPClient-librar
 ```c++
 #include "smtpclient.h"
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 int main()
 {
@@ -95,16 +96,18 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cout << client.getCommunicationLog() << '\n';
-			cerr << "An error occurred. Return code : " << err_no << '\n';
+			std::cout << client.getCommunicationLog() << '\n';
+			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
+			std::cerr << "An error occurred: " << errorMessage.get()
+                 << " (error no: " << err_no << ")" << '\n';
 			return 1;
 		}
-		cout << client.getCommunicationLog() << endl;
-		cout << "Operation completed!" << endl;
+		std::cout << client.getCommunicationLog() << '\n';
+		std::cout << "Operation completed!" << std::endl;
 	}
-	catch (invalid_argument &err)
+	catch (std::invalid_argument &err)
 	{
-		cerr << err.what() << endl;
+		std::cerr << err.what() << std::endl;
 	}
     return 0;
 }
@@ -115,9 +118,10 @@ int main()
 ```c++
 #include "smtpclient.h"
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 int main()
 {
@@ -140,16 +144,18 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cout << client.getCommunicationLog() << '\n';
-			cerr << "An error occurred. Return code : " << err_no << '\n';
+			std::cout << client.getCommunicationLog() << '\n';
+			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
+			std::cerr << "An error occurred: " << errorMessage.get()
+                 << " (error no: " << err_no << ")" << '\n';
 			return 1;
 		}
-		cout << client.getCommunicationLog() << endl;
-		cout << "Operation completed!" << endl;
+		std::cout << client.getCommunicationLog() << '\n';
+		std::cout << "Operation completed!" << std::endl;
 	}
-	catch (invalid_argument &err)
+	catch (std::invalid_argument &err)
 	{
-		cerr << err.what() << endl;
+		std::cerr << err.what() << std::endl;
 	}
     return 0;
 }
@@ -160,9 +166,10 @@ int main()
 ```c++
 #include "opportunisticsecuresmtpclient.h"
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 int main()
 {
@@ -177,16 +184,18 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cout << client.getCommunicationLog() << '\n';
-			cerr << "An error occurred. Return code : " << err_no << '\n';
+			std::cout << client.getCommunicationLog() << '\n';
+			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
+			std::cerr << "An error occurred: " << errorMessage.get()
+                 << " (error no: " << err_no << ")" << '\n';
 			return 1;
 		}
-		cout << client.getCommunicationLog() << endl;
-		cout << "Operation completed!" << endl;
+		std::cout << client.getCommunicationLog() << '\n';
+		std::cout << "Operation completed!" << std::endl;
 	}
-	catch (invalid_argument &err)
+	catch (std::invalid_argument &err)
 	{
-		cerr << err.what() << endl;
+		std::cerr << err.what() << std::endl;
 	}
     return 0;
 }
@@ -197,9 +206,10 @@ int main()
 ```c++
 #include "forcedsecuresmtpclient.h"
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 int main()
 {
@@ -214,16 +224,18 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cout << client.getCommunicationLog() << '\n';
-			cerr << "An error occurred. Return code : " << err_no << '\n';
+			std::cout << client.getCommunicationLog() << '\n';
+			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
+			std::cerr << "An error occurred: " << errorMessage.get()
+                 << " (error no: " << err_no << ")" << '\n';
 			return 1;
 		}
-		cout << client.getCommunicationLog() << endl;
-		cout << "Operation completed!" << endl;
+		std::cout << client.getCommunicationLog() << '\n';
+		std::cout << "Operation completed!" << std::endl;
 	}
-	catch (invalid_argument &err)
+	catch (std::invalid_argument &err)
 	{
-		cerr << err.what() << endl;
+		std::cerr << err.what() << std::endl;
 	}
     return 0;
 }

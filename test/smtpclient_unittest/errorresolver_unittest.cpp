@@ -214,3 +214,75 @@ TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_HEADERFROM_ERROR_ReturnV
     ErrorResolver errorResolver(CLIENT_SENDMAIL_HEADERFROM_ERROR);
     ASSERT_EQ("The From header command return an error"s, errorResolver.getErrorMessage());
 }
+
+TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_HEADERTOANDCC_ERROR_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(CLIENT_SENDMAIL_HEADERTOANDCC_ERROR);
+    ASSERT_EQ("The To and CC header command return an error"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_HEADERSUBJECT_ERROR_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(CLIENT_SENDMAIL_HEADERSUBJECT_ERROR);
+    ASSERT_EQ("The Subject header command return an error"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(CLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR);
+    ASSERT_EQ("The Content type header command return an error"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_BODYPART_ERROR_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(CLIENT_SENDMAIL_BODYPART_ERROR);
+    ASSERT_EQ("The Body part return an error"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_BODY_ERROR_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(CLIENT_SENDMAIL_BODY_ERROR);
+    ASSERT_EQ("The Body command return an error"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_END_DATA_ERROR_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(CLIENT_SENDMAIL_END_DATA_ERROR);
+    ASSERT_EQ("The End data command return an error"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_END_DATA_TIMEOUT_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(CLIENT_SENDMAIL_END_DATA_TIMEOUT);
+    ASSERT_EQ("The End data command timed out"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_QUIT_ERROR_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(CLIENT_SENDMAIL_QUIT_ERROR);
+    ASSERT_EQ("The QUIT command return an error"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithSMTPSERVER_AUTHENTICATIONREQUIRED_ERROR_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(SMTPSERVER_AUTHENTICATIONREQUIRED_ERROR);
+    ASSERT_EQ("Authentication required"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithSMTPSERVER_AUTHENTICATIONTOOWEAK_ERROR_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(SMTPSERVER_AUTHENTICATIONTOOWEAK_ERROR);
+    ASSERT_EQ("Authentication mechanism is too weak"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithSMTPSERVER_CREDENTIALSINVALID_ERROR_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(SMTPSERVER_CREDENTIALSINVALID_ERROR);
+    ASSERT_EQ("Authentication credentials invalid"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithSMTPSERVER_ENCRYPTIONREQUIREDFORAUTH_ERROR_ReturnValidMessage)
+{
+    ErrorResolver errorResolver(SMTPSERVER_ENCRYPTIONREQUIREDFORAUTH_ERROR);
+    ASSERT_EQ("Encryption required for requested authentication mechanism"s, errorResolver.getErrorMessage());
+}
