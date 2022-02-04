@@ -6,6 +6,7 @@
 
 namespace jed_utils
 {
+	/** @brief The AttachmentError class represent a type of exception */
 	class AttachmentError : std::exception
 	{
 	public:

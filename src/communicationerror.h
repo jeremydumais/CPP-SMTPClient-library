@@ -6,6 +6,7 @@
 
 namespace jed_utils
 {
+	/** @brief The CommunicationError class represent a type of exception */
 	class CommunicationError : std::exception
 	{
 	public:

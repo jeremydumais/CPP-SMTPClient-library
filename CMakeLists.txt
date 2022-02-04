@@ -74,7 +74,6 @@ endif(((NOT CMAKE_BUILD_TYPE)
     OR (CMAKE_BUILD_TYPE STREQUAL "Release"))
 
 set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
-    ${SRC_PATH}/attachmenterror.cpp
     ${SRC_PATH}/base64.cpp
     ${SRC_PATH}/communicationerror.cpp
     ${SRC_PATH}/credential.cpp
