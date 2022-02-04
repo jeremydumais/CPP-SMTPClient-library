@@ -9,6 +9,7 @@
 #include "socketerrors.h"
 #include "stringutils.h"
 #include <algorithm>
+#include <cstring>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
@@ -296,21 +297,29 @@ void SMTPClientBase::setAuthenticationOptions(ServerAuthOptions *authOptions)
 char *SMTPClientBase::getErrorMessage(int errorCode)
 {
     ErrorResolver errorResolver(errorCode);
-    auto errorMessageStr = errorResolver.getErrorMessage();
+    const auto &errorMessageStr = errorResolver.getErrorMessage();
     char *errorMessage = new char[errorMessageStr.size()+1];
     strcpy(errorMessage, errorMessageStr.c_str());
     return errorMessage;
 }
 
-static int getErrorMessage_r(int errorCode, 
-                               char *errorMessagePtr, 
-                               const size_t maxLength)
+int SMTPClientBase::getErrorMessage_r(int errorCode,
+                      char *errorMessagePtr,
+                      const size_t maxLength)
 {
-    if (!errorMessagePtr) {
+    ErrorResolver errorResolver(errorCode);
+    const auto &errorMessageStr = errorResolver.getErrorMessage();
+    if (!errorMessagePtr || maxLength == 0) {
         return -1;
     }
+    if (errorMessageStr.length() > maxLength-1) {
+        strncpy(errorMessagePtr, errorMessageStr.c_str(), maxLength-1);
+        errorMessagePtr[maxLength-1] = '\0';
+        return static_cast<int>(maxLength-1);
+    }
+    strncpy(errorMessagePtr, errorMessageStr.c_str(), maxLength-1);
+    return 0;
 }
-
 
 int SMTPClientBase::sendMail(const Message &pMsg)
 {

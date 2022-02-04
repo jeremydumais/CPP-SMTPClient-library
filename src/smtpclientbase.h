@@ -70,8 +70,8 @@ namespace jed_utils
 		 *  the error code provided.
 		 */
 	  	static int getErrorMessage_r(int errorCode, 
-									   char *errorMessagePtr, 
-									   const size_t maxLength); 
+									 char *errorMessagePtr, 
+									 const size_t maxLength); 
         int sendMail(const Message &pMsg);
 	protected:  
 		virtual void cleanup() = 0;
@@ -116,11 +116,13 @@ namespace jed_utils
 		ServerAuthOptions *mAuthOptions;
 		Credential *mCredential;
 		int mSock;
+
 		// This field indicate the class will keep using base send command even if a child class
 		// as overriden the sendCommand and sendCommandWithFeedback.
 		// This is used for example if you are using a secure client class but the STARTTLS
 		// feature is not available. The communication will then remain unsecured.
 		bool mKeepUsingBaseSendCommands;
+
 	    int (SMTPClientBase::*sendCommandPtr)(const char *pCommand, int pErrorCode);
     	int (SMTPClientBase::*sendCommandWithFeedbackPtr)(const char *pCommand, int pErrorCode, int pTimeoutCode);
     };
