@@ -36,27 +36,69 @@ namespace jed_utils
         SMTPClientBase& operator=(const SMTPClientBase& other); //Copy assignment
 		SMTPClientBase(SMTPClientBase&& other) noexcept; //Move constructor
 		SMTPClientBase& operator=(SMTPClientBase&& other) noexcept; //Move assignement
+		
+		/** Return the server name. */
 		const char *getServerName() const;
+		
+		/** Return the server port number. */
 		unsigned int getServerPort() const;
+
+		/** Return the command timeout in seconds. */
 		unsigned int getCommandTimeout() const;
+		
+		/** Return the communication log produced by the sendMail method. */
 		const char *getCommunicationLog() const;
+
+		/** Return the credentials configured. */
 		const Credential *getCredentials() const;
-		void setServerName(const char *pServerName);
-		void setServerPort(unsigned int pPort);
-		void setCommandTimeout(unsigned int pTimeOutInSeconds);
-		void setCredentials(const Credential &pCredential);
-		void setKeepUsingBaseSendCommands(bool pValue);
-        
+
 		/**
-		 *  @brief  This method return error message string that correspond to
+		 *  @brief  Set the server name. 
+		 *  @param pServerName A char array pointer of the server name. 
+		 *  Example: smtp.domainexample.com
+		 */
+		void setServerName(const char *pServerName);
+
+		/**
+		 *  @brief  Set the server port number.
+		 *  @param pPort The port number. 
+		 *  Example: 25, 465, 587
+		 */
+		void setServerPort(unsigned int pPort);
+
+		/**
+		 *  @brief  Set the command timeout in seconds. 
+		 *  @param pTimeOutInSeconds The timeout in seconds. 
+		 *  Default: 3 seconds
+		 */
+		void setCommandTimeout(unsigned int pTimeOutInSeconds);
+		
+		/**
+		 *  @brief  Set the credentials. 
+		 *  @param pCredential The credential containing the username and the password. 
+		 */
+		void setCredentials(const Credential &pCredential);
+
+		/**
+		 *  @brief  Indicate if the class will keep using base send command even 
+		 *  if a child class as overriden the sendCommand and sendCommandWithFeedback.
+		 * 
+		 *  This is used for example if you are using a secure client class but 
+		 *  the STARTTLS feature is not available. The communication will then 
+		 *  remain unsecured.
+		 *  @param pValue True to enable this behavior, false for the default
+		 */
+		void setKeepUsingBaseSendCommands(bool pValue);    
+	
+		/**
+		 *  @brief  Retreive the error message string that correspond to
 		 *  the error code provided.
 		 *  @return A pointer to an allocated char array that pointed to the
 		 *  error message. The user is responsible to delete this pointer after
 		 *  usage.
-		 *
 		 */
 		static char *getErrorMessage(int errorCode); 
-        
+
 		/**
 		 *  @brief  This is the reentrant version of the getErrorMessage method
 		 *  @param  errorCode  The error code return by the SMTP client.
@@ -66,12 +108,13 @@ namespace jed_utils
 		 *  number representing the number of characters copied to errorMessagePtr 
 		 *  if the message was longer than that allocated char array.
 		 * 
-		 *  This method retreive the error message string that correspond to
-		 *  the error code provided.
+		 *  Retreive the error message string that correspond to the error code 
+		 *  provided.
 		 */
 	  	static int getErrorMessage_r(int errorCode, 
 									 char *errorMessagePtr, 
 									 const size_t maxLength); 
+
         int sendMail(const Message &pMsg);
 	protected:  
 		virtual void cleanup() = 0;

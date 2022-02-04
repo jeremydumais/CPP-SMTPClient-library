@@ -9,12 +9,28 @@ namespace jed_utils
 	class CommunicationError : std::exception
 	{
 	public:
+		/**
+		 *  @brief  Construct a new CommunicationError. 
+		 *  @param pErrMsg The error message.
+		 */
 		explicit CommunicationError(const char *pErrMsg);
+		
+		/** The destructor of CommunicationError */
 		~CommunicationError() override;
-		CommunicationError(const CommunicationError& other); //Copy constructor
-        CommunicationError& operator=(const CommunicationError& other); //Copy assignment
-		CommunicationError(CommunicationError&& other) noexcept; //Move constructor
-		CommunicationError& operator=(CommunicationError&& other) noexcept; //Move assignement
+		
+		/** CommunicationError copy constructor. */
+		CommunicationError(const CommunicationError& other);
+        
+		/** CommunicationError copy assignment operator. */
+		CommunicationError& operator=(const CommunicationError& other);
+
+		/** CommunicationError move constructor. */
+		CommunicationError(CommunicationError&& other) noexcept;
+
+		/** CommunicationError move assignment operator. */
+		CommunicationError& operator=(CommunicationError&& other) noexcept;
+
+		/** Return a char array pointer containing the error message. */
 		const char *what() const noexcept override;
 	private:
 	char *mErrorMessage;

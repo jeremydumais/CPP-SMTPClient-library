@@ -9,12 +9,28 @@ namespace jed_utils
 	class AttachmentError : std::exception
 	{
 	public:
+		/**
+		 *  @brief  Construct a new AttachmentError. 
+		 *  @param pErrMsg The error message.
+		 */
 		explicit AttachmentError(const char *pErrMsg);
+
+		/** The destructor of AttachmentError */
 		~AttachmentError() override;
-		AttachmentError(const AttachmentError& other); //Copy constructor
-                AttachmentError& operator=(const AttachmentError& other); //Copy assignment
-		AttachmentError(AttachmentError&& other) noexcept; //Move constructor
-		AttachmentError& operator=(AttachmentError&& other) noexcept; //Move assignement
+
+		/** AttachmentError copy constructor. */
+		AttachmentError(const AttachmentError& other);
+        
+		/** AttachmentError copy assignment operator. */
+		AttachmentError& operator=(const AttachmentError& other);
+
+		/** AttachmentError move constructor. */
+		AttachmentError(AttachmentError&& other) noexcept;
+
+		/** AttachmentError move assignment operator. */
+		AttachmentError& operator=(AttachmentError&& other) noexcept;
+
+		/** Return a char array pointer containing the error message. */
 		const char *what() const noexcept override;
 	private:
 		char *mErrorMessage;
