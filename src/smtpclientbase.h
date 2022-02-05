@@ -2,8 +2,6 @@
 #define SMTPCLIENTBASE_H
 
 #include "attachment.h"
-#include "attachmenterror.h"
-#include "communicationerror.h"
 #include "credential.h"
 #include "htmlmessage.h"
 #include "messageaddress.h"

@@ -24,16 +24,27 @@ namespace jed_utils
 	public:
 		/**
 		 *  @brief  Construct a new ForcedSecureSMTPClient. 
-		 *  @param pFilename The full path of the file.
-		 *  @param pName The display name of the file that will appear in 
-		 *  the mail content  
+		 *  @param pServerName The name of the server. 
+		 *  Example: smtp.domainexample.com
+		 *  @param pPort The server port number.
+		 *  Example: 25, 465, 587  
 		 */
 		ForcedSecureSMTPClient(const char *pServerName, unsigned int pPort);
+		
+		/** Destructor of the ForcedSecureSMTPClient */
 		~ForcedSecureSMTPClient() = default;
-		ForcedSecureSMTPClient(const ForcedSecureSMTPClient& other) = default; //Copy constructor
-        ForcedSecureSMTPClient& operator=(const ForcedSecureSMTPClient& other); //Copy assignment
-		ForcedSecureSMTPClient(ForcedSecureSMTPClient&& other) noexcept; //Move constructor
-		ForcedSecureSMTPClient& operator=(ForcedSecureSMTPClient&& other) noexcept; //Move assignement
+		
+		/** ForcedSecureSMTPClient copy constructor. */
+		ForcedSecureSMTPClient(const ForcedSecureSMTPClient& other) = default;
+        
+		/** ForcedSecureSMTPClient copy assignment operator. */
+		ForcedSecureSMTPClient& operator=(const ForcedSecureSMTPClient& other);
+		
+		/** ForcedSecureSMTPClient move constructor. */
+		ForcedSecureSMTPClient(ForcedSecureSMTPClient&& other) noexcept;
+		
+		/** ForcedSecureSMTPClient move assignment operator. */
+		ForcedSecureSMTPClient& operator=(ForcedSecureSMTPClient&& other) noexcept;
 	protected:
 		int establishConnectionWithServer() override;
 		int checkServerGreetings() override;

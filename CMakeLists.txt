@@ -75,7 +75,6 @@ endif(((NOT CMAKE_BUILD_TYPE)
 
 set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/base64.cpp
-    ${SRC_PATH}/communicationerror.cpp
     ${SRC_PATH}/credential.cpp
     ${SRC_PATH}/htmlmessage.cpp
     ${SRC_PATH}/message.cpp

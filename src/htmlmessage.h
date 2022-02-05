@@ -16,9 +16,23 @@
 
 namespace jed_utils
 {
+	/** @brief The HTMLMessage class represents an email message in
+	 *  HTML format. 
+	 */
 	class HTMLMESSAGE_API HTMLMessage : public Message
 	{
-	public:
+	public:		
+		/**
+		 *  @brief  Construct a new HTMLMessage. 
+		 *  @param pFrom The sender email address of the message.
+		 *  @param pTo The recipient email address of the message.
+		 *  @param pSubject The subject of the message.
+		 *  @param pBody The content of the message. 
+		 *  @param pCc The carbon-copy recipient email address.
+		 *  @param pBcc The blind carbon-copy recipient email address.
+		 *  @param pAttachments The attachments array of the message
+		 *  @param pAttachmentsSize The number of attachments in the array.
+		 */
 		HTMLMessage(const MessageAddress &pFrom,
 			const MessageAddress &pTo,
 			const char *pSubject,
