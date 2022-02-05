@@ -21,13 +21,11 @@ MessageAddress::MessageAddress(const char *pEmailAddress, const char *pDisplayNa
 
     size_t email_len = strlen(pEmailAddress);
     mEmailAddress = new char[email_len+1];
-    strncpy(mEmailAddress, pEmailAddress, email_len);
-    mEmailAddress[email_len] = '\0';
+    strcpy(mEmailAddress, pEmailAddress);
 
     size_t name_len = strlen(pDisplayName);
     mDisplayName = new char[name_len+1];
-    strncpy(mDisplayName, pDisplayName, name_len);
-    mDisplayName[name_len] = '\0';
+    strcpy(mDisplayName, pDisplayName);
 }
 
 MessageAddress::~MessageAddress()
@@ -41,11 +39,8 @@ MessageAddress::MessageAddress(const MessageAddress& other)
 	: mEmailAddress(new char[strlen(other.mEmailAddress) + 1]),
       mDisplayName(new char[strlen(other.mDisplayName) + 1])
 {
-	strncpy(mEmailAddress, other.mEmailAddress, strlen(other.mEmailAddress) + 1);
-	mEmailAddress[strlen(other.mEmailAddress)] = '\0';
-
-    strncpy(mDisplayName, other.mDisplayName, strlen(other.mDisplayName) + 1);
-	mDisplayName[strlen(other.mDisplayName)] = '\0';
+	strcpy(mEmailAddress, other.mEmailAddress);
+    strcpy(mDisplayName, other.mDisplayName);
 }
 
 //Assignment operator
@@ -57,12 +52,10 @@ MessageAddress& MessageAddress::operator=(const MessageAddress& other)
 		delete[] mDisplayName;
 		//mEmailAddress
 		mEmailAddress = new char[strlen(other.mEmailAddress) + 1];
-		strncpy(mEmailAddress, other.mEmailAddress, strlen(other.mEmailAddress) + 1);
-		mEmailAddress[strlen(other.mEmailAddress)] = '\0';
+		strcpy(mEmailAddress, other.mEmailAddress);
         //mDisplayName
 		mDisplayName = new char[strlen(other.mDisplayName) + 1];
-		strncpy(mDisplayName, other.mDisplayName, strlen(other.mDisplayName) + 1);
-		mDisplayName[strlen(other.mDisplayName)] = '\0';
+		strcpy(mDisplayName, other.mDisplayName);
 	}
 	return *this;
 }

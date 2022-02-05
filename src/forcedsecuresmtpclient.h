@@ -31,7 +31,7 @@ namespace jed_utils
 		 */
 		ForcedSecureSMTPClient(const char *pServerName, unsigned int pPort);
 		
-		/** Destructor of the ForcedSecureSMTPClient */
+		/** Destructor of the ForcedSecureSMTPClient. */
 		~ForcedSecureSMTPClient() = default;
 		
 		/** ForcedSecureSMTPClient copy constructor. */

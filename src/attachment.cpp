@@ -19,13 +19,11 @@ Attachment::Attachment(const char *pFilename, const char *pName)
     
     size_t filename_len = pFileNameLength;
     mFilename = new char[filename_len+1];
-    strncpy(mFilename, pFilename, filename_len);
-    mFilename[filename_len] = '\0';
+    strcpy(mFilename, pFilename);
 
     size_t name_len = strlen(pName);
     mName = new char[name_len+1];
-    strncpy(mName, pName, name_len);
-    mName[name_len] = '\0'; 
+    strcpy(mName, pName);
 }
 
 Attachment::~Attachment()
@@ -41,10 +39,8 @@ Attachment::Attachment(const Attachment& other)
 	: mName(new char[strlen(other.mName) + 1]),
 	  mFilename(new char[strlen(other.mFilename) + 1])
 {
-    strncpy(mName, other.mName, strlen(other.mName) + 1);
-	mName[strlen(other.mName)] = '\0';
-    strncpy(mFilename, other.mFilename, strlen(other.mFilename) + 1);
-	mFilename[strlen(other.mFilename)] = '\0';
+    strcpy(mName, other.mName);
+    strcpy(mFilename, other.mFilename);
 }
 
 //Assignment operator
@@ -56,12 +52,10 @@ Attachment& Attachment::operator=(const Attachment& other)
 		delete[] mFilename;
 		//mName
 		mName = new char[strlen(other.mName) + 1];
-        strncpy(mName, other.mName, strlen(other.mName) + 1);
-		mName[strlen(other.mName)] = '\0';
+        strcpy(mName, other.mName);
 		//mFilename
 		mFilename = new char[strlen(other.mFilename) + 1];
-        strncpy(mFilename, other.mFilename, strlen(other.mFilename) + 1);
-		mFilename[strlen(other.mFilename)] = '\0';
+        strcpy(mFilename, other.mFilename);
 	}
 	return *this;
 }

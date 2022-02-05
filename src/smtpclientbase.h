@@ -20,20 +20,43 @@
 	#define SMTPCLIENTBASE_API
 #endif
 
-#define COMMUNICATIONLOG_LENGTH			4096	/* The max length of the communication log */
-#define SERVERRESPONSE_BUFFER_LENGTH	1024	/* The max length of the server response buffer */
+/** The max length of the communication log */
+#define COMMUNICATIONLOG_LENGTH			4096
+
+/** The max length of the server response buffer */
+#define SERVERRESPONSE_BUFFER_LENGTH	1024
 
 namespace jed_utils
 {
+	/** @brief The SMTPClientBase represents the base class for all SMTP clients
+	 *  that will or will not use encryption for communication.
+	 */
 	class SMTPCLIENTBASE_API SMTPClientBase
 	{
 	public:
+		/**
+		 *  @brief  Construct a new SMTPClientBase. 
+		 *  @param pServerName The name of the server. 
+		 *  Example: smtp.domainexample.com
+		 *  @param pPort The server port number.
+		 *  Example: 25, 465, 587  
+		 */
 		SMTPClientBase(const char *pServerName, unsigned int pPort);
+
+		/** Destructor of the SMTPClientBase. */
 		virtual ~SMTPClientBase();
-		SMTPClientBase(const SMTPClientBase& other); //Copy constructor
-        SMTPClientBase& operator=(const SMTPClientBase& other); //Copy assignment
-		SMTPClientBase(SMTPClientBase&& other) noexcept; //Move constructor
-		SMTPClientBase& operator=(SMTPClientBase&& other) noexcept; //Move assignement
+
+		/** SMTPClientBase copy constructor. */
+		SMTPClientBase(const SMTPClientBase& other);
+		
+		/** SMTPClientBase copy assignment operator. */
+        SMTPClientBase& operator=(const SMTPClientBase& other);
+		
+		/** SMTPClientBase move constructor. */
+		SMTPClientBase(SMTPClientBase&& other) noexcept;
+
+		/** SMTPClientBase move assignment operator. */
+		SMTPClientBase& operator=(SMTPClientBase&& other) noexcept;
 		
 		/** Return the server name. */
 		const char *getServerName() const;

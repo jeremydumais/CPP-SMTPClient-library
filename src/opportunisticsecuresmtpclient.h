@@ -15,15 +15,36 @@
 
 namespace jed_utils
 {
+	/** @brief The OpportunisticSecureSMTPClient should be your default choice for 
+	 *  communicating with modern SMTP servers. The communication is usually done 
+	 *  via port 587.
+	 */
 	class OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : public SecureSMTPClientBase
 	{
 	public:
+		/**
+		 *  @brief  Construct a new OpportunisticSecureSMTPClient. 
+		 *  @param pServerName The name of the server. 
+		 *  Example: smtp.domainexample.com
+		 *  @param pPort The server port number.
+		 *  Example: 25, 465, 587  
+		 */
 		OpportunisticSecureSMTPClient(const char *pServerName, unsigned int pPort);
+
+		/** Destructor of the OpportunisticSecureSMTPClient. */
 		~OpportunisticSecureSMTPClient() = default;
-		OpportunisticSecureSMTPClient(const OpportunisticSecureSMTPClient& other) = default; //Copy constructor
-        OpportunisticSecureSMTPClient& operator=(const OpportunisticSecureSMTPClient& other); //Copy assignment
-		OpportunisticSecureSMTPClient(OpportunisticSecureSMTPClient&& other) noexcept; //Move constructor
-		OpportunisticSecureSMTPClient& operator=(OpportunisticSecureSMTPClient&& other) noexcept; //Move assignement
+
+		/** OpportunisticSecureSMTPClient copy constructor. */
+		OpportunisticSecureSMTPClient(const OpportunisticSecureSMTPClient& other) = default;
+
+		/** OpportunisticSecureSMTPClient copy assignment operator. */
+        OpportunisticSecureSMTPClient& operator=(const OpportunisticSecureSMTPClient& other);
+
+		/** OpportunisticSecureSMTPClient move constructor. */
+		OpportunisticSecureSMTPClient(OpportunisticSecureSMTPClient&& other) noexcept;
+
+		/** OpportunisticSecureSMTPClient move assignment operator. */
+		OpportunisticSecureSMTPClient& operator=(OpportunisticSecureSMTPClient&& other) noexcept;
 	protected:
 		int establishConnectionWithServer() override;
 		int upgradeToSecureConnection();

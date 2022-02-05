@@ -53,8 +53,7 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     }
     size_t server_name_len = strlen(pServerName);
 	mServerName = new char[server_name_len + 1];
-	strncpy(mServerName, pServerName, server_name_len);
-    mServerName[server_name_len] = '\0';
+	strcpy(mServerName, pServerName);
 }
 
 SMTPClientBase::~SMTPClientBase() 
@@ -85,17 +84,13 @@ SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
        sendCommandPtr(&SMTPClientBase::sendCommand),
        sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback)
 {
-    strncpy(mServerName, other.mServerName, strlen(other.mServerName) + 1);
-	mServerName[strlen(other.mServerName)] = '\0';
-    
+    strcpy(mServerName, other.mServerName);    
     if (mCommunicationLog != nullptr) {
-	    strncpy(mCommunicationLog, other.mCommunicationLog, strlen(other.mCommunicationLog) + 1);
-	    mCommunicationLog[strlen(other.mCommunicationLog)] = '\0';
+	    strcpy(mCommunicationLog, other.mCommunicationLog);
     }
 
     if (mLastServerResponse != nullptr) {
-	    strncpy(mLastServerResponse, other.mLastServerResponse, strlen(other.mLastServerResponse) + 1);
-	    mLastServerResponse[strlen(other.mLastServerResponse)] = '\0';
+	    strcpy(mLastServerResponse, other.mLastServerResponse);
     }
     setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
 }
@@ -107,21 +102,18 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other)
         //mServerName
         delete[] mServerName;
 		mServerName = new char[strlen(other.mServerName) + 1];
-		strncpy(mServerName, other.mServerName, strlen(other.mServerName) + 1);
-		mServerName[strlen(other.mServerName)] = '\0';
+		strcpy(mServerName, other.mServerName);
         //mPort
         mPort = other.mPort;
         //mCommunicationLog
         mCommunicationLog = other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr;
         if (mCommunicationLog != nullptr) {
-            strncpy(mCommunicationLog, other.mCommunicationLog, strlen(other.mCommunicationLog) + 1);
-            mCommunicationLog[strlen(other.mCommunicationLog)] = '\0';
+            strcpy(mCommunicationLog, other.mCommunicationLog);
         }
         //mLastServerResponse
         mLastServerResponse = other.mLastServerResponse != nullptr ? new char[strlen(other.mLastServerResponse) + 1]: nullptr;
         if (mLastServerResponse != nullptr) {
-            strncpy(mLastServerResponse, other.mLastServerResponse, strlen(other.mLastServerResponse) + 1);
-            mLastServerResponse[strlen(other.mLastServerResponse)] = '\0';
+            strcpy(mLastServerResponse, other.mLastServerResponse);
         }
         mCommandTimeOut = other.mCommandTimeOut;
         mLastSocketErrNo = other.mLastSocketErrNo;
@@ -240,8 +232,7 @@ void SMTPClientBase::setServerName(const char *pServerName)
     delete []mServerName;
     size_t server_name_len = strlen(pServerName);
 	mServerName = new char[server_name_len + 1];
-	strncpy(mServerName, pServerName, server_name_len);
-    mServerName[server_name_len] = '\0';
+	strcpy(mServerName, pServerName);
 }
 
 void SMTPClientBase::setCommandTimeout(unsigned int pTimeOutInSeconds)
@@ -313,11 +304,10 @@ int SMTPClientBase::getErrorMessage_r(int errorCode,
         return -1;
     }
     if (errorMessageStr.length() > maxLength-1) {
-        strncpy(errorMessagePtr, errorMessageStr.c_str(), maxLength-1);
-        errorMessagePtr[maxLength-1] = '\0';
+        strcpy(errorMessagePtr, errorMessageStr.c_str());
         return static_cast<int>(maxLength-1);
     }
-    strncpy(errorMessagePtr, errorMessageStr.c_str(), maxLength-1);
+    strcpy(errorMessagePtr, errorMessageStr.c_str());
     return 0;
 }
 
@@ -499,8 +489,7 @@ void SMTPClientBase::setLastServerResponse(const char *pResponse)
     delete[] mLastServerResponse;
     size_t response_len = strlen(pResponse);
 	mLastServerResponse = new char[response_len + 1];
-	strncpy(mLastServerResponse, pResponse, response_len);
-    mLastServerResponse[response_len] = '\0';
+	strcpy(mLastServerResponse, pResponse);
 }
 
 int SMTPClientBase::authenticateClient()
@@ -752,10 +741,11 @@ void SMTPClientBase::addCommunicationLogItem(const char *pItem, const char *pPre
     }
     std::string endOfLine { "\n" };
     std::string separator { ": " };
-    strncat(mCommunicationLog, endOfLine.c_str(), strlen(endOfLine.c_str()));
-    strncat(mCommunicationLog, pPrefix, strlen(pPrefix));
-    strncat(mCommunicationLog, separator.c_str(), strlen(separator.c_str()));
-    strncat(mCommunicationLog, item.c_str(), item.length());
+    strncat(mCommunicationLog, endOfLine.c_str(), COMMUNICATIONLOG_LENGTH-1);
+    strncat(mCommunicationLog, pPrefix, COMMUNICATIONLOG_LENGTH-1);
+    strncat(mCommunicationLog, separator.c_str(), COMMUNICATIONLOG_LENGTH-1);
+    strncat(mCommunicationLog, item.c_str(), COMMUNICATIONLOG_LENGTH-1);
+    mCommunicationLog[COMMUNICATIONLOG_LENGTH-1] = '\0';
 }
 
 std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*> &pAttachments)

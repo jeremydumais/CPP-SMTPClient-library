@@ -16,15 +16,35 @@
 
 namespace jed_utils
 {
+	/** @brief The SecureSMTPClientBase represents the base class for SMTP client
+	 *  that will use encryption for communication.
+	 */
 	class SECURESMTPCLIENTBASE_API SecureSMTPClientBase : public SMTPClientBase
 	{
 	public:
+		/**
+		 *  @brief  Construct a new SecureSMTPClientBase. 
+		 *  @param pServerName The name of the server. 
+		 *  Example: smtp.domainexample.com
+		 *  @param pPort The server port number.
+		 *  Example: 25, 465, 587  
+		 */
     	SecureSMTPClientBase(const char *pServerName, unsigned int pPort);
+
+		/** Destructor of the SecureSMTPClientBase. */
 		~SecureSMTPClientBase();
-		SecureSMTPClientBase(const SecureSMTPClientBase& other); //Copy constructor
-        SecureSMTPClientBase& operator=(const SecureSMTPClientBase& other); //Copy assignment
-		SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcept; //Move constructor
-		SecureSMTPClientBase& operator=(SecureSMTPClientBase&& other) noexcept; //Move assignement
+
+		/** SecureSMTPClientBase copy constructor. */
+		SecureSMTPClientBase(const SecureSMTPClientBase& other);
+        
+		/** SecureSMTPClientBase copy assignment operator. */
+		SecureSMTPClientBase& operator=(const SecureSMTPClientBase& other);
+		
+		/** SecureSMTPClientBase move constructor. */
+		SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcept;
+		
+		/** SecureSMTPClientBase move assignment operator. */
+		SecureSMTPClientBase& operator=(SecureSMTPClientBase&& other) noexcept;
 	protected:
 		//Methods
 		void cleanup() override;

@@ -20,13 +20,11 @@ Credential::Credential(const char *pUsername, const char *pPassword)
 
     size_t username_len = strlen(pUsername);
 	mUsername = new char[username_len + 1];
-	strncpy(mUsername, pUsername, username_len);
-    mUsername[username_len] = '\0';
+	strcpy(mUsername, pUsername);
 
     size_t password_len = strlen(pPassword);
 	mPassword = new char[password_len + 1];
-	strncpy(mPassword, pPassword, password_len);
-    mPassword[password_len] = '\0';
+	strcpy(mPassword, pPassword);
 }
 
 Credential::~Credential()
@@ -40,11 +38,8 @@ Credential::Credential(const Credential& other)
 	: mUsername(new char[strlen(other.mUsername) + 1]),
       mPassword(new char[strlen(other.mPassword) + 1])
 {
-	strncpy(mUsername, other.mUsername, strlen(other.mUsername) + 1);
-	mUsername[strlen(other.mUsername)] = '\0';
-
-    strncpy(mPassword, other.mPassword, strlen(other.mPassword) + 1);
-	mPassword[strlen(other.mPassword)] = '\0';
+	strcpy(mUsername, other.mUsername);
+    strcpy(mPassword, other.mPassword);
 }
 
 //Assignment operator
@@ -56,12 +51,10 @@ Credential& Credential::operator=(const Credential& other)
 		delete[] mPassword;
 		//mUsername
 		mUsername = new char[strlen(other.mUsername) + 1];
-		strncpy(mUsername, other.mUsername, strlen(other.mUsername) + 1);
-		mUsername[strlen(other.mUsername)] = '\0';
+		strcpy(mUsername, other.mUsername);
         //mPassword
 		mPassword = new char[strlen(other.mPassword) + 1];
-		strncpy(mPassword, other.mPassword, strlen(other.mPassword) + 1);
-		mPassword[strlen(other.mPassword)] = '\0';
+		strcpy(mPassword, other.mPassword);
 	}
 	return *this;
 }
@@ -116,8 +109,7 @@ void Credential::setUsername(const char *pUsername)
 	delete []mUsername;
 	size_t username_len = strlen(pUsername);
 	mUsername = new char[username_len + 1];
-	strncpy(mUsername, pUsername, username_len);
-    mUsername[username_len] = '\0';
+	strcpy(mUsername, pUsername);
 }
 
 void Credential::setPassword(const char *pPassword)
@@ -129,6 +121,5 @@ void Credential::setPassword(const char *pPassword)
 	delete []mPassword;
     size_t password_len = strlen(pPassword);
 	mPassword = new char[password_len + 1];
-	strncpy(mPassword, pPassword, password_len);
-    mPassword[password_len] = '\0';
+	strcpy(mPassword, pPassword);
 }
