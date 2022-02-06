@@ -18,33 +18,32 @@ Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/H
 <table>
 <tr>
 <th> Release </th>
-<th> MD5 </th>
+<th> MD5 hash of smtpclient.dll </th>
 </tr>
 <tr>
 <td>
 
-[v1.1.3 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.3/CPP-SMTPClient-Library.1.1.3.x64.zip)
+[v1.1.4 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.4/CPP-SMTPClient-Library.1.1.4.x64.zip)
 
 </td>
 <td>
 
-e448f3ddcf910df50d9d22633523b5e6
+c0c50a722e02dba488d6440ede046976
 
 </td>
 </tr>
 <tr>
 <td>
 
-[v1.1.3 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.3/CPP-SMTPClient-Library.1.1.3.x86.zip)
+[v1.1.4 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.4/CPP-SMTPClient-Library.1.1.4.x86.zip)
 
 </td>
 <td>
 
-a931bde4ccb4f272a2fa2c257c0f56fc
+dce3b4c0704c8aafd4b2c5e8fdd3a701
 
 </td>
 </tr>
-
 </table>
 
 See the section [Releases](https://github.com/jeremydumais/CPP-SMTPClient-library/releases) for previous versions.
