@@ -304,7 +304,8 @@ int SMTPClientBase::getErrorMessage_r(int errorCode,
         return -1;
     }
     if (errorMessageStr.length() > maxLength-1) {
-        strcpy(errorMessagePtr, errorMessageStr.c_str());
+        strncpy(errorMessagePtr, errorMessageStr.c_str(), maxLength-1);
+        errorMessagePtr[maxLength-1] = '\0';
         return static_cast<int>(maxLength-1);
     }
     strcpy(errorMessagePtr, errorMessageStr.c_str());
