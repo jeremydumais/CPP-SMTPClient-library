@@ -445,7 +445,7 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode)
 {
     #ifdef _WIN32
         size_t pCommandSize = strlen(pCommand);
-        if (static_cast<intmax_t>(pCommandSize) > std::numeric_limits<int>::max()) {
+        if (static_cast<intmax_t>(pCommandSize) > (std::numeric_limits<int>::max)()) {
             return pErrorCode;
         }
         int commandSize = static_cast<int>(pCommandSize);
