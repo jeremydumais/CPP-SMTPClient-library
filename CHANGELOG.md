@@ -19,6 +19,9 @@ All notable changes to this project will be documented in this file
 - The Windows documentation has been updated to explain how to use OPENSSL_ROOT_DIR variable.
 - Added documentation in all headers files for public methods.
 
+### Removed
+- The exception classes AttachmentError and CommunicationError has been removed.
+
 ## [1.1.3]
 
 ### Updated
