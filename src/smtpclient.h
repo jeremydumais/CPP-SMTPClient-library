@@ -15,15 +15,36 @@
 
 namespace jed_utils
 {
+	/** @brief The SmtpClient should be used to communicate with internal relay servers.
+	 *  This client doesn't provided encryption for communication. 
+	 *  The communication is usually done via port 25.
+	 */
 	class SMTPCLIENT_API SmtpClient : public SMTPClientBase
 	{
 	public:
+		/**
+		 *  @brief  Construct a new SmtpClient. 
+		 *  @param pServerName The name of the server. 
+		 *  Example: smtp.domainexample.com
+		 *  @param pPort The server port number.
+		 *  Example: 25, 465, 587  
+		 */
 		SmtpClient(const char *pServerName, unsigned int pPort);
+
+		/** Destructor of the SmtpClient. */
 		virtual ~SmtpClient();
-        SmtpClient(const SmtpClient &other) = default; //Copy constructor
-        SmtpClient& operator=(const SmtpClient &other); //Copy assignment
-        SmtpClient(SmtpClient &&other) noexcept; //Move constructor
-        SmtpClient& operator=(SmtpClient &&other) noexcept; //Move assignement
+
+		/** SmtpClient copy constructor. */
+        SmtpClient(const SmtpClient &other) = default;
+
+		/** SmtpClient copy assignment operator. */
+        SmtpClient& operator=(const SmtpClient &other);
+
+		/** SmtpClient move constructor. */
+        SmtpClient(SmtpClient &&other) noexcept;
+
+		/** SmtpClient move assignment operator. */
+        SmtpClient& operator=(SmtpClient &&other) noexcept;
 	protected:
 		void cleanup() override;
 		//Methods used to establish the connection with server

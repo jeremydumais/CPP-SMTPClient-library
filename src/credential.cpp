@@ -4,30 +4,27 @@
 #include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 Credential::Credential(const char *pUsername, const char *pPassword)
     : mUsername(nullptr),
       mPassword(nullptr)
 {   
-    string username_str { pUsername == nullptr ? "" : pUsername };
+    std::string username_str { pUsername == nullptr ? "" : pUsername };
     if (pUsername == nullptr || strcmp(pUsername, "") == 0 || StringUtils::trim(username_str).empty()) {
-        throw invalid_argument("Username cannot be null or empty");
+        throw std::invalid_argument("Username cannot be null or empty");
     }
 
     if (pPassword == nullptr || strcmp(pPassword, "") == 0) {
-        throw invalid_argument("Password cannot be null or empty");
+        throw std::invalid_argument("Password cannot be null or empty");
     }
 
     size_t username_len = strlen(pUsername);
 	mUsername = new char[username_len + 1];
-	strncpy(mUsername, pUsername, username_len);
-    mUsername[username_len] = '\0';
+	strcpy(mUsername, pUsername);
 
     size_t password_len = strlen(pPassword);
 	mPassword = new char[password_len + 1];
-	strncpy(mPassword, pPassword, password_len);
-    mPassword[password_len] = '\0';
+	strcpy(mPassword, pPassword);
 }
 
 Credential::~Credential()
@@ -41,11 +38,8 @@ Credential::Credential(const Credential& other)
 	: mUsername(new char[strlen(other.mUsername) + 1]),
       mPassword(new char[strlen(other.mPassword) + 1])
 {
-	strncpy(mUsername, other.mUsername, strlen(other.mUsername) + 1);
-	mUsername[strlen(other.mUsername)] = '\0';
-
-    strncpy(mPassword, other.mPassword, strlen(other.mPassword) + 1);
-	mPassword[strlen(other.mPassword)] = '\0';
+	strcpy(mUsername, other.mUsername);
+    strcpy(mPassword, other.mPassword);
 }
 
 //Assignment operator
@@ -57,12 +51,10 @@ Credential& Credential::operator=(const Credential& other)
 		delete[] mPassword;
 		//mUsername
 		mUsername = new char[strlen(other.mUsername) + 1];
-		strncpy(mUsername, other.mUsername, strlen(other.mUsername) + 1);
-		mUsername[strlen(other.mUsername)] = '\0';
+		strcpy(mUsername, other.mUsername);
         //mPassword
 		mPassword = new char[strlen(other.mPassword) + 1];
-		strncpy(mPassword, other.mPassword, strlen(other.mPassword) + 1);
-		mPassword[strlen(other.mPassword)] = '\0';
+		strcpy(mPassword, other.mPassword);
 	}
 	return *this;
 }
@@ -109,27 +101,25 @@ const char *Credential::getPassword() const
 
 void Credential::setUsername(const char *pUsername)
 {
-	string username_str { pUsername == nullptr ? "" : pUsername };
+	std::string username_str { pUsername == nullptr ? "" : pUsername };
     if (pUsername == nullptr || strcmp(pUsername, "") == 0 || StringUtils::trim(username_str).empty()) {
-        throw invalid_argument("Username cannot be null or empty");
+        throw std::invalid_argument("Username cannot be null or empty");
     }
 
 	delete []mUsername;
 	size_t username_len = strlen(pUsername);
 	mUsername = new char[username_len + 1];
-	strncpy(mUsername, pUsername, username_len);
-    mUsername[username_len] = '\0';
+	strcpy(mUsername, pUsername);
 }
 
 void Credential::setPassword(const char *pPassword)
 {
     if (pPassword == nullptr || strcmp(pPassword, "") == 0) {
-        throw invalid_argument("Password cannot be null or empty");
+        throw std::invalid_argument("Password cannot be null or empty");
     }
 
 	delete []mPassword;
     size_t password_len = strlen(pPassword);
 	mPassword = new char[password_len + 1];
-	strncpy(mPassword, pPassword, password_len);
-    mPassword[password_len] = '\0';
+	strcpy(mPassword, pPassword);
 }

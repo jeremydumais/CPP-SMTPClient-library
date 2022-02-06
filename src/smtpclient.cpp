@@ -11,7 +11,6 @@
 #endif
 #include <vector>
 
-using namespace std;
 using namespace jed_utils;
 
 SmtpClient::SmtpClient(const char *pServerName, unsigned int pPort)
@@ -35,7 +34,7 @@ SmtpClient& SmtpClient::operator=(const SmtpClient &other)
 
 //Move constructor
 SmtpClient::SmtpClient(SmtpClient &&other) noexcept
-    : SMTPClientBase(move(other))
+    : SMTPClientBase(std::move(other))
 {
 }
 
@@ -43,7 +42,7 @@ SmtpClient::SmtpClient(SmtpClient &&other) noexcept
 SmtpClient& SmtpClient::operator=(SmtpClient &&other) noexcept
 {
     if (this != &other) {
-        SMTPClientBase::operator=(move(other));
+        SMTPClientBase::operator=(std::move(other));
     }
     return *this;
 }

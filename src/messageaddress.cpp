@@ -4,31 +4,28 @@
 #include <stdexcept>
 #include <string>
 
-using namespace std;
 using namespace jed_utils;
 
 MessageAddress::MessageAddress(const char *pEmailAddress, const char *pDisplayName)
     : mEmailAddress(nullptr), mDisplayName(nullptr)
 {
-    string email_address { pEmailAddress };
+    std::string email_address { pEmailAddress };
     //Check if the email address is not empty or white spaces
     if (email_address.length() == 0 || StringUtils::trim(email_address).empty()) {
-        throw invalid_argument("pEmailAddress");
+        throw std::invalid_argument("pEmailAddress");
     }
     //Check is the email address is valid
     if (!isEmailAddressValid(email_address)) {
-        throw invalid_argument("pEmailAddress");
+        throw std::invalid_argument("pEmailAddress");
     }
 
     size_t email_len = strlen(pEmailAddress);
     mEmailAddress = new char[email_len+1];
-    strncpy(mEmailAddress, pEmailAddress, email_len);
-    mEmailAddress[email_len] = '\0';
+    strcpy(mEmailAddress, pEmailAddress);
 
     size_t name_len = strlen(pDisplayName);
     mDisplayName = new char[name_len+1];
-    strncpy(mDisplayName, pDisplayName, name_len);
-    mDisplayName[name_len] = '\0';
+    strcpy(mDisplayName, pDisplayName);
 }
 
 MessageAddress::~MessageAddress()
@@ -42,11 +39,8 @@ MessageAddress::MessageAddress(const MessageAddress& other)
 	: mEmailAddress(new char[strlen(other.mEmailAddress) + 1]),
       mDisplayName(new char[strlen(other.mDisplayName) + 1])
 {
-	strncpy(mEmailAddress, other.mEmailAddress, strlen(other.mEmailAddress) + 1);
-	mEmailAddress[strlen(other.mEmailAddress)] = '\0';
-
-    strncpy(mDisplayName, other.mDisplayName, strlen(other.mDisplayName) + 1);
-	mDisplayName[strlen(other.mDisplayName)] = '\0';
+	strcpy(mEmailAddress, other.mEmailAddress);
+    strcpy(mDisplayName, other.mDisplayName);
 }
 
 //Assignment operator
@@ -58,12 +52,10 @@ MessageAddress& MessageAddress::operator=(const MessageAddress& other)
 		delete[] mDisplayName;
 		//mEmailAddress
 		mEmailAddress = new char[strlen(other.mEmailAddress) + 1];
-		strncpy(mEmailAddress, other.mEmailAddress, strlen(other.mEmailAddress) + 1);
-		mEmailAddress[strlen(other.mEmailAddress)] = '\0';
+		strcpy(mEmailAddress, other.mEmailAddress);
         //mDisplayName
 		mDisplayName = new char[strlen(other.mDisplayName) + 1];
-		strncpy(mDisplayName, other.mDisplayName, strlen(other.mDisplayName) + 1);
-		mDisplayName[strlen(other.mDisplayName)] = '\0';
+		strcpy(mDisplayName, other.mDisplayName);
 	}
 	return *this;
 }
@@ -103,10 +95,10 @@ bool MessageAddress::operator==(const MessageAddress &pMsgComp) const
             strcmp(mDisplayName, pMsgComp.mDisplayName) == 0);
 }
 
-MessageAddress::operator string() const
+MessageAddress::operator std::string() const
 {
-    ostringstream retval;
-    string display_name { mDisplayName };
+    std::ostringstream retval;
+    std::string display_name { mDisplayName };
     if (display_name.empty()) {
         retval << mEmailAddress;
     }
@@ -126,9 +118,9 @@ const char *MessageAddress::getDisplayName() const
     return mDisplayName;
 }
 
-bool MessageAddress::isEmailAddressValid(const string &pEmailAddress) const
+bool MessageAddress::isEmailAddressValid(const std::string &pEmailAddress) const
 {
-    regex emailPattern("^[_a-z0-9-]+(.[_a-z0-9-]+)*@[a-z0-9-]+(.[a-z0-9-]+)*(.[a-z]{2,4})$");
+    std::regex emailPattern("^[_a-z0-9-]+(.[_a-z0-9-]+)*@[a-z0-9-]+(.[a-z0-9-]+)*(.[a-z]{2,4})$");
     return regex_match(StringUtils::toLower(pEmailAddress), emailPattern);
 }
 

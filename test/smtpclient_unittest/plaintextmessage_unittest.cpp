@@ -4,7 +4,6 @@
 #include <vector>
 
 using namespace jed_utils;
-using namespace std;
 
 class SimpleMessage : public ::testing::Test
 {

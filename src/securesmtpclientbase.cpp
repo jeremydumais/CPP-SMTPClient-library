@@ -19,7 +19,7 @@
     #include <unistd.h>
 #endif
 
-using namespace std;
+using namespace std::literals::string_literals;
 using namespace jed_utils;
 
 SecureSMTPClientBase::SecureSMTPClientBase(const char *pServerName, unsigned int pPort)
@@ -58,7 +58,7 @@ SecureSMTPClientBase& SecureSMTPClientBase::operator=(const SecureSMTPClientBase
 
 //Move constructor
 SecureSMTPClientBase::SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcept
-	: SMTPClientBase(move(other)),
+	: SMTPClientBase(std::move(other)),
       mBIO(other.mBIO),
       mCTX(other.mCTX),
       mSSL(other.mSSL)
@@ -83,7 +83,7 @@ SecureSMTPClientBase& SecureSMTPClientBase::operator=(SecureSMTPClientBase&& oth
         other.mBIO = nullptr;
         other.mCTX = nullptr;
         other.mSSL = nullptr;
-        SMTPClientBase::operator=(move(other));
+        SMTPClientBase::operator=(std::move(other));
 	}
 	return *this;
 }
@@ -167,7 +167,8 @@ int SecureSMTPClientBase::startTLSNegotiation()
             return SSL_CLIENT_STARTTLS_WIN_CERTOPENSYSTEMSTORE_ERROR;
         }
 
-        while (pContext = CertEnumCertificatesInStore(hStore, pContext))
+        pContext = CertEnumCertificatesInStore(hStore, pContext);
+        while (pContext)
         {
             X509 *x509 = nullptr;
             x509 = d2i_X509(nullptr, (const unsigned char **)&pContext->pbCertEncoded, pContext->cbCertEncoded);
@@ -176,6 +177,7 @@ int SecureSMTPClientBase::startTLSNegotiation()
                 X509_STORE_add_cert(store, x509);
                 X509_free(x509);
             }
+            pContext = CertEnumCertificatesInStore(hStore, pContext);
         }
     #else
         if (SSL_CTX_set_default_verify_paths(mCTX) == 0) {
@@ -238,7 +240,7 @@ int SecureSMTPClientBase::getServerSecureIdentification()
 {
     const int EHLO_SUCCESS_CODE = 250;
     addCommunicationLogItem("Contacting the server again but via the secure channel...");
-    string ehlo { "ehlo localhost\r\n"s };
+    std::string ehlo { "ehlo localhost\r\n"s };
     addCommunicationLogItem(ehlo.c_str());
     int tls_command_return_code = sendCommandWithFeedback(ehlo.c_str(), 
                                     SSL_CLIENT_INITSECURECLIENT_ERROR, 

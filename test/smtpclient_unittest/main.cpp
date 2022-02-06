@@ -6,7 +6,6 @@
 #include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 int main(int argc, char**argv)
 {

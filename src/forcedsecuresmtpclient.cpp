@@ -20,7 +20,6 @@
     #include <unistd.h>
 #endif
 
-using namespace std;
 using namespace jed_utils;
 
 ForcedSecureSMTPClient::ForcedSecureSMTPClient(const char *pServerName, unsigned int pPort)
@@ -39,7 +38,7 @@ ForcedSecureSMTPClient& ForcedSecureSMTPClient::operator=(const ForcedSecureSMTP
 
 //Move constructor
 ForcedSecureSMTPClient::ForcedSecureSMTPClient(ForcedSecureSMTPClient&& other) noexcept
-	: SecureSMTPClientBase(move(other))
+	: SecureSMTPClientBase(std::move(other))
 {
 }
 
@@ -47,7 +46,7 @@ ForcedSecureSMTPClient::ForcedSecureSMTPClient(ForcedSecureSMTPClient&& other) n
 ForcedSecureSMTPClient& ForcedSecureSMTPClient::operator=(ForcedSecureSMTPClient&& other) noexcept
 {
 	if (this != &other) {
-        SecureSMTPClientBase::operator=(move(other));
+        SecureSMTPClientBase::operator=(std::move(other));
 	}
 	return *this;
 }

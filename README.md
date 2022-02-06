@@ -18,33 +18,32 @@ Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/H
 <table>
 <tr>
 <th> Release </th>
-<th> MD5 </th>
+<th> MD5 hash of smtpclient.dll </th>
 </tr>
 <tr>
 <td>
 
-[v1.1.3 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.3/CPP-SMTPClient-Library.1.1.3.x64.zip)
+[v1.1.4 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.4/CPP-SMTPClient-Library.1.1.4.x64.zip)
 
 </td>
 <td>
 
-e448f3ddcf910df50d9d22633523b5e6
+c0c50a722e02dba488d6440ede046976
 
 </td>
 </tr>
 <tr>
 <td>
 
-[v1.1.3 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.3/CPP-SMTPClient-Library.1.1.3.x86.zip)
+[v1.1.4 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.4/CPP-SMTPClient-Library.1.1.4.x86.zip)
 
 </td>
 <td>
 
-a931bde4ccb4f272a2fa2c257c0f56fc
+dce3b4c0704c8aafd4b2c5e8fdd3a701
 
 </td>
 </tr>
-
 </table>
 
 See the section [Releases](https://github.com/jeremydumais/CPP-SMTPClient-library/releases) for previous versions.
@@ -79,9 +78,10 @@ See the section [Releases](https://github.com/jeremydumais/CPP-SMTPClient-librar
 ```c++
 #include "smtpclient.h"
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 int main()
 {
@@ -95,16 +95,18 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cout << client.getCommunicationLog() << '\n';
-			cerr << "An error occurred. Return code : " << err_no << '\n';
+			std::cout << client.getCommunicationLog() << '\n';
+			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
+			std::cerr << "An error occurred: " << errorMessage.get()
+                 << " (error no: " << err_no << ")" << '\n';
 			return 1;
 		}
-		cout << client.getCommunicationLog() << endl;
-		cout << "Operation completed!" << endl;
+		std::cout << client.getCommunicationLog() << '\n';
+		std::cout << "Operation completed!" << std::endl;
 	}
-	catch (invalid_argument &err)
+	catch (std::invalid_argument &err)
 	{
-		cerr << err.what() << endl;
+		std::cerr << err.what() << std::endl;
 	}
     return 0;
 }
@@ -115,9 +117,10 @@ int main()
 ```c++
 #include "smtpclient.h"
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 int main()
 {
@@ -140,16 +143,18 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cout << client.getCommunicationLog() << '\n';
-			cerr << "An error occurred. Return code : " << err_no << '\n';
+			std::cout << client.getCommunicationLog() << '\n';
+			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
+			std::cerr << "An error occurred: " << errorMessage.get()
+                 << " (error no: " << err_no << ")" << '\n';
 			return 1;
 		}
-		cout << client.getCommunicationLog() << endl;
-		cout << "Operation completed!" << endl;
+		std::cout << client.getCommunicationLog() << '\n';
+		std::cout << "Operation completed!" << std::endl;
 	}
-	catch (invalid_argument &err)
+	catch (std::invalid_argument &err)
 	{
-		cerr << err.what() << endl;
+		std::cerr << err.what() << std::endl;
 	}
     return 0;
 }
@@ -160,9 +165,10 @@ int main()
 ```c++
 #include "opportunisticsecuresmtpclient.h"
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 int main()
 {
@@ -177,16 +183,18 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cout << client.getCommunicationLog() << '\n';
-			cerr << "An error occurred. Return code : " << err_no << '\n';
+			std::cout << client.getCommunicationLog() << '\n';
+			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
+			std::cerr << "An error occurred: " << errorMessage.get()
+                 << " (error no: " << err_no << ")" << '\n';
 			return 1;
 		}
-		cout << client.getCommunicationLog() << endl;
-		cout << "Operation completed!" << endl;
+		std::cout << client.getCommunicationLog() << '\n';
+		std::cout << "Operation completed!" << std::endl;
 	}
-	catch (invalid_argument &err)
+	catch (std::invalid_argument &err)
 	{
-		cerr << err.what() << endl;
+		std::cerr << err.what() << std::endl;
 	}
     return 0;
 }
@@ -197,9 +205,10 @@ int main()
 ```c++
 #include "forcedsecuresmtpclient.h"
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 
 using namespace jed_utils;
-using namespace std;
 
 int main()
 {
@@ -214,16 +223,18 @@ int main()
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
-			cout << client.getCommunicationLog() << '\n';
-			cerr << "An error occurred. Return code : " << err_no << '\n';
+			std::cout << client.getCommunicationLog() << '\n';
+			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
+			std::cerr << "An error occurred: " << errorMessage.get()
+                 << " (error no: " << err_no << ")" << '\n';
 			return 1;
 		}
-		cout << client.getCommunicationLog() << endl;
-		cout << "Operation completed!" << endl;
+		std::cout << client.getCommunicationLog() << '\n';
+		std::cout << "Operation completed!" << std::endl;
 	}
-	catch (invalid_argument &err)
+	catch (std::invalid_argument &err)
 	{
-		cerr << err.what() << endl;
+		std::cerr << err.what() << std::endl;
 	}
     return 0;
 }

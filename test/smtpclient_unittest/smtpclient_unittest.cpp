@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 
 using namespace jed_utils;
-using namespace std;
 
 class FakeSMTPClient : public ::testing::Test, public SmtpClient
 {
@@ -20,7 +19,7 @@ TEST(SmtpClient_Constructor, NullServerName_ThrowInvalidArgument)
 		SmtpClient client(nullptr, 587);
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Server name cannot be null or empty", err.what());
 	}
@@ -33,7 +32,7 @@ TEST(SmtpClient_Constructor, EmptyServerName_ThrowInvalidArgument)
 		SmtpClient client("", 587);
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Server name cannot be null or empty", err.what());
 	}
@@ -46,7 +45,7 @@ TEST(SmtpClient_Constructor, OnlySpacesServerName_ThrowInvalidArgument)
 		SmtpClient client("   ", 587);
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Server name cannot be null or empty", err.what());
 	}
@@ -93,7 +92,7 @@ TEST(SmtpClient_MoveConstructor, SmtpClientMoveConstructorValid)
 	SmtpClient client1("test", 123);
     client1.setCredentials(Credential("user1", "pass1"));
     client1.setCommandTimeout(8);
-	SmtpClient client2(move(client1));
+	SmtpClient client2(std::move(client1));
 	ASSERT_STREQ("test", client2.getServerName());
 	ASSERT_EQ(123, client2.getServerPort());
     ASSERT_EQ(8, client2.getCommandTimeout());
@@ -112,7 +111,7 @@ TEST(SmtpClient_MoveAssignment, SmtpClientMoveAssignmentValid)
     client1.setCredentials(Credential("user1", "pass1"));
     client1.setCommandTimeout(8);
 	SmtpClient client2("aaa", 456);
-	client2 = move(client1);
+	client2 = std::move(client1);
 	ASSERT_STREQ("test", client2.getServerName());
 	ASSERT_EQ(123, client2.getServerPort());
     ASSERT_EQ(8, client2.getCommandTimeout());

@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${vcpkgRoot}/**"
+                "/usr/include/c++/**"
             ],
             "defines": [
                 "_DEBUG",

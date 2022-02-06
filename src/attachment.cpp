@@ -1,29 +1,29 @@
 #include "attachment.h"
 #include "stringutils.h"
 #include <algorithm>
+#include <ios>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <string>
 
-using namespace std;
 using namespace jed_utils;
 
 Attachment::Attachment(const char *pFilename, const char *pName)
     : mName(nullptr), mFilename(nullptr)
 {
-    if (strlen(pFilename) == 0 || StringUtils::trim(string(pFilename)).length() == 0) {
-        throw invalid_argument("filename");
+    size_t pFileNameLength = strlen(pFilename);
+    if (pFileNameLength == 0 || StringUtils::trim(std::string(pFilename)).length() == 0) {
+        throw std::invalid_argument("filename");
     }
     
-    size_t filename_len = strlen(pFilename);
+    size_t filename_len = pFileNameLength;
     mFilename = new char[filename_len+1];
-    strncpy(mFilename, pFilename, filename_len);
-    mFilename[filename_len] = '\0';
+    strcpy(mFilename, pFilename);
 
     size_t name_len = strlen(pName);
     mName = new char[name_len+1];
-    strncpy(mName, pName, name_len);
-    mName[name_len] = '\0'; 
+    strcpy(mName, pName);
 }
 
 Attachment::~Attachment()
@@ -39,10 +39,8 @@ Attachment::Attachment(const Attachment& other)
 	: mName(new char[strlen(other.mName) + 1]),
 	  mFilename(new char[strlen(other.mFilename) + 1])
 {
-	strncpy(mName, other.mName, strlen(other.mName) + 1);
-	mName[strlen(other.mName)] = '\0';
-	strncpy(mFilename, other.mFilename, strlen(other.mFilename) + 1);
-	mFilename[strlen(other.mFilename)] = '\0';
+    strcpy(mName, other.mName);
+    strcpy(mFilename, other.mFilename);
 }
 
 //Assignment operator
@@ -54,12 +52,10 @@ Attachment& Attachment::operator=(const Attachment& other)
 		delete[] mFilename;
 		//mName
 		mName = new char[strlen(other.mName) + 1];
-		strncpy(mName, other.mName, strlen(other.mName) + 1);
-		mName[strlen(other.mName)] = '\0';
+        strcpy(mName, other.mName);
 		//mFilename
 		mFilename = new char[strlen(other.mFilename) + 1];
-		strncpy(mFilename, other.mFilename, strlen(other.mFilename) + 1);
-		mFilename[strlen(other.mFilename)] = '\0';
+        strcpy(mFilename, other.mFilename);
 	}
 	return *this;
 }
@@ -105,28 +101,31 @@ const char *Attachment::getFilename() const
 const char *Attachment::getBase64EncodedFile() const
 {
     //Open the file
-    ifstream in(mFilename, std::ios::in | std::ios::binary);
+    std::ifstream in(mFilename, std::ios::in | std::ios::binary);
     if (in) {
         std::string contents;
         in.seekg(0, std::ios::end);
         contents.resize(static_cast<unsigned int>(in.tellg()));
         in.seekg(0, std::ios::beg);
-        in.read(&contents[0], contents.size());
+        if (static_cast<intmax_t>(contents.size()) <= std::numeric_limits<std::streamsize>::max()) {
+            in.read(&contents[0], static_cast<std::streamsize>(contents.size()));
+            in.close();
+            std::string base64_result = Base64::Encode(reinterpret_cast<const unsigned char*>(contents.c_str()), contents.length());
+            auto *base64_file = new char[base64_result.length() + 1];
+            strncpy(base64_file, base64_result.c_str(), base64_result.length() + 1);
+            return base64_file;
+        }
         in.close();
-        string base64_result = Base64::Encode(reinterpret_cast<const unsigned char*>(contents.c_str()), contents.length());
-        auto *base64_file = new char[base64_result.length() + 1];
-        strncpy(base64_file, base64_result.c_str(), base64_result.length() + 1);
-        return base64_file;
     }
     
-    cerr << "Could not open file " << mFilename << endl;
+    std::cerr << "Could not open file " << mFilename << std::endl;
     return nullptr;
 }
 
 const char *Attachment::getMimeType() const
 {
-    string filename_str { mFilename };
-    const string extension = StringUtils::toUpper(filename_str.substr(filename_str.find_last_of('.') + 1));
+	std::string filename_str { mFilename };
+    const std::string extension = StringUtils::toUpper(filename_str.substr(filename_str.find_last_of('.') + 1));
     //Images
     if (extension == "PNG") {
         return "image/png";

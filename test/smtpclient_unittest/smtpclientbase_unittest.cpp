@@ -1,10 +1,8 @@
 #include "../../src/smtpclientbase.h"
+#include "../../src/socketerrors.h"
 #include <gtest/gtest.h>
 
 using namespace jed_utils;
-using namespace std;
-
-
 
 class FakeSMTPClientBase : public ::testing::Test, public SMTPClientBase
 {
@@ -51,7 +49,7 @@ TEST(SmtpClientBase_setServerName, NullServerName_ThrowInvalidArgument)
         client.setServerName(nullptr);
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Server name cannot be null or empty", err.what());
 	}
@@ -65,7 +63,7 @@ TEST(SmtpClientBase_setServerName, EmptyServerName_ThrowInvalidArgument)
         client.setServerName("");
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Server name cannot be null or empty", err.what());
 	}
@@ -79,7 +77,7 @@ TEST(SmtpClientBase_setServerName, OnlySpacesServerName_ThrowInvalidArgument)
         client.setServerName("    ");
 		FAIL();
 	}
-	catch(invalid_argument &err) 
+	catch(std::invalid_argument &err) 
 	{
         ASSERT_STREQ("Server name cannot be null or empty", err.what());
 	}
@@ -216,4 +214,35 @@ TEST_F(FakeSMTPClientBase, extractAuthenticationOptions_WithAuthMultipleEhlo_Ret
     ASSERT_TRUE(options->Plain_ClientToken);
     ASSERT_TRUE(options->OAuthBearer);
     ASSERT_TRUE(options->XOAuth);
+}
+
+TEST_F(FakeSMTPClientBase, getErrorMessage_r_WithNullPtr_ReturnMinus1)
+{
+    ASSERT_EQ(-1, getErrorMessage_r(-1, nullptr, 0));
+}
+
+TEST_F(FakeSMTPClientBase, getErrorMessage_r_WithZeroLength_ReturnMinus1)
+{
+    const size_t length = 6;
+    char *buffer = new char[length];
+    ASSERT_EQ(-1, getErrorMessage_r(-1, buffer, 0));
+    delete buffer;
+}
+
+TEST_F(FakeSMTPClientBase, getErrorMessage_r_WithCharPtrOfFive_Return6)
+{
+    const size_t length = 6;
+    char *buffer = new char[length];
+    ASSERT_EQ(5, getErrorMessage_r(SOCKET_INIT_SESSION_CREATION_ERROR, buffer, length));
+    ASSERT_STREQ("Unabl", buffer);
+    delete buffer;
+}
+
+TEST_F(FakeSMTPClientBase, getErrorMessage_r_WithCharPtrOf50_Return0)
+{
+    const size_t length = 50;
+    char *buffer = new char[length];
+    ASSERT_EQ(0, getErrorMessage_r(SOCKET_INIT_SESSION_CREATION_ERROR, buffer, length));
+    ASSERT_STREQ("Unable to create the socket", buffer);
+    delete buffer;
 }

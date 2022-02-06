@@ -1,8 +1,6 @@
 #include "message.h"
 #include <iterator>
 
-using namespace std;
-
 using namespace jed_utils;
 
 Message::Message(const MessageAddress &pFrom,
@@ -49,8 +47,7 @@ Message::Message(const MessageAddress &pFrom,
 	else {
 		size_t subject_len = strlen(pSubject);
 		mSubject = new char[subject_len + 1];
-		strncpy(mSubject, pSubject, subject_len);
-		mSubject[subject_len] = '\0';
+		strcpy(mSubject, pSubject);
 	}
 
 	if (pBody == nullptr) {
@@ -59,8 +56,7 @@ Message::Message(const MessageAddress &pFrom,
 	else {
 		size_t body_len = strlen(pBody);
 		mBody = new char[body_len + 1];
-		strncpy(mBody, pBody, body_len);
-		mBody[body_len] = '\0';
+		strcpy(mBody, pBody);
 	}
 
     if (pTo != nullptr) {
@@ -146,11 +142,8 @@ Message::Message(const Message &other)
     mAttachments(nullptr),
     mAttachmentCount(other.mAttachmentCount)
 {
-	strncpy(mBody, other.mBody, strlen(other.mBody) + 1);
-	mBody[strlen(other.mBody)] = '\0';
-
-    strncpy(mSubject, other.mSubject, strlen(other.mSubject) + 1);
-	mSubject[strlen(other.mSubject)] = '\0';
+	strcpy(mBody, other.mBody);
+    strcpy(mSubject, other.mSubject);
 
 	//mTo
 	if (other.mToCount > 0) {
@@ -193,13 +186,11 @@ Message& Message::operator=(const Message &other)
         //mSubject
         delete[] mSubject;
 		mSubject = new char[strlen(other.mSubject) + 1];
-		strncpy(mSubject, other.mSubject, strlen(other.mSubject) + 1);
-		mSubject[strlen(other.mSubject)] = '\0';
+		strcpy(mSubject, other.mSubject);
         //mBody
         delete[] mBody;
 		mBody = new char[strlen(other.mBody) + 1];
-		strncpy(mBody, other.mBody, strlen(other.mBody) + 1);
-		mBody[strlen(other.mBody)] = '\0';
+		strcpy(mBody, other.mBody);
         //mTo and mToCount
 		if (mToCount > 0) {
 			for (unsigned int i = 0; i < mToCount; i++) {
@@ -262,7 +253,7 @@ Message& Message::operator=(const Message &other)
 
 //Move constructor
 Message::Message(Message &&other) noexcept
-    : mFrom(move(other.mFrom)),
+    : mFrom(std::move(other.mFrom)),
     mTo(other.mTo),
     mToCount(other.mToCount),
     mCc(other.mCc),
