@@ -134,7 +134,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	    set(OPENSSL_LIBRARY_DIRECTORY ${OPENSSL_ROOT_DIR}/lib${OPENSSL_ARCHITECTURE_SUFFIX})
     endif()
     message(STATUS "Will use OpenSSL lib directory ${OPENSSL_LIBRARY_DIRECTORY}")
-	link_directories(${OPENSSL_ROOT_DIR}/lib${OPENSSL_ARCHITECTURE_SUFFIX})
+	link_directories(${OPENSSL_LIBRARY_DIRECTORY})
 	add_library(${PROJECT_NAME} SHARED
 		${PROJECT_SOURCE_FILES} ${VersionFilesOutputVariable})
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
