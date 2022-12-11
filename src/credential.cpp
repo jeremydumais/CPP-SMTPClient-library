@@ -8,7 +8,7 @@ using namespace jed_utils;
 Credential::Credential(const char *pUsername, const char *pPassword)
     : mUsername(nullptr),
       mPassword(nullptr)
-{   
+{
     std::string username_str { pUsername == nullptr ? "" : pUsername };
     if (pUsername == nullptr || strcmp(pUsername, "") == 0 || StringUtils::trim(username_str).empty()) {
         throw std::invalid_argument("Username cannot be null or empty");
@@ -28,9 +28,11 @@ Credential::Credential(const char *pUsername, const char *pPassword)
 }
 
 Credential::~Credential()
-{   
+{
     delete []mUsername;
     delete []mPassword;
+    mUsername = nullptr;
+    mPassword = nullptr;
 }
 
 //Copy constructor
@@ -64,7 +66,7 @@ Credential::Credential(Credential&& other) noexcept
 	: mUsername(other.mUsername),
       mPassword(other.mPassword)
 {
-	// Release the data pointer from the source object so that the destructor 
+	// Release the data pointer from the source object so that the destructor
 	// does not free the memory multiple times.
 	other.mUsername = nullptr;
 	other.mPassword = nullptr;

@@ -17,6 +17,46 @@ TEST(ErrorResolver_Constructor, PositiveErrorCode_ReturnValid)
     ErrorResolver errorResolver(1);
 }
 
+TEST(ErrorResolver_CopyConstructor, ErrorResolverCopyConstructorValid)
+{
+	ErrorResolver* errResolver1 = new ErrorResolver(SOCKET_INIT_SESSION_CONNECT_ERROR);
+	ErrorResolver errResolver2(*errResolver1);
+	delete errResolver1;
+	ASSERT_EQ(SOCKET_INIT_SESSION_CONNECT_ERROR, errResolver2.getErrorCode());
+	ASSERT_STREQ("Unable to connect to the socket", errResolver2.getErrorMessage());
+}
+
+TEST(ErrorResolver_CopyAssignment, ErrorResolverCopyAssignmentValid)
+{
+    ErrorResolver* errResolver1 = new ErrorResolver(SOCKET_INIT_SESSION_CONNECT_ERROR);
+    ErrorResolver errResolver2(SOCKET_INIT_SESSION_GETHOSTBYNAME_ERROR);
+    errResolver2 = *errResolver1;
+    delete errResolver1;
+    ASSERT_EQ(SOCKET_INIT_SESSION_CONNECT_ERROR, errResolver2.getErrorCode());
+    ASSERT_STREQ("Unable to connect to the socket", errResolver2.getErrorMessage());
+}
+
+TEST(ErrorResolver_MoveConstructor, ErrorResolverMoveConstructorValid)
+{
+    ErrorResolver errResolver1(SOCKET_INIT_SESSION_CONNECT_ERROR);
+    ErrorResolver errResolver2(std::move(errResolver1));
+    ASSERT_EQ(SOCKET_INIT_SESSION_CONNECT_ERROR, errResolver2.getErrorCode());
+    ASSERT_STREQ("Unable to connect to the socket", errResolver2.getErrorMessage());
+    ASSERT_EQ(0, errResolver1.getErrorCode());
+    ASSERT_EQ(nullptr, errResolver1.getErrorMessage());
+}
+
+TEST(ErrorResolver_MoveAssignment, ErrorResolverMoveAssignmentValid)
+{
+    ErrorResolver errResolver1(SOCKET_INIT_SESSION_CONNECT_ERROR);
+    ErrorResolver errResolver2(SOCKET_INIT_SESSION_WINSOCKET_GETADDRINFO_ERROR);
+    errResolver2 = std::move(errResolver1);
+    ASSERT_EQ(SOCKET_INIT_SESSION_CONNECT_ERROR, errResolver2.getErrorCode());
+    ASSERT_STREQ("Unable to connect to the socket", errResolver2.getErrorMessage());
+    ASSERT_EQ(0, errResolver1.getErrorCode());
+    ASSERT_EQ(nullptr, errResolver1.getErrorMessage());
+}
+
 TEST(ErrorResolver_getErrorCode, WithOneOnConstruction_ReturnOne)
 {
     ErrorResolver errorResolver(1);

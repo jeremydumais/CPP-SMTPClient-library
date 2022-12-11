@@ -26,14 +26,14 @@
     #include <netdb.h>
     #include <netinet/in.h>
     #include <sys/socket.h>
-    #include <sys/types.h>  
+    #include <sys/types.h>
     #include <unistd.h>
 #endif
 
 using namespace std::literals::string_literals;
 using namespace jed_utils;
 
-SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort) 
+SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     : mServerName(nullptr),
       mPort(pPort),
       mCommunicationLog(nullptr),
@@ -56,7 +56,7 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
 	strcpy(mServerName, pServerName);
 }
 
-SMTPClientBase::~SMTPClientBase() 
+SMTPClientBase::~SMTPClientBase()
 {
     delete[] mServerName;
     mServerName = nullptr;
@@ -84,7 +84,7 @@ SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
        sendCommandPtr(&SMTPClientBase::sendCommand),
        sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback)
 {
-    strcpy(mServerName, other.mServerName);    
+    strcpy(mServerName, other.mServerName);
     if (mCommunicationLog != nullptr) {
 	    strcpy(mCommunicationLog, other.mCommunicationLog);
     }
@@ -246,7 +246,7 @@ void SMTPClientBase::setCredentials(const Credential &pCredential)
     mCredential = new Credential(pCredential);
 }
 
-void SMTPClientBase::setKeepUsingBaseSendCommands(bool pValue) 
+void SMTPClientBase::setKeepUsingBaseSendCommands(bool pValue)
 {
     mKeepUsingBaseSendCommands = pValue;
     if (pValue) {
@@ -264,7 +264,7 @@ int SMTPClientBase::getSocketFileDescriptor() const
     return mSock;
 }
 
-void SMTPClientBase::clearSocketFileDescriptor() 
+void SMTPClientBase::clearSocketFileDescriptor()
 {
     mSock = 0;
 }
@@ -274,12 +274,12 @@ const char *SMTPClientBase::getLastServerResponse() const
     return mLastServerResponse;
 }
 
-void SMTPClientBase::setLastSocketErrNo(int lastError) 
+void SMTPClientBase::setLastSocketErrNo(int lastError)
 {
     mLastSocketErrNo = lastError;
 }
 
-void SMTPClientBase::setAuthenticationOptions(ServerAuthOptions *authOptions) 
+void SMTPClientBase::setAuthenticationOptions(ServerAuthOptions *authOptions)
 {
     delete mAuthOptions;
     mAuthOptions = authOptions;
@@ -288,9 +288,9 @@ void SMTPClientBase::setAuthenticationOptions(ServerAuthOptions *authOptions)
 char *SMTPClientBase::getErrorMessage(int errorCode)
 {
     ErrorResolver errorResolver(errorCode);
-    const auto &errorMessageStr = errorResolver.getErrorMessage();
-    char *errorMessage = new char[errorMessageStr.size()+1];
-    strcpy(errorMessage, errorMessageStr.c_str());
+    const char *errorMessageStr = errorResolver.getErrorMessage();
+    char *errorMessage = new char[strlen(errorMessageStr)+1];
+    strcpy(errorMessage, errorMessageStr);
     return errorMessage;
 }
 
@@ -299,16 +299,16 @@ int SMTPClientBase::getErrorMessage_r(int errorCode,
                       const size_t maxLength)
 {
     ErrorResolver errorResolver(errorCode);
-    const auto &errorMessageStr = errorResolver.getErrorMessage();
+    const char *errorMessageStr = errorResolver.getErrorMessage();
     if (!errorMessagePtr || maxLength == 0) {
         return -1;
     }
-    if (errorMessageStr.length() > maxLength-1) {
-        strncpy(errorMessagePtr, errorMessageStr.c_str(), maxLength-1);
+    if (strlen(errorMessageStr) > maxLength-1) {
+        strncpy(errorMessagePtr, errorMessageStr, maxLength-1);
         errorMessagePtr[maxLength-1] = '\0';
         return static_cast<int>(maxLength-1);
     }
-    strcpy(errorMessagePtr, errorMessageStr.c_str());
+    strcpy(errorMessagePtr, errorMessageStr);
     return 0;
 }
 
@@ -334,12 +334,12 @@ int SMTPClientBase::sendMail(const Message &pMsg)
         return set_mail_body_ret_code;
     }
 
-    cleanup(); 
+    cleanup();
     return 0;
 }
 
 
-int SMTPClientBase::initializeSession() 
+int SMTPClientBase::initializeSession()
 {
     delete[] mCommunicationLog;
     mCommunicationLog = new char[COMMUNICATIONLOG_LENGTH];
@@ -355,13 +355,13 @@ int SMTPClientBase::initializeSession()
             return SOCKET_INIT_SESSION_WINSOCKET_STARTUP_ERROR;
         }
         struct addrinfo *result = nullptr;
-        struct addrinfo hints; 
+        struct addrinfo hints;
         memset(&hints, 0, sizeof hints);
         hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
         hints.ai_socktype = SOCK_STREAM;
 
         wsa_retVal = getaddrinfo(getServerName(), std::to_string(getServerPort()).c_str(), &hints, &result);
-        if (wsa_retVal != 0) 
+        if (wsa_retVal != 0)
         {
             WSACleanup();
             setLastSocketErrNo(wsa_retVal);
@@ -375,7 +375,7 @@ int SMTPClientBase::initializeSession()
             return SOCKET_INIT_SESSION_CREATION_ERROR;
         }
         wsa_retVal = connect(mSock, result->ai_addr, static_cast<int>(result->ai_addrlen));
-        if (wsa_retVal == SOCKET_ERROR) 
+        if (wsa_retVal == SOCKET_ERROR)
         {
             WSACleanup();
             setLastSocketErrNo(WSAGetLastError());
@@ -390,7 +390,7 @@ int SMTPClientBase::initializeSession()
         }
         struct hostent *host = gethostbyname(getServerName());
         if (!host || host->h_length < 0) {
-            
+
             return SOCKET_INIT_SESSION_GETHOSTBYNAME_ERROR;
         }
         struct sockaddr_in saddr_in {};
@@ -404,23 +404,23 @@ int SMTPClientBase::initializeSession()
         if (connect(mSock, reinterpret_cast<struct sockaddr*>(&saddr_in), sizeof(saddr_in)) == -1) {
             setLastSocketErrNo(errno);
             return SOCKET_INIT_SESSION_CONNECT_ERROR;
-        } 
+        }
     #endif
-    
+
     return 0;
-   
+
 }
 
-int SMTPClientBase::sendServerIdentification() 
+int SMTPClientBase::sendServerIdentification()
 {
     std::string ehlo { "ehlo localhost\r\n" };
     addCommunicationLogItem(ehlo.c_str());
-    return sendRawCommand(ehlo.c_str(), 
-        SOCKET_INIT_CLIENT_SEND_EHLO_ERROR, 
+    return sendRawCommand(ehlo.c_str(),
+        SOCKET_INIT_CLIENT_SEND_EHLO_ERROR,
         SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT);
 }
 
-int SMTPClientBase::checkServerGreetings() 
+int SMTPClientBase::checkServerGreetings()
 {
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
     unsigned int waitTime = 0;
@@ -442,7 +442,7 @@ int SMTPClientBase::checkServerGreetings()
     return SOCKET_INIT_SESSION_CONNECT_TIMEOUT;
 }
 
-int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode) 
+int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode)
 {
     #ifdef _WIN32
         size_t pCommandSize = strlen(pCommand);
@@ -459,7 +459,7 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode)
         return pErrorCode;
     }
     return 0;
-}   
+}
 
 int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode)
 {
@@ -480,7 +480,7 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTi
         addCommunicationLogItem(outbuf, "s");
         return extractReturnCode(outbuf);
     }
-    
+
     cleanup();
     return pTimeoutCode;
 }
@@ -514,9 +514,9 @@ int SMTPClientBase::authenticateWithMethodPlain() {
     ss_credentials << '\0' << mCredential->getUsername() << '\0' << mCredential->getPassword();
     std::string str_credentials = ss_credentials.str();
     std::stringstream ss;
-    ss << "AUTH PLAIN " 
+    ss << "AUTH PLAIN "
     << Base64::Encode(reinterpret_cast<const unsigned char*>(str_credentials.c_str()),
-            strlen(mCredential->getUsername()) + strlen(mCredential->getPassword()) + 2) // + 2 for the two null characters 
+            strlen(mCredential->getUsername()) + strlen(mCredential->getPassword()) + 2) // + 2 for the two null characters
     << "\r\n";
     return (*this.*sendCommandWithFeedbackPtr)(ss.str().c_str(), CLIENT_AUTHENTICATE_ERROR, CLIENT_AUTHENTICATE_TIMEOUT);
 }
@@ -524,31 +524,31 @@ int SMTPClientBase::authenticateWithMethodPlain() {
 int SMTPClientBase::authenticateWithMethodLogin()
 {
     addCommunicationLogItem("AUTH LOGIN ***************\r\n");
-    int login_return_code = (*this.*sendCommandWithFeedbackPtr)("AUTH LOGIN\r\n",  
-        CLIENT_AUTHENTICATE_ERROR, 
+    int login_return_code = (*this.*sendCommandWithFeedbackPtr)("AUTH LOGIN\r\n",
+        CLIENT_AUTHENTICATE_ERROR,
         CLIENT_AUTHENTICATE_TIMEOUT);
     if (login_return_code != STATUS_CODE_SERVER_CHALLENGE) {
         return CLIENT_AUTHENTICATE_ERROR;
     }
-    
-    std::string encoded_username { Base64::Encode(reinterpret_cast<const unsigned char*>(mCredential->getUsername()), 
+
+    std::string encoded_username { Base64::Encode(reinterpret_cast<const unsigned char*>(mCredential->getUsername()),
         strlen(mCredential->getUsername())) };
     std::stringstream ss_username;
     ss_username << encoded_username << "\r\n";
-    int username_return_code = (*this.*sendCommandWithFeedbackPtr)(ss_username.str().c_str(), 
-        CLIENT_AUTHENTICATE_ERROR, 
+    int username_return_code = (*this.*sendCommandWithFeedbackPtr)(ss_username.str().c_str(),
+        CLIENT_AUTHENTICATE_ERROR,
         CLIENT_AUTHENTICATE_TIMEOUT);
     if (username_return_code != STATUS_CODE_SERVER_CHALLENGE) {
         return CLIENT_AUTHENTICATE_ERROR;
     }
-    std::string encoded_password { Base64::Encode(reinterpret_cast<const unsigned char*>(mCredential->getPassword()), 
+    std::string encoded_password { Base64::Encode(reinterpret_cast<const unsigned char*>(mCredential->getPassword()),
         strlen(mCredential->getPassword())) };
     std::stringstream ss_password;
     ss_password << encoded_password << "\r\n";
     return (*this.*sendCommandWithFeedbackPtr)(ss_password.str().c_str(), CLIENT_AUTHENTICATE_ERROR, CLIENT_AUTHENTICATE_TIMEOUT);
 }
 
-int SMTPClientBase::setMailRecipients(const Message &pMsg) 
+int SMTPClientBase::setMailRecipients(const Message &pMsg)
 {
     const int INVALID_ADDRESS { 501 };
     const int SENDER_OK { 250 };
@@ -595,7 +595,7 @@ int SMTPClientBase::setMailRecipients(const Message &pMsg)
     return 0;
 }
 
-int SMTPClientBase::addMailRecipients(jed_utils::MessageAddress **list, size_t count, const int RECIPIENT_OK) 
+int SMTPClientBase::addMailRecipients(jed_utils::MessageAddress **list, size_t count, const int RECIPIENT_OK)
 {
     int rcpt_to_ret_code = RECIPIENT_OK;
     std::for_each(list, list + count, [this, &rcpt_to_ret_code, &RECIPIENT_OK](MessageAddress *address) {
@@ -627,7 +627,7 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg)
         return header_from_ret_code;
     }
 
-    // To and Cc. 
+    // To and Cc.
     //Note : Bcc are not included in the header
     std::vector<std::tuple<MessageAddress **, size_t, const char *>> recipients {
         std::tuple<MessageAddress **, size_t, const char *>(pMsg.getTo(), pMsg.getToCount(), "To"),
@@ -678,7 +678,7 @@ int SMTPClientBase::setMailBody(const Message &pMsg)
     std::ostringstream body_ss;
     body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
     std::string body_real = body_ss.str();
-    addCommunicationLogItem(body_real.c_str());    
+    addCommunicationLogItem(body_real.c_str());
 
     //If there's attachments, prepare the attachments text content
     Attachment** arr_attachment = pMsg.getAttachments();
@@ -712,14 +712,14 @@ int SMTPClientBase::setMailBody(const Message &pMsg)
 
     //End of data
     std::string end_data_command { "\r\n.\r\n" };
-    addCommunicationLogItem(end_data_command.c_str());    
+    addCommunicationLogItem(end_data_command.c_str());
     int end_data_ret_code = (*this.*sendCommandWithFeedbackPtr)(end_data_command.c_str(), CLIENT_SENDMAIL_END_DATA_ERROR, CLIENT_SENDMAIL_END_DATA_TIMEOUT);
     if (end_data_ret_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
         return end_data_ret_code;
     }
 
     std::string quit_command { "QUIT\r\n" };
-    addCommunicationLogItem(quit_command.c_str());    
+    addCommunicationLogItem(quit_command.c_str());
     int quit_ret_code = (*this.*sendCommandPtr)(quit_command.c_str(), CLIENT_SENDMAIL_QUIT_ERROR);
     if (quit_ret_code != 0) {
         return quit_ret_code;
@@ -751,7 +751,7 @@ void SMTPClientBase::addCommunicationLogItem(const char *pItem, const char *pPre
 
 std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*> &pAttachments)
 {
-    std::string retval;	
+    std::string retval;
     for (const auto &item : pAttachments)
     {
         retval += "\r\n--sep\r\n";
@@ -771,7 +771,7 @@ int SMTPClientBase::extractReturnCode(const char *pOutput)
         std::string code_str { pOutput };
         try {
             return std::stoi(code_str.substr(0, 3));
-        } 
+        }
         catch (std::exception const &) {
             return -1;
         }
@@ -787,14 +787,14 @@ ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhl
         return retVal;
     }
     const std::string DELIMITER { "\r\n" };
-    std::string ehlo_output { pEhloOutput }; 
+    std::string ehlo_output { pEhloOutput };
     size_t ehlo_character_index { 0 };
     while((ehlo_character_index = ehlo_output.find(DELIMITER)) != std::string::npos) {
         std::string line { ehlo_output.substr(0, ehlo_character_index)};
         //Find the line that begin with 250-AUTH
         if (line.substr(0, AUTH_LINE_PREFIX.length()) == AUTH_LINE_PREFIX) {
             retVal = new ServerAuthOptions();
-            //Find each options 
+            //Find each options
             std::vector<std::string> options;
             size_t line_character_index { 0 };
             while((line_character_index = line.find(' ')) != std::string::npos) {
@@ -813,13 +813,13 @@ ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhl
                 }
                 else if (option == "XOAUTH2") {
                     retVal->XOAuth2 = true;
-                }                
+                }
                 else if (option == "PLAIN-CLIENTTOKEN") {
                     retVal->Plain_ClientToken = true;
-                }                
+                }
                 else if (option == "OAUTHBEARER") {
                     retVal->OAuthBearer = true;
-                }                
+                }
                 else if (option == "XOAUTH") {
                     retVal->XOAuth = true;
                 }

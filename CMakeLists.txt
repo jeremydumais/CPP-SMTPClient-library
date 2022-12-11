@@ -97,14 +97,14 @@ if (WIN32)
 		ICON "${PATH_TO_APPLICATION_ICON}"
 		VERSION_MAJOR 1
 		VERSION_MINOR 1
-		VERSION_PATCH 4
+		VERSION_PATCH 5
 		VERSION_REVISION ${BUILD_REVISION}
 	)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	#For MSVC create the library as a shared library
-	if(CMAKE_SIZEOF_VOID_P EQUAL 8)	
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 		# 64 bits
 		set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE "libsslMD" "libcryptoMD")
 		set(OPENSSL_ARCHITECTURE_SUFFIX "64")
@@ -228,7 +228,7 @@ if (BUILD_TESTING)
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
 	if(result)
   		message(FATAL_ERROR "Build step for googletest failed: ${result}")
-	endif() 
+	endif()
 
 	# Prevent overriding the parent project's compiler/linker
 	# settings on Windows
