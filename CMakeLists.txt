@@ -104,15 +104,17 @@ endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	#For MSVC create the library as a shared library
-	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-		# 64 bits
-		set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE "libsslMD" "libcryptoMD")
-		set(OPENSSL_ARCHITECTURE_SUFFIX "64")
-	elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-		# 32 bits
-		set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE ${OPENSSL_LIBRARIES})
-		set(OPENSSL_ARCHITECTURE_SUFFIX "")
-	endif()
+    if (NOT DEFINED OPENSSL_LIBRARIES_BY_MACHINE_TYPE)
+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            # 64 bits
+            set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE "libsslMD" "libcryptoMD")
+            set(OPENSSL_ARCHITECTURE_SUFFIX "64")
+        elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+            # 32 bits
+            set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE ${OPENSSL_LIBRARIES})
+            set(OPENSSL_ARCHITECTURE_SUFFIX "")
+        endif()
+    endif()
 	#If OPENSSL_ROOT_DIR was not provided search for the environment variable
 	if (NOT DEFINED OPENSSL_ROOT_DIR)
 		message(STATUS "No OPENSSL_ROOT_DIR variable provided so searching for the OPENSSL_ROOT_DIR environment variable...")
