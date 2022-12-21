@@ -1,16 +1,14 @@
 #ifndef ERRORRESOLVER_H
 #define ERRORRESOLVER_H
 
-#include <string>
-
 #ifdef _WIN32
-	#ifdef SMTPCLIENT_EXPORTS
-		#define ERRORRESOLVER_API __declspec(dllexport)
-	#else
-		#define ERRORRESOLVER_API __declspec(dllimport)
-	#endif
+    #ifdef SMTPCLIENT_EXPORTS
+        #define ERRORRESOLVER_API __declspec(dllexport)
+    #else
+        #define ERRORRESOLVER_API __declspec(dllimport)
+    #endif
 #else
-	#define ERRORRESOLVER_API
+    #define ERRORRESOLVER_API
 #endif
 
 namespace jed_utils
@@ -23,13 +21,13 @@ namespace jed_utils
     {
     public:
         /**
-		 *  @brief  Construct a new ErrorResolver.
-		 *  @param pErrorCode The error code returned by the sendMail method
+         *  @brief  Construct a new ErrorResolver.
+         *  @param pErrorCode The error code returned by the sendMail method
          *  of the different smtp client classes.
-		 */
-        ErrorResolver(int pErrorCode);
+         */
+        explicit ErrorResolver(int pErrorCode);
 
-		/** The destructor of ErrorResolver */
+        /** The destructor of ErrorResolver */
         virtual ~ErrorResolver();
 
         /** ErrorResolver copy constructor */
@@ -44,10 +42,10 @@ namespace jed_utils
         /** ErrorResolver move assignment operator */
         ErrorResolver& operator=(ErrorResolver&& other) noexcept;
 
-		/** Return the error code configured. */
+        /** Return the error code configured. */
         int getErrorCode() const;
 
-		/** Return the error message corresponding of the currently set
+        /** Return the error message corresponding of the currently set
          *  error code.
          */
         const char *getErrorMessage() const;

@@ -5,7 +5,7 @@
 #include <openssl/err.h>
 
 #ifdef _WIN32
-	#include <WinSock2.h>
+    #include <WinSock2.h>
     #include <ws2tcpip.h>
     #include <BaseTsd.h>
     typedef SSIZE_T ssize_t;
@@ -24,47 +24,47 @@ using namespace jed_utils;
 
 SecureSMTPClientBase::SecureSMTPClientBase(const char *pServerName, unsigned int pPort)
     : SMTPClientBase(pServerName, pPort),
-      mBIO(nullptr),
-      mCTX(nullptr),
-      mSSL(nullptr)
+    mBIO(nullptr),
+    mCTX(nullptr),
+    mSSL(nullptr)
 {
 }
 
 SecureSMTPClientBase::~SecureSMTPClientBase()
-{    
+{
     SecureSMTPClientBase::cleanup();
 }
 
 //Copy constructor
 SecureSMTPClientBase::SecureSMTPClientBase(const SecureSMTPClientBase& other)
-	: SMTPClientBase(other),
-      mBIO(nullptr),
-      mCTX(nullptr),
-      mSSL(nullptr)
-{    
+    : SMTPClientBase(other),
+    mBIO(nullptr),
+    mCTX(nullptr),
+    mSSL(nullptr)
+{
 }
 
 //Assignment operator
 SecureSMTPClientBase& SecureSMTPClientBase::operator=(const SecureSMTPClientBase& other)
 {
-	if (this != &other) {
+    if (this != &other) {
         SMTPClientBase::operator=(other);
         mBIO = nullptr;
         mCTX = nullptr;
         mSSL = nullptr;
-	}
-	return *this;
+    }
+    return *this;
 }
 
 //Move constructor
 SecureSMTPClientBase::SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcept
-	: SMTPClientBase(std::move(other)),
-      mBIO(other.mBIO),
-      mCTX(other.mCTX),
-      mSSL(other.mSSL)
+: SMTPClientBase(std::move(other)),
+    mBIO(other.mBIO),
+    mCTX(other.mCTX),
+    mSSL(other.mSSL)
 {
-	// Release the data pointer from the source object so that the destructor 
-	// does not free the memory multiple times.
+    // Release the data pointer from the source object so that the destructor
+    // does not free the memory multiple times.
     other.mBIO = nullptr;
     other.mCTX = nullptr;
     other.mSSL = nullptr;
@@ -73,19 +73,19 @@ SecureSMTPClientBase::SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcep
 //Move assignement operator
 SecureSMTPClientBase& SecureSMTPClientBase::operator=(SecureSMTPClientBase&& other) noexcept
 {
-	if (this != &other) {
-		// Copy the data pointer and its length from the source object.
+    if (this != &other) {
+        // Copy the data pointer and its length from the source object.
         mBIO = other.mBIO;
         mCTX = other.mCTX;
         mSSL = other.mSSL;
-		// Release the data pointer from the source object so that
-		// the destructor does not free the memory multiple times.
+        // Release the data pointer from the source object so that
+        // the destructor does not free the memory multiple times.
         other.mBIO = nullptr;
         other.mCTX = nullptr;
         other.mSSL = nullptr;
         SMTPClientBase::operator=(std::move(other));
-	}
-	return *this;
+    }
+    return *this;
 }
 
 void SecureSMTPClientBase::cleanup()
@@ -100,18 +100,18 @@ void SecureSMTPClientBase::cleanup()
     mBIO = nullptr;
     int socketFileDescriptor {getSocketFileDescriptor() };
     if (socketFileDescriptor != 0) {
-        #ifdef _WIN32
-            shutdown(socketFileDescriptor, SD_BOTH);
-            closesocket(socketFileDescriptor);
-        #else
-            close(socketFileDescriptor);
-        #endif 
+#ifdef _WIN32
+        shutdown(socketFileDescriptor, SD_BOTH);
+        closesocket(socketFileDescriptor);
+#else
+        close(socketFileDescriptor);
+#endif
     }
     clearSocketFileDescriptor();
     mSSL = nullptr;
-    #ifdef _WIN32
-        WSACleanup();
-    #endif
+#ifdef _WIN32
+    WSACleanup();
+#endif
 }
 
 BIO* SecureSMTPClientBase::getBIO() const
@@ -135,7 +135,7 @@ void SecureSMTPClientBase::initializeSSLContext()
 
 int SecureSMTPClientBase::startTLSNegotiation()
 {
-    addCommunicationLogItem("<Start TLS negotiation>");    
+    addCommunicationLogItem("<Start TLS negotiation>");
     initializeSSLContext();
     if (mCTX == nullptr) {
         return SSL_CLIENT_STARTTLS_INITSSLCTX_ERROR;
@@ -149,46 +149,46 @@ int SecureSMTPClientBase::startTLSNegotiation()
     /* Link bio channel, SSL session, and server endpoint */
     const int SERVERNAMEANDPORT_LENGTH = 1024;
     char name[SERVERNAMEANDPORT_LENGTH];
-    sprintf(name, "%s:%i", getServerName(), getServerPort());
+    sprintf(name, "%s:%u", getServerName(), getServerPort());
     BIO_get_ssl(mBIO, &mSSL); /* session */
     SSL_set_fd(mSSL, getSocketFileDescriptor());
     SSL_set_mode(mSSL, SSL_MODE_AUTO_RETRY); /* robustness */
     BIO_set_conn_hostname(mBIO, name); /* prepare to connect */
 
-    #ifdef _WIN32
-        /* On Windows, we need to import all the ROOT certificates to
-        the OpenSSL Store */
-        PCCERT_CONTEXT pContext = nullptr;
-        X509_STORE *store = SSL_CTX_get_cert_store(mCTX);
-        HCERTSTORE hStore = CertOpenSystemStore(NULL, "ROOT");
+#ifdef _WIN32
+    /* On Windows, we need to import all the ROOT certificates to
+       the OpenSSL Store */
+    PCCERT_CONTEXT pContext = nullptr;
+    X509_STORE *store = SSL_CTX_get_cert_store(mCTX);
+    HCERTSTORE hStore = CertOpenSystemStore(NULL, "ROOT");
 
-        if (!hStore) {
-            setLastSocketErrNo(static_cast<int>(GetLastError()));
-            return SSL_CLIENT_STARTTLS_WIN_CERTOPENSYSTEMSTORE_ERROR;
-        }
+    if (!hStore) {
+        setLastSocketErrNo(static_cast<int>(GetLastError()));
+        return SSL_CLIENT_STARTTLS_WIN_CERTOPENSYSTEMSTORE_ERROR;
+    }
 
-        pContext = CertEnumCertificatesInStore(hStore, pContext);
-        while (pContext)
+    pContext = CertEnumCertificatesInStore(hStore, pContext);
+    while (pContext)
+    {
+        X509 *x509 = nullptr;
+        x509 = d2i_X509(nullptr, (const unsigned char **)&pContext->pbCertEncoded, pContext->cbCertEncoded);
+        if (x509)
         {
-            X509 *x509 = nullptr;
-            x509 = d2i_X509(nullptr, (const unsigned char **)&pContext->pbCertEncoded, pContext->cbCertEncoded);
-            if (x509)
-            {
-                X509_STORE_add_cert(store, x509);
-                X509_free(x509);
-            }
-            pContext = CertEnumCertificatesInStore(hStore, pContext);
+            X509_STORE_add_cert(store, x509);
+            X509_free(x509);
         }
-    #else
-        if (SSL_CTX_set_default_verify_paths(mCTX) == 0) {
-           return SSL_CLIENT_STARTTLS_CTX_SET_DEFAULT_VERIFY_PATHS_ERROR; 
-        }
-    #endif
+        pContext = CertEnumCertificatesInStore(hStore, pContext);
+    }
+#else
+    if (SSL_CTX_set_default_verify_paths(mCTX) == 0) {
+        return SSL_CLIENT_STARTTLS_CTX_SET_DEFAULT_VERIFY_PATHS_ERROR;
+    }
+#endif
     long verify_flag = SSL_get_verify_result(mSSL);
     if (verify_flag != X509_V_OK) {
         fprintf(stderr,
-            "##### Certificate verification error (%i) but continuing...\n",
-            static_cast<int>(verify_flag));
+                "##### Certificate verification error (%i) but continuing...\n",
+                static_cast<int>(verify_flag));
     }
 
     /* Try to connect */
@@ -199,20 +199,20 @@ int SecureSMTPClientBase::startTLSNegotiation()
     }
 
     /* Try to do the handshake */
-    addCommunicationLogItem("<Negotiate a TLS session>", "c & s");    
+    addCommunicationLogItem("<Negotiate a TLS session>", "c & s");
     if (BIO_do_handshake(mBIO) <= 0) {
         cleanup();
         setLastSocketErrNo(static_cast<int>(ERR_get_error()));
         return SSL_CLIENT_STARTTLS_BIO_HANDSHAKE_ERROR;
     }
 
-    addCommunicationLogItem("<Check result of negotiation>", "c & s");    
-    /* Step 1: Verify a server certificate was presented 
+    addCommunicationLogItem("<Check result of negotiation>", "c & s");
+    /* Step 1: Verify a server certificate was presented
        during the negotiation */
     X509* cert = SSL_get_peer_certificate(mSSL);
-    if(cert != nullptr) { 
+    if(cert != nullptr) {
         X509_free(cert); /* Free immediately */
-    } 
+    }
     if(cert == nullptr) {
         cleanup();
         return SSL_CLIENT_STARTTLS_GET_CERTIFICATE_ERROR;
@@ -227,12 +227,12 @@ int SecureSMTPClientBase::startTLSNegotiation()
         return SSL_CLIENT_STARTTLS_VERIFY_RESULT_ERROR;
     }
 
-    addCommunicationLogItem("TLS session ready!");    
+    addCommunicationLogItem("TLS session ready!");
 
-    #ifdef _WIN32
-        CertFreeCertificateContext(pContext);
-        CertCloseStore(hStore, 0);
-    #endif
+#ifdef _WIN32
+    CertFreeCertificateContext(pContext);
+    CertCloseStore(hStore, 0);
+#endif
     return 0;
 }
 
@@ -242,9 +242,9 @@ int SecureSMTPClientBase::getServerSecureIdentification()
     addCommunicationLogItem("Contacting the server again but via the secure channel...");
     std::string ehlo { "ehlo localhost\r\n"s };
     addCommunicationLogItem(ehlo.c_str());
-    int tls_command_return_code = sendCommandWithFeedback(ehlo.c_str(), 
-                                    SSL_CLIENT_INITSECURECLIENT_ERROR, 
-                                    SSL_CLIENT_INITSECURECLIENT_TIMEOUT);
+    int tls_command_return_code = sendCommandWithFeedback(ehlo.c_str(),
+            SSL_CLIENT_INITSECURECLIENT_ERROR,
+            SSL_CLIENT_INITSECURECLIENT_TIMEOUT);
     if (tls_command_return_code != EHLO_SUCCESS_CODE) {
         return tls_command_return_code;
     }
@@ -274,7 +274,7 @@ int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErr
         cleanup();
         return pErrorCode;
     }
-    
+
     while ((bytes_received = BIO_read(mBIO, outbuf, SERVERRESPONSE_BUFFER_LENGTH)) <= 0 && waitTime < getCommandTimeout()) {
         sleep(1);
         waitTime += 1;
@@ -285,7 +285,7 @@ int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErr
         addCommunicationLogItem(outbuf, "s");
         return extractReturnCode(outbuf);
     }
-    
+
     cleanup();
-    return pTimeoutCode;  
+    return pTimeoutCode;
 }

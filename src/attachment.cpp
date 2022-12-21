@@ -16,7 +16,7 @@ Attachment::Attachment(const char *pFilename, const char *pName)
     if (pFileNameLength == 0 || StringUtils::trim(std::string(pFilename)).length() == 0) {
         throw std::invalid_argument("filename");
     }
-    
+
     size_t filename_len = pFileNameLength;
     mFilename = new char[filename_len+1];
     strcpy(mFilename, pFilename);
@@ -36,8 +36,8 @@ Attachment::~Attachment()
 
 //Copy constructor
 Attachment::Attachment(const Attachment& other)
-	: mName(new char[strlen(other.mName) + 1]),
-	  mFilename(new char[strlen(other.mFilename) + 1])
+    : mName(new char[strlen(other.mName) + 1]),
+    mFilename(new char[strlen(other.mFilename) + 1])
 {
     strcpy(mName, other.mName);
     strcpy(mFilename, other.mFilename);
@@ -46,46 +46,46 @@ Attachment::Attachment(const Attachment& other)
 //Assignment operator
 Attachment& Attachment::operator=(const Attachment& other)
 {
-	if (this != &other)
-	{
-		delete[] mName;
-		delete[] mFilename;
-		//mName
-		mName = new char[strlen(other.mName) + 1];
+    if (this != &other)
+    {
+        delete[] mName;
+        delete[] mFilename;
+        //mName
+        mName = new char[strlen(other.mName) + 1];
         strcpy(mName, other.mName);
-		//mFilename
-		mFilename = new char[strlen(other.mFilename) + 1];
+        //mFilename
+        mFilename = new char[strlen(other.mFilename) + 1];
         strcpy(mFilename, other.mFilename);
-	}
-	return *this;
+    }
+    return *this;
 }
 
 //Move constructor
 Attachment::Attachment(Attachment&& other) noexcept
-	: mName(other.mName), mFilename(other.mFilename)
+: mName(other.mName), mFilename(other.mFilename)
 {
-	// Release the data pointer from the source object so that the destructor 
-	// does not free the memory multiple times.
-	other.mName = nullptr;
-	other.mFilename = nullptr;
+    // Release the data pointer from the source object so that the destructor
+    // does not free the memory multiple times.
+    other.mName = nullptr;
+    other.mFilename = nullptr;
 }
 
 //Move assignement operator
 Attachment& Attachment::operator=(Attachment&& other) noexcept
 {
-	if (this != &other)
-	{
-		delete[] mName;
-		delete[] mFilename;
-		// Copy the data pointer and its length from the source object.
-		mName = other.mName;
-		mFilename = other.mFilename;
-		// Release the data pointer from the source object so that
-		// the destructor does not free the memory multiple times.
-		other.mName = nullptr;
-		other.mFilename = nullptr;
-	}
-	return *this;
+    if (this != &other)
+    {
+        delete[] mName;
+        delete[] mFilename;
+        // Copy the data pointer and its length from the source object.
+        mName = other.mName;
+        mFilename = other.mFilename;
+        // Release the data pointer from the source object so that
+        // the destructor does not free the memory multiple times.
+        other.mName = nullptr;
+        other.mFilename = nullptr;
+    }
+    return *this;
 }
 
 const char *Attachment::getName() const
@@ -117,14 +117,14 @@ const char *Attachment::getBase64EncodedFile() const
         }
         in.close();
     }
-    
+
     std::cerr << "Could not open file " << mFilename << std::endl;
     return nullptr;
 }
 
 const char *Attachment::getMimeType() const
 {
-	std::string filename_str { mFilename };
+    std::string filename_str { mFilename };
     const std::string extension = StringUtils::toUpper(filename_str.substr(filename_str.find_last_of('.') + 1));
     //Images
     if (extension == "PNG") {
@@ -208,7 +208,7 @@ const char *Attachment::getMimeType() const
         return "application/vnd.oasis.opendocument.spreadsheet";
     }
     if (extension == "ODP") {
-        return "application/vnd.oasis.opendocument.presentation"; 
+        return "application/vnd.oasis.opendocument.presentation";
     }
     if (extension == "ODG") {
         return "application/vnd.oasis.opendocument.graphics";
