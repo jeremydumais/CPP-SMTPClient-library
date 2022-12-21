@@ -42,7 +42,6 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     mLastSocketErrNo(0),
     mAuthOptions(nullptr),
     mCredential(nullptr),
-    mSock(0),
     mKeepUsingBaseSendCommands(false),
     sendCommandPtr(&SMTPClientBase::sendCommand),
     sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback)
@@ -74,6 +73,7 @@ SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
     :  mServerName(new char[strlen(other.mServerName) + 1]),
     mPort(other.mPort),
     mCommunicationLog(other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr),
+    mCommunicationLogSize(other.mCommunicationLogSize),
     mLastServerResponse(other.mLastServerResponse != nullptr ? new char[strlen(other.mLastServerResponse) + 1]: nullptr),
     mCommandTimeOut(other.mCommandTimeOut),
     mLastSocketErrNo(other.mLastSocketErrNo),
@@ -110,6 +110,7 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other)
         if (mCommunicationLog != nullptr) {
             strcpy(mCommunicationLog, other.mCommunicationLog);
         }
+        mCommunicationLogSize = other.mCommunicationLogSize;
         //mLastServerResponse
         mLastServerResponse = other.mLastServerResponse != nullptr ? new char[strlen(other.mLastServerResponse) + 1]: nullptr;
         if (mLastServerResponse != nullptr) {
@@ -133,6 +134,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
 : mServerName(other.mServerName),
     mPort(other.mPort),
     mCommunicationLog(other.mCommunicationLog),
+    mCommunicationLogSize(other.mCommunicationLogSize),
     mLastServerResponse(other.mLastServerResponse),
     mCommandTimeOut(other.mCommandTimeOut),
     mLastSocketErrNo(other.mLastSocketErrNo),
@@ -146,6 +148,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     other.mServerName = nullptr;
     other.mPort = 0;
     other.mCommunicationLog = nullptr;
+    other.mCommunicationLogSize = 0;
     other.mLastServerResponse = nullptr;
     other.mCommandTimeOut = 0;
     other.mLastSocketErrNo = 0;
@@ -169,6 +172,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept
         mServerName = other.mServerName;
         mPort = other.mPort;
         mCommunicationLog = other.mCommunicationLog;
+        mCommunicationLogSize = other.mCommunicationLogSize;
         mLastServerResponse = other.mLastServerResponse;
         mCommandTimeOut = other.mCommandTimeOut;
         mLastSocketErrNo = other.mLastSocketErrNo;
@@ -182,6 +186,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept
         other.mServerName = nullptr;
         other.mPort = 0;
         other.mCommunicationLog = nullptr;
+        other.mCommunicationLogSize = 0;
         other.mLastServerResponse = nullptr;
         other.mCommandTimeOut = 0;
         other.mLastSocketErrNo = 0;
@@ -342,7 +347,8 @@ int SMTPClientBase::sendMail(const Message &pMsg)
 int SMTPClientBase::initializeSession()
 {
     delete[] mCommunicationLog;
-    mCommunicationLog = new char[COMMUNICATIONLOG_LENGTH];
+    mCommunicationLog = new char[INITIAL_COMM_LOG_LENGTH];
+    mCommunicationLogSize = INITIAL_COMM_LOG_LENGTH;
     mCommunicationLog[0] = '\0';
 
 #ifdef _WIN32
@@ -732,21 +738,33 @@ void SMTPClientBase::addCommunicationLogItem(const char *pItem, const char *pPre
     std::string item { pItem };
     if (strcmp(pPrefix, "c") == 0) {
         /* Replace the \ by \\ */
-        std::string from { "\r\n" };
-        std::string to { "\\r\\n" };
+        const std::string FROM { "\r\n" };
+        const std::string TO { "\\r\\n" };
         size_t start_pos = 0;
-        while((start_pos = item.find(from, start_pos)) != std::string::npos) {
-            item.replace(start_pos, from.length(), to);
-            start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+        while((start_pos = item.find(FROM, start_pos)) != std::string::npos) {
+            item.replace(start_pos, FROM.length(), TO);
+            start_pos += TO.length(); // Handles case where 'to' is a substring of 'from'
         }
     }
-    std::string endOfLine { "\n" };
-    std::string separator { ": " };
-    strncat(mCommunicationLog, endOfLine.c_str(), COMMUNICATIONLOG_LENGTH-1);
-    strncat(mCommunicationLog, pPrefix, COMMUNICATIONLOG_LENGTH-1);
-    strncat(mCommunicationLog, separator.c_str(), COMMUNICATIONLOG_LENGTH-1);
-    strncat(mCommunicationLog, item.c_str(), COMMUNICATIONLOG_LENGTH-1);
-    mCommunicationLog[COMMUNICATIONLOG_LENGTH-1] = '\0';
+    const std::string ENDOFLINE { "\n" };
+    const std::string SEPARATOR { ": " };
+    size_t currentLogSize = strlen(mCommunicationLog);
+    size_t appendSize = ENDOFLINE.length() + strlen(pPrefix) + SEPARATOR.length() + item.length() + 1;
+    if (mCommunicationLogSize - currentLogSize <= appendSize) {
+        size_t newSize = currentLogSize + appendSize + INITIAL_COMM_LOG_LENGTH;
+        char *newBuffer = new char[newSize];
+        std::strncpy(newBuffer, mCommunicationLog, currentLogSize);
+        newBuffer[currentLogSize] = '\0';
+        mCommunicationLogSize = newSize;
+        char *tmpBuffer = mCommunicationLog;
+        mCommunicationLog = newBuffer;
+        delete [] tmpBuffer;
+    }
+    strncat(mCommunicationLog, ENDOFLINE.c_str(), mCommunicationLogSize-1);
+    strncat(mCommunicationLog, pPrefix, mCommunicationLogSize-1);
+    strncat(mCommunicationLog, SEPARATOR.c_str(), mCommunicationLogSize-1);
+    strncat(mCommunicationLog, item.c_str(), mCommunicationLogSize-1);
+    mCommunicationLog[mCommunicationLogSize-1] = '\0';
 }
 
 std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*> &pAttachments)

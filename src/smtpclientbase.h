@@ -11,17 +11,17 @@
 #include <vector>
 
 #ifdef _WIN32
-	#ifdef SMTPCLIENT_EXPORTS  
-		#define SMTPCLIENTBASE_API __declspec(dllexport)   
-	#else  
-		#define SMTPCLIENTBASE_API __declspec(dllimport)   
-	#endif  
+	#ifdef SMTPCLIENT_EXPORTS
+		#define SMTPCLIENTBASE_API __declspec(dllexport)
+	#else
+		#define SMTPCLIENTBASE_API __declspec(dllimport)
+	#endif
 #else
 	#define SMTPCLIENTBASE_API
 #endif
 
 /** The max length of the communication log */
-#define COMMUNICATIONLOG_LENGTH			4096
+#define INITIAL_COMM_LOG_LENGTH			4096
 
 /** The max length of the server response buffer */
 #define SERVERRESPONSE_BUFFER_LENGTH	1024
@@ -35,11 +35,11 @@ namespace jed_utils
 	{
 	public:
 		/**
-		 *  @brief  Construct a new SMTPClientBase. 
-		 *  @param pServerName The name of the server. 
+		 *  @brief  Construct a new SMTPClientBase.
+		 *  @param pServerName The name of the server.
 		 *  Example: smtp.domainexample.com
 		 *  @param pPort The server port number.
-		 *  Example: 25, 465, 587  
+		 *  Example: 25, 465, 587
 		 */
 		SMTPClientBase(const char *pServerName, unsigned int pPort);
 
@@ -48,25 +48,25 @@ namespace jed_utils
 
 		/** SMTPClientBase copy constructor. */
 		SMTPClientBase(const SMTPClientBase& other);
-		
+
 		/** SMTPClientBase copy assignment operator. */
         SMTPClientBase& operator=(const SMTPClientBase& other);
-		
+
 		/** SMTPClientBase move constructor. */
 		SMTPClientBase(SMTPClientBase&& other) noexcept;
 
 		/** SMTPClientBase move assignment operator. */
 		SMTPClientBase& operator=(SMTPClientBase&& other) noexcept;
-		
+
 		/** Return the server name. */
 		const char *getServerName() const;
-		
+
 		/** Return the server port number. */
 		unsigned int getServerPort() const;
 
 		/** Return the command timeout in seconds. */
 		unsigned int getCommandTimeout() const;
-		
+
 		/** Return the communication log produced by the sendMail method. */
 		const char *getCommunicationLog() const;
 
@@ -74,43 +74,43 @@ namespace jed_utils
 		const Credential *getCredentials() const;
 
 		/**
-		 *  @brief  Set the server name. 
-		 *  @param pServerName A char array pointer of the server name. 
+		 *  @brief  Set the server name.
+		 *  @param pServerName A char array pointer of the server name.
 		 *  Example: smtp.domainexample.com
 		 */
 		void setServerName(const char *pServerName);
 
 		/**
 		 *  @brief  Set the server port number.
-		 *  @param pPort The port number. 
+		 *  @param pPort The port number.
 		 *  Example: 25, 465, 587
 		 */
 		void setServerPort(unsigned int pPort);
 
 		/**
-		 *  @brief  Set the command timeout in seconds. 
-		 *  @param pTimeOutInSeconds The timeout in seconds. 
+		 *  @brief  Set the command timeout in seconds.
+		 *  @param pTimeOutInSeconds The timeout in seconds.
 		 *  Default: 3 seconds
 		 */
 		void setCommandTimeout(unsigned int pTimeOutInSeconds);
-		
+
 		/**
-		 *  @brief  Set the credentials. 
-		 *  @param pCredential The credential containing the username and the password. 
+		 *  @brief  Set the credentials.
+		 *  @param pCredential The credential containing the username and the password.
 		 */
 		void setCredentials(const Credential &pCredential);
 
 		/**
-		 *  @brief  Indicate if the class will keep using base send command even 
+		 *  @brief  Indicate if the class will keep using base send command even
 		 *  if a child class as overriden the sendCommand and sendCommandWithFeedback.
-		 * 
-		 *  This is used for example if you are using a secure client class but 
-		 *  the STARTTLS feature is not available. The communication will then 
+		 *
+		 *  This is used for example if you are using a secure client class but
+		 *  the STARTTLS feature is not available. The communication will then
 		 *  remain unsecured.
 		 *  @param pValue True to enable this behavior, false for the default
 		 */
-		void setKeepUsingBaseSendCommands(bool pValue);    
-	
+		void setKeepUsingBaseSendCommands(bool pValue);
+
 		/**
 		 *  @brief  Retreive the error message string that correspond to
 		 *  the error code provided.
@@ -118,7 +118,7 @@ namespace jed_utils
 		 *  error message. The user is responsible to delete this pointer after
 		 *  usage.
 		 */
-		static char *getErrorMessage(int errorCode); 
+		static char *getErrorMessage(int errorCode);
 
 		/**
 		 *  @brief  This is the reentrant version of the getErrorMessage method
@@ -126,18 +126,18 @@ namespace jed_utils
 		 *  @param  errorMessagePtr  A pointer to an allocated char array
 		 *  @param  maxLength  The size of the allocated char array.
 		 *  @return Return 0 for success, -1 if an error occurred and a positive
-		 *  number representing the number of characters copied to errorMessagePtr 
+		 *  number representing the number of characters copied to errorMessagePtr
 		 *  if the message was longer than that allocated char array.
-		 * 
-		 *  Retreive the error message string that correspond to the error code 
+		 *
+		 *  Retreive the error message string that correspond to the error code
 		 *  provided.
 		 */
-	  	static int getErrorMessage_r(int errorCode, 
-									 char *errorMessagePtr, 
-									 const size_t maxLength); 
+	  	static int getErrorMessage_r(int errorCode,
+									 char *errorMessagePtr,
+									 const size_t maxLength);
 
         int sendMail(const Message &pMsg);
-	protected:  
+	protected:
 		virtual void cleanup() = 0;
 		int getSocketFileDescriptor() const;
 		void clearSocketFileDescriptor();
@@ -174,12 +174,13 @@ namespace jed_utils
 		char *mServerName;
 		unsigned int mPort;
 		char *mCommunicationLog;
+        size_t mCommunicationLogSize = 0;
 		char *mLastServerResponse;
 		unsigned int mCommandTimeOut;
 		int mLastSocketErrNo;
 		ServerAuthOptions *mAuthOptions;
 		Credential *mCredential;
-		int mSock;
+		int mSock = 0;
 
 		// This field indicate the class will keep using base send command even if a child class
 		// as overriden the sendCommand and sendCommandWithFeedback.
