@@ -42,8 +42,6 @@ TEST(ErrorResolver_MoveConstructor, ErrorResolverMoveConstructorValid)
     ErrorResolver errResolver2(std::move(errResolver1));
     ASSERT_EQ(SOCKET_INIT_SESSION_CONNECT_ERROR, errResolver2.getErrorCode());
     ASSERT_STREQ("Unable to connect to the socket", errResolver2.getErrorMessage());
-    ASSERT_EQ(0, errResolver1.getErrorCode());
-    ASSERT_EQ(nullptr, errResolver1.getErrorMessage());
 }
 
 TEST(ErrorResolver_MoveAssignment, ErrorResolverMoveAssignmentValid)
@@ -53,8 +51,6 @@ TEST(ErrorResolver_MoveAssignment, ErrorResolverMoveAssignmentValid)
     errResolver2 = std::move(errResolver1);
     ASSERT_EQ(SOCKET_INIT_SESSION_CONNECT_ERROR, errResolver2.getErrorCode());
     ASSERT_STREQ("Unable to connect to the socket", errResolver2.getErrorMessage());
-    ASSERT_EQ(0, errResolver1.getErrorCode());
-    ASSERT_EQ(nullptr, errResolver1.getErrorMessage());
 }
 
 TEST(ErrorResolver_getErrorCode, WithOneOnConstruction_ReturnOne)

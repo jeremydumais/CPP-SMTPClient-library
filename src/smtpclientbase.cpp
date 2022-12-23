@@ -1,19 +1,20 @@
-#include "base64.h"
-#include "errorresolver.h"
-#include "message.h"
-#include "messageaddress.h"
-#include "serverauthoptions.h"
 #include "smtpclientbase.h"
-#include "smtpclienterrors.h"
-#include "smtpserverstatuscodes.h"
-#include "socketerrors.h"
-#include "stringutils.h"
 #include <algorithm>
 #include <cstring>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
+#include "base64.h"
+#include "errorresolver.h"
+#include "message.h"
+#include "messageaddress.h"
+#include "serverauthoptions.h"
+#include "smtpclienterrors.h"
+#include "smtpserverstatuscodes.h"
+#include "socketerrors.h"
+#include "stringutils.h"
 #ifdef _WIN32
     #include <WinSock2.h>
     #include <ws2tcpip.h>
@@ -35,28 +36,27 @@ using namespace jed_utils;
 
 SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     : mServerName(nullptr),
-    mPort(pPort),
-    mCommunicationLog(nullptr),
-    mLastServerResponse(nullptr),
-    mCommandTimeOut(3),
-    mLastSocketErrNo(0),
-    mAuthOptions(nullptr),
-    mCredential(nullptr),
-    mKeepUsingBaseSendCommands(false),
-    sendCommandPtr(&SMTPClientBase::sendCommand),
-    sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback)
-{
+      mPort(pPort),
+      mCommunicationLog(nullptr),
+      mLastServerResponse(nullptr),
+      mCommandTimeOut(3),
+      mLastSocketErrNo(0),
+      mAuthOptions(nullptr),
+      mCredential(nullptr),
+      mKeepUsingBaseSendCommands(false),
+      sendCommandPtr(&SMTPClientBase::sendCommand),
+      sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback) {
     std::string servername_str { pServerName == nullptr ? "" : pServerName };
     if (pServerName == nullptr || strcmp(pServerName, "") == 0  || StringUtils::trim(servername_str).empty()) {
         throw std::invalid_argument("Server name cannot be null or empty");
     }
     size_t server_name_len = strlen(pServerName);
     mServerName = new char[server_name_len + 1];
-    strcpy(mServerName, pServerName);
+    strncpy(mServerName, pServerName, server_name_len);
+    mServerName[server_name_len] = '\0';
 }
 
-SMTPClientBase::~SMTPClientBase()
-{
+SMTPClientBase::~SMTPClientBase() {
     delete[] mServerName;
     mServerName = nullptr;
     delete[] mCommunicationLog;
@@ -68,22 +68,22 @@ SMTPClientBase::~SMTPClientBase()
     mCredential = nullptr;
 }
 
-//Copy constructor
+// Copy constructor
 SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
-    :  mServerName(new char[strlen(other.mServerName) + 1]),
-    mPort(other.mPort),
-    mCommunicationLog(other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr),
-    mCommunicationLogSize(other.mCommunicationLogSize),
-    mLastServerResponse(other.mLastServerResponse != nullptr ? new char[strlen(other.mLastServerResponse) + 1]: nullptr),
-    mCommandTimeOut(other.mCommandTimeOut),
-    mLastSocketErrNo(other.mLastSocketErrNo),
-    mAuthOptions(other.mAuthOptions != nullptr ? new ServerAuthOptions(*other.mAuthOptions) : nullptr),
-    mCredential(other.mCredential != nullptr ? new Credential(*other.mCredential) : nullptr),
-    mSock(0),
-    mKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands),
-    sendCommandPtr(&SMTPClientBase::sendCommand),
-    sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback)
-{
+    : mServerName(new char[strlen(other.mServerName) + 1]),
+      mPort(other.mPort),
+      mCommunicationLog(other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr),
+      mCommunicationLogSize(other.mCommunicationLogSize),
+      mLastServerResponse(other.mLastServerResponse != nullptr ? new char[strlen(other.mLastServerResponse) + 1]: nullptr),
+      mCommandTimeOut(other.mCommandTimeOut),
+      mLastSocketErrNo(other.mLastSocketErrNo),
+      mAuthOptions(other.mAuthOptions != nullptr ? new ServerAuthOptions(*other.mAuthOptions) : nullptr),
+      mCredential(other.mCredential != nullptr ? new Credential(*other.mCredential) : nullptr),
+      mSock(0),
+      mKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands),
+      sendCommandPtr(&SMTPClientBase::sendCommand),
+      sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback) {
+    // size_t server_name_len
     strcpy(mServerName, other.mServerName);
     if (mCommunicationLog != nullptr) {
         strcpy(mCommunicationLog, other.mCommunicationLog);
@@ -95,23 +95,22 @@ SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
     setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
 }
 
-//Assignment operator
-SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other)
-{
+// Assignment operator
+SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
     if (this != &other) {
-        //mServerName
+        // mServerName
         delete[] mServerName;
         mServerName = new char[strlen(other.mServerName) + 1];
         strcpy(mServerName, other.mServerName);
-        //mPort
+        // mPort
         mPort = other.mPort;
-        //mCommunicationLog
+        // mCommunicationLog
         mCommunicationLog = other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr;
         if (mCommunicationLog != nullptr) {
             strcpy(mCommunicationLog, other.mCommunicationLog);
         }
         mCommunicationLogSize = other.mCommunicationLogSize;
-        //mLastServerResponse
+        // mLastServerResponse
         mLastServerResponse = other.mLastServerResponse != nullptr ? new char[strlen(other.mLastServerResponse) + 1]: nullptr;
         if (mLastServerResponse != nullptr) {
             strcpy(mLastServerResponse, other.mLastServerResponse);
@@ -121,7 +120,7 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other)
 
         delete mAuthOptions;
         mAuthOptions = other.mAuthOptions != nullptr ? new ServerAuthOptions(*other.mAuthOptions) : nullptr;
-        //mCredential
+        // mCredential
         mCredential = other.mCredential != nullptr ? new Credential(*other.mCredential) : nullptr;
         mSock = 0;
         setKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands);
@@ -129,22 +128,21 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other)
     return *this;
 }
 
-//Move constructor
+// Move constructor
 SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
-: mServerName(other.mServerName),
-    mPort(other.mPort),
-    mCommunicationLog(other.mCommunicationLog),
-    mCommunicationLogSize(other.mCommunicationLogSize),
-    mLastServerResponse(other.mLastServerResponse),
-    mCommandTimeOut(other.mCommandTimeOut),
-    mLastSocketErrNo(other.mLastSocketErrNo),
-    mAuthOptions(other.mAuthOptions),
-    mCredential(other.mCredential),
-    mSock(other.mSock),
-    mKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands),
-    sendCommandPtr(&SMTPClientBase::sendCommand),
-    sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback)
-{
+    : mServerName(other.mServerName),
+      mPort(other.mPort),
+      mCommunicationLog(other.mCommunicationLog),
+      mCommunicationLogSize(other.mCommunicationLogSize),
+      mLastServerResponse(other.mLastServerResponse),
+      mCommandTimeOut(other.mCommandTimeOut),
+      mLastSocketErrNo(other.mLastSocketErrNo),
+      mAuthOptions(other.mAuthOptions),
+      mCredential(other.mCredential),
+      mSock(other.mSock),
+      mKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands),
+      sendCommandPtr(&SMTPClientBase::sendCommand),
+      sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback) {
     other.mServerName = nullptr;
     other.mPort = 0;
     other.mCommunicationLog = nullptr;
@@ -159,9 +157,8 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
 }
 
-//Move assignement operator
-SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept
-{
+// Move assignement operator
+SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
     if (this != &other) {
         delete[] mServerName;
         delete[] mCommunicationLog;
@@ -198,38 +195,31 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept
     return *this;
 }
 
-const char *SMTPClientBase::getServerName() const
-{
+const char *SMTPClientBase::getServerName() const {
     return mServerName;
 }
 
-unsigned int SMTPClientBase::getServerPort() const
-{
+unsigned int SMTPClientBase::getServerPort() const {
     return mPort;
 }
 
-unsigned int SMTPClientBase::getCommandTimeout() const
-{
+unsigned int SMTPClientBase::getCommandTimeout() const {
     return mCommandTimeOut;
 }
 
-const char *SMTPClientBase::getCommunicationLog() const
-{
+const char *SMTPClientBase::getCommunicationLog() const {
     return mCommunicationLog == nullptr ? "" : mCommunicationLog;
 }
 
-const Credential *SMTPClientBase::getCredentials() const
-{
+const Credential *SMTPClientBase::getCredentials() const {
     return mCredential;
 }
 
-void SMTPClientBase::setServerPort(unsigned int pPort)
-{
+void SMTPClientBase::setServerPort(unsigned int pPort) {
     mPort = pPort;
 }
 
-void SMTPClientBase::setServerName(const char *pServerName)
-{
+void SMTPClientBase::setServerName(const char *pServerName) {
     std::string servername_str { pServerName == nullptr ? "" : pServerName };
     if (pServerName == nullptr || strcmp(pServerName, "") == 0  || StringUtils::trim(servername_str).empty()) {
         throw std::invalid_argument("Server name cannot be null or empty");
@@ -240,58 +230,48 @@ void SMTPClientBase::setServerName(const char *pServerName)
     strcpy(mServerName, pServerName);
 }
 
-void SMTPClientBase::setCommandTimeout(unsigned int pTimeOutInSeconds)
-{
+void SMTPClientBase::setCommandTimeout(unsigned int pTimeOutInSeconds) {
     mCommandTimeOut = pTimeOutInSeconds;
 }
 
-void SMTPClientBase::setCredentials(const Credential &pCredential)
-{
+void SMTPClientBase::setCredentials(const Credential &pCredential) {
     delete mCredential;
     mCredential = new Credential(pCredential);
 }
 
-void SMTPClientBase::setKeepUsingBaseSendCommands(bool pValue)
-{
+void SMTPClientBase::setKeepUsingBaseSendCommands(bool pValue) {
     mKeepUsingBaseSendCommands = pValue;
     if (pValue) {
         sendCommandPtr = &SMTPClientBase::sendRawCommand;
         sendCommandWithFeedbackPtr = &SMTPClientBase::sendRawCommand;
-    }
-    else {
+    } else {
         sendCommandPtr = &SMTPClientBase::sendCommand;
         sendCommandWithFeedbackPtr = &SMTPClientBase::sendCommandWithFeedback;
     }
 }
 
-int SMTPClientBase::getSocketFileDescriptor() const
-{
+int SMTPClientBase::getSocketFileDescriptor() const {
     return mSock;
 }
 
-void SMTPClientBase::clearSocketFileDescriptor()
-{
+void SMTPClientBase::clearSocketFileDescriptor() {
     mSock = 0;
 }
 
-const char *SMTPClientBase::getLastServerResponse() const
-{
+const char *SMTPClientBase::getLastServerResponse() const {
     return mLastServerResponse;
 }
 
-void SMTPClientBase::setLastSocketErrNo(int lastError)
-{
+void SMTPClientBase::setLastSocketErrNo(int lastError) {
     mLastSocketErrNo = lastError;
 }
 
-void SMTPClientBase::setAuthenticationOptions(ServerAuthOptions *authOptions)
-{
+void SMTPClientBase::setAuthenticationOptions(ServerAuthOptions *authOptions) {
     delete mAuthOptions;
     mAuthOptions = authOptions;
 }
 
-char *SMTPClientBase::getErrorMessage(int errorCode)
-{
+char *SMTPClientBase::getErrorMessage(int errorCode) {
     ErrorResolver errorResolver(errorCode);
     const char *errorMessageStr = errorResolver.getErrorMessage();
     char *errorMessage = new char[strlen(errorMessageStr)+1];
@@ -301,8 +281,7 @@ char *SMTPClientBase::getErrorMessage(int errorCode)
 
 int SMTPClientBase::getErrorMessage_r(int errorCode,
         char *errorMessagePtr,
-        const size_t maxLength)
-{
+        const size_t maxLength) {
     ErrorResolver errorResolver(errorCode);
     const char *errorMessageStr = errorResolver.getErrorMessage();
     if (!errorMessagePtr || maxLength == 0) {
@@ -317,8 +296,7 @@ int SMTPClientBase::getErrorMessage_r(int errorCode,
     return 0;
 }
 
-int SMTPClientBase::sendMail(const Message &pMsg)
-{
+int SMTPClientBase::sendMail(const Message &pMsg) {
     int client_connect_ret_code = establishConnectionWithServer();
     if (client_connect_ret_code != 0) {
         return client_connect_ret_code;
@@ -344,15 +322,14 @@ int SMTPClientBase::sendMail(const Message &pMsg)
 }
 
 
-int SMTPClientBase::initializeSession()
-{
+int SMTPClientBase::initializeSession() {
     delete[] mCommunicationLog;
     mCommunicationLog = new char[INITIAL_COMM_LOG_LENGTH];
     mCommunicationLogSize = INITIAL_COMM_LOG_LENGTH;
     mCommunicationLog[0] = '\0';
 
 #ifdef _WIN32
-    //Windows Sockets version
+    // Windows Sockets version
     WSADATA wsaData;
     WORD wVersionRequested = MAKEWORD(2, 2);
     int wsa_retVal = WSAStartup(wVersionRequested, &wsaData);
@@ -367,8 +344,7 @@ int SMTPClientBase::initializeSession()
     hints.ai_socktype = SOCK_STREAM;
 
     wsa_retVal = getaddrinfo(getServerName(), std::to_string(getServerPort()).c_str(), &hints, &result);
-    if (wsa_retVal != 0)
-    {
+    if (wsa_retVal != 0) {
         WSACleanup();
         setLastSocketErrNo(wsa_retVal);
         return SOCKET_INIT_SESSION_WINSOCKET_GETADDRINFO_ERROR;
@@ -381,14 +357,13 @@ int SMTPClientBase::initializeSession()
         return SOCKET_INIT_SESSION_CREATION_ERROR;
     }
     wsa_retVal = connect(mSock, result->ai_addr, static_cast<int>(result->ai_addrlen));
-    if (wsa_retVal == SOCKET_ERROR)
-    {
+    if (wsa_retVal == SOCKET_ERROR) {
         WSACleanup();
         setLastSocketErrNo(WSAGetLastError());
         return SOCKET_INIT_SESSION_CONNECT_ERROR;
     }
 #else
-    //POSIX socket version
+    // POSIX socket version
     mSock = socket(AF_INET, SOCK_STREAM, 0);
     if (mSock < 0) {
         setLastSocketErrNo(errno);
@@ -396,7 +371,6 @@ int SMTPClientBase::initializeSession()
     }
     struct hostent *host = gethostbyname(getServerName());
     if (!host || host->h_length < 0) {
-
         return SOCKET_INIT_SESSION_GETHOSTBYNAME_ERROR;
     }
     struct sockaddr_in saddr_in {};
@@ -414,11 +388,9 @@ int SMTPClientBase::initializeSession()
 #endif
 
     return 0;
-
 }
 
-int SMTPClientBase::sendServerIdentification()
-{
+int SMTPClientBase::sendServerIdentification() {
     std::string ehlo { "ehlo localhost\r\n" };
     addCommunicationLogItem(ehlo.c_str());
     return sendRawCommand(ehlo.c_str(),
@@ -426,13 +398,12 @@ int SMTPClientBase::sendServerIdentification()
             SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT);
 }
 
-int SMTPClientBase::checkServerGreetings()
-{
+int SMTPClientBase::checkServerGreetings() {
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
     unsigned int waitTime = 0;
     ssize_t bytes_received = 0;
-    while ((bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0)) <= 0 && waitTime < mCommandTimeOut)
-    {
+    while ((bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0)) <= 0
+            && waitTime < mCommandTimeOut) {
         sleep(1);
         waitTime += 1;
     }
@@ -448,8 +419,7 @@ int SMTPClientBase::checkServerGreetings()
     return SOCKET_INIT_SESSION_CONNECT_TIMEOUT;
 }
 
-int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode)
-{
+int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode) {
 #ifdef _WIN32
     size_t pCommandSize = strlen(pCommand);
     if (static_cast<intmax_t>(pCommandSize) > (std::numeric_limits<int>::max)()) {
@@ -467,8 +437,7 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode)
     return 0;
 }
 
-int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode)
-{
+int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode) {
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
     unsigned int waitTime {0};
     ssize_t bytes_received {0};
@@ -491,16 +460,14 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTi
     return pTimeoutCode;
 }
 
-void SMTPClientBase::setLastServerResponse(const char *pResponse)
-{
+void SMTPClientBase::setLastServerResponse(const char *pResponse) {
     delete[] mLastServerResponse;
     size_t response_len = strlen(pResponse);
     mLastServerResponse = new char[response_len + 1];
     strcpy(mLastServerResponse, pResponse);
 }
 
-int SMTPClientBase::authenticateClient()
-{
+int SMTPClientBase::authenticateClient() {
     if (mCredential != nullptr) {
         if (mAuthOptions->Plain) {
             return authenticateWithMethodPlain();
@@ -516,19 +483,18 @@ int SMTPClientBase::authenticateClient()
 int SMTPClientBase::authenticateWithMethodPlain() {
     addCommunicationLogItem("AUTH PLAIN ***************\r\n");
     std::stringstream ss_credentials;
-    //Format : \0username\0password
+    // Format : \0username\0password
     ss_credentials << '\0' << mCredential->getUsername() << '\0' << mCredential->getPassword();
     std::string str_credentials = ss_credentials.str();
     std::stringstream ss;
     ss << "AUTH PLAIN "
         << Base64::Encode(reinterpret_cast<const unsigned char*>(str_credentials.c_str()),
-                strlen(mCredential->getUsername()) + strlen(mCredential->getPassword()) + 2) // + 2 for the two null characters
+                strlen(mCredential->getUsername()) + strlen(mCredential->getPassword()) + 2)  // + 2 for the two null characters
         << "\r\n";
     return (*this.*sendCommandWithFeedbackPtr)(ss.str().c_str(), CLIENT_AUTHENTICATE_ERROR, CLIENT_AUTHENTICATE_TIMEOUT);
 }
 
-int SMTPClientBase::authenticateWithMethodLogin()
-{
+int SMTPClientBase::authenticateWithMethodLogin() {
     addCommunicationLogItem("AUTH LOGIN ***************\r\n");
     int login_return_code = (*this.*sendCommandWithFeedbackPtr)("AUTH LOGIN\r\n",
             CLIENT_AUTHENTICATE_ERROR,
@@ -554,21 +520,19 @@ int SMTPClientBase::authenticateWithMethodLogin()
     return (*this.*sendCommandWithFeedbackPtr)(ss_password.str().c_str(), CLIENT_AUTHENTICATE_ERROR, CLIENT_AUTHENTICATE_TIMEOUT);
 }
 
-int SMTPClientBase::setMailRecipients(const Message &pMsg)
-{
+int SMTPClientBase::setMailRecipients(const Message &pMsg) {
     const int INVALID_ADDRESS { 501 };
     const int SENDER_OK { 250 };
     const int RECIPIENT_OK { 250 };
     std::vector<std::string> mailFormats;
-    std::stringstream ss_mail_from;
-    //Method 1, 2 and 3
+    // Method 1, 2 and 3
     mailFormats.push_back("MAIL FROM: <"s + pMsg.getFrom().getDisplayName() + " " + pMsg.getFrom().getEmailAddress() + ">\r\n"s);
     mailFormats.push_back("MAIL FROM: "s + pMsg.getFrom().getEmailAddress() + "\r\n"s);
     mailFormats.push_back("MAIL FROM: <"s + pMsg.getFrom().getEmailAddress() + ">\r\n"s);
 
 
     int mail_from_ret_code { 0 };
-    for(const auto &format : mailFormats) {
+    for (const auto &format : mailFormats) {
         addCommunicationLogItem(format.c_str());
         mail_from_ret_code = (*this.*sendCommandWithFeedbackPtr)(format.c_str(), CLIENT_SENDMAIL_MAILFROM_ERROR, CLIENT_SENDMAIL_MAILFROM_TIMEOUT);
 
@@ -579,18 +543,18 @@ int SMTPClientBase::setMailRecipients(const Message &pMsg)
             return mail_from_ret_code;
         }
     }
-    //if no compatible format were found
+    // If no compatible format were found
     if (mail_from_ret_code != SENDER_OK) {
         return mail_from_ret_code;
     }
 
-    //Send command for the recipients
+    // Send command for the recipients
     std::vector<std::pair<MessageAddress **, size_t>> recipients {
         std::pair<MessageAddress **, size_t>(pMsg.getTo(), pMsg.getToCount()),
             std::pair<MessageAddress **, size_t>(pMsg.getCc(), pMsg.getCcCount()),
             std::pair<MessageAddress **, size_t>(pMsg.getBcc(), pMsg.getBccCount())
     };
-    for(const auto &item : recipients) {
+    for (const auto &item : recipients) {
         if (item.first != nullptr) {
             int rcpt_to_ret_code = addMailRecipients(item.first, item.second, RECIPIENT_OK);
             if (rcpt_to_ret_code != RECIPIENT_OK) {
@@ -601,8 +565,7 @@ int SMTPClientBase::setMailRecipients(const Message &pMsg)
     return 0;
 }
 
-int SMTPClientBase::addMailRecipients(jed_utils::MessageAddress **list, size_t count, const int RECIPIENT_OK)
-{
+int SMTPClientBase::addMailRecipients(jed_utils::MessageAddress **list, size_t count, const int RECIPIENT_OK) {
     int rcpt_to_ret_code = RECIPIENT_OK;
     std::for_each(list, list + count, [this, &rcpt_to_ret_code, &RECIPIENT_OK](MessageAddress *address) {
             std::stringstream ss_rcpt_to;
@@ -616,8 +579,7 @@ int SMTPClientBase::addMailRecipients(jed_utils::MessageAddress **list, size_t c
     return rcpt_to_ret_code;
 }
 
-int SMTPClientBase::setMailHeaders(const Message &pMsg)
-{
+int SMTPClientBase::setMailHeaders(const Message &pMsg) {
     // Data section
     std::string data_cmd = "DATA\r\n";
     addCommunicationLogItem(data_cmd.c_str());
@@ -634,12 +596,12 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg)
     }
 
     // To and Cc.
-    //Note : Bcc are not included in the header
+    // Note : Bcc are not included in the header
     std::vector<std::tuple<MessageAddress **, size_t, const char *>> recipients {
         std::tuple<MessageAddress **, size_t, const char *>(pMsg.getTo(), pMsg.getToCount(), "To"),
             std::tuple<MessageAddress **, size_t, const char *>(pMsg.getCc(), pMsg.getCcCount(), "Cc")
     };
-    for(const auto &item : recipients) {
+    for (const auto &item : recipients) {
         MessageAddress **list = std::get<0>(item);
         size_t count = std::get<1>(item);
         const char *field = std::get<2>(item);
@@ -659,7 +621,7 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg)
         return header_subject_ret_code;
     }
 
-    //Content-Type
+    // Content-Type
     std::string content_type { "Content-Type: multipart/mixed; boundary=sep\r\n\r\n" };
     addCommunicationLogItem(content_type.c_str());
     int header_content_type_ret_code = (*this.*sendCommandPtr)(content_type.c_str(), CLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR);
@@ -670,23 +632,21 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg)
     return 0;
 }
 
-int SMTPClientBase::addMailHeader(const char *field, const char *value, int pErrorCode)
-{
+int SMTPClientBase::addMailHeader(const char *field, const char *value, int pErrorCode) {
     std::stringstream ss_header_item;
     ss_header_item << field << ": " << value << "\r\n";
     addCommunicationLogItem(ss_header_item.str().c_str());
     return (*this.*sendCommandPtr)(ss_header_item.str().c_str(), pErrorCode);
 }
 
-int SMTPClientBase::setMailBody(const Message &pMsg)
-{
+int SMTPClientBase::setMailBody(const Message &pMsg) {
     // Body part
     std::ostringstream body_ss;
     body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
     std::string body_real = body_ss.str();
     addCommunicationLogItem(body_real.c_str());
 
-    //If there's attachments, prepare the attachments text content
+    // If there's attachments, prepare the attachments text content
     Attachment** arr_attachment = pMsg.getAttachments();
 
     std::vector<Attachment*> vect_attachment(arr_attachment, arr_attachment + pMsg.getAttachmentsCount());
@@ -697,7 +657,7 @@ int SMTPClientBase::setMailBody(const Message &pMsg)
 
     const size_t CHUNK_MAXLENGTH = 512;
     if (body_real.length() > CHUNK_MAXLENGTH) {
-        //Split into chunk
+        // Split into chunk
         for (size_t index_start = 0; index_start < body_real.length(); index_start += CHUNK_MAXLENGTH) {
             size_t length = CHUNK_MAXLENGTH;
             if (index_start + CHUNK_MAXLENGTH > body_real.length() - 1) {
@@ -708,15 +668,14 @@ int SMTPClientBase::setMailBody(const Message &pMsg)
                 return body_part_ret_code;
             }
         }
-    }
-    else {
+    } else {
         int body_ret_code = (*this.*sendCommandPtr)(body_real.c_str(), CLIENT_SENDMAIL_BODY_ERROR);
         if (body_ret_code != 0) {
             return body_ret_code;
         }
     }
 
-    //End of data
+    // End of data
     std::string end_data_command { "\r\n.\r\n" };
     addCommunicationLogItem(end_data_command.c_str());
     int end_data_ret_code = (*this.*sendCommandWithFeedbackPtr)(end_data_command.c_str(), CLIENT_SENDMAIL_END_DATA_ERROR, CLIENT_SENDMAIL_END_DATA_TIMEOUT);
@@ -733,17 +692,16 @@ int SMTPClientBase::setMailBody(const Message &pMsg)
     return 0;
 }
 
-void SMTPClientBase::addCommunicationLogItem(const char *pItem, const char *pPrefix)
-{
+void SMTPClientBase::addCommunicationLogItem(const char *pItem, const char *pPrefix) {
     std::string item { pItem };
     if (strcmp(pPrefix, "c") == 0) {
         /* Replace the \ by \\ */
         const std::string FROM { "\r\n" };
         const std::string TO { "\\r\\n" };
         size_t start_pos = 0;
-        while((start_pos = item.find(FROM, start_pos)) != std::string::npos) {
+        while ((start_pos = item.find(FROM, start_pos)) != std::string::npos) {
             item.replace(start_pos, FROM.length(), TO);
-            start_pos += TO.length(); // Handles case where 'to' is a substring of 'from'
+            start_pos += TO.length();  // Handles case where 'to' is a substring of 'from'
         }
     }
     const std::string ENDOFLINE { "\n" };
@@ -767,24 +725,20 @@ void SMTPClientBase::addCommunicationLogItem(const char *pItem, const char *pPre
     mCommunicationLog[mCommunicationLogSize-1] = '\0';
 }
 
-std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*> &pAttachments)
-{
+std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*> &pAttachments) {
     std::string retval;
-    for (const auto &item : pAttachments)
-    {
+    for (const auto &item : pAttachments) {
         retval += "\r\n--sep\r\n";
         retval += "Content-Type: " + std::string(item->getMimeType()) + "; file=\"" + std::string(item->getName()) + "\"\r\n";
         retval += "Content-Disposition: Inline; filename=\"" + std::string(item->getName()) + "\"\r\n";
         retval += "Content-Transfer-Encoding: base64\r\n\r\n";
         retval += std::string((item->getBase64EncodedFile() != nullptr ? item->getBase64EncodedFile() : ""));
-
     }
     retval += "\r\n--sep--";
     return retval;
 }
 
-int SMTPClientBase::extractReturnCode(const char *pOutput)
-{
+int SMTPClientBase::extractReturnCode(const char *pOutput) {
     if (pOutput != nullptr && strlen(pOutput) >= 3) {
         std::string code_str { pOutput };
         try {
@@ -797,8 +751,7 @@ int SMTPClientBase::extractReturnCode(const char *pOutput)
     return -1;
 }
 
-ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhloOutput)
-{
+ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhloOutput) {
     ServerAuthOptions *retVal = nullptr;
     const std::string AUTH_LINE_PREFIX = "250-AUTH";
     if (pEhloOutput == nullptr) {
@@ -807,41 +760,36 @@ ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhl
     const std::string DELIMITER { "\r\n" };
     std::string ehlo_output { pEhloOutput };
     size_t ehlo_character_index { 0 };
-    while((ehlo_character_index = ehlo_output.find(DELIMITER)) != std::string::npos) {
+    while ((ehlo_character_index = ehlo_output.find(DELIMITER)) != std::string::npos) {
         std::string line { ehlo_output.substr(0, ehlo_character_index)};
-        //Find the line that begin with 250-AUTH
+        // Find the line that begin with 250-AUTH
         if (line.substr(0, AUTH_LINE_PREFIX.length()) == AUTH_LINE_PREFIX) {
             retVal = new ServerAuthOptions();
-            //Find each options
+            // Find each options
             std::vector<std::string> options;
             size_t line_character_index { 0 };
-            while((line_character_index = line.find(' ')) != std::string::npos) {
+            while ((line_character_index = line.find(' ')) != std::string::npos) {
                 std::string option { line.substr(0, line_character_index)};
                 options.push_back(option);
                 line.erase(0, line_character_index + 1);
             }
             options.push_back(line);
-            //Try to match the string options with the ServerAuthOptions struct attributes
+            // Try to match the string options with the ServerAuthOptions struct attributes
             for_each(options.begin(), options.end(), [&retVal](const std::string &option) {
-                    if (option == "PLAIN") {
+                if (option == "PLAIN") {
                     retVal->Plain = true;
-                    }
-                    else if (option == "LOGIN") {
+                } else if (option == "LOGIN") {
                     retVal->Login = true;
-                    }
-                    else if (option == "XOAUTH2") {
+                } else if (option == "XOAUTH2") {
                     retVal->XOAuth2 = true;
-                    }
-                    else if (option == "PLAIN-CLIENTTOKEN") {
+                } else if (option == "PLAIN-CLIENTTOKEN") {
                     retVal->Plain_ClientToken = true;
-                    }
-                    else if (option == "OAUTHBEARER") {
+                } else if (option == "OAUTHBEARER") {
                     retVal->OAuthBearer = true;
-                    }
-                    else if (option == "XOAUTH") {
+                } else if (option == "XOAUTH") {
                     retVal->XOAuth = true;
-                    }
-                    });
+                }
+                });
             break;
         }
         ehlo_output.erase(0, ehlo_character_index + DELIMITER.length());

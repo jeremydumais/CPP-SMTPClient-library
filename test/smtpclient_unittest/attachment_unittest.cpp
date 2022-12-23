@@ -11,7 +11,7 @@ TEST(Attachment_Constructor, FailEmptyFileName)
 		Attachment att1("", "");
 		FAIL();
 	}
-	catch(std::invalid_argument) 
+	catch(std::invalid_argument)
 	{
 	}
 }
@@ -24,7 +24,7 @@ TEST(Attachment_Constructor, FailWhiteSpaceFileName)
 		Attachment att1("   ", "");
 		FAIL();
 	}
-	catch(std::invalid_argument) 
+	catch(std::invalid_argument)
 	{
 	}
 }
@@ -32,6 +32,44 @@ TEST(Attachment_Constructor, FailWhiteSpaceFileName)
 TEST(Attachment_Constructor, ValidParam)
 {
 	Attachment att1("test.png", "");
+}
+
+TEST(Attachment_CopyConstructor, AttachmentCopyConstructorValid)
+{
+    Attachment att1("test.png", "Test");
+    Attachment att2(att1);
+    ASSERT_STREQ("test.png", att1.getFilename());
+    ASSERT_STREQ("Test", att1.getName());
+    ASSERT_STREQ("test.png", att2.getFilename());
+    ASSERT_STREQ("Test", att2.getName());
+}
+
+TEST(Attachment_CopyAssignment, AttachmentCopyAssignmentValid)
+{
+    Attachment att1("test.png", "123");
+    Attachment att2("aaa.png", "bbb");
+    att2 = att1;
+    ASSERT_STREQ("test.png", att1.getFilename());
+    ASSERT_STREQ("123", att1.getName());
+    ASSERT_STREQ("test.png", att2.getFilename());
+    ASSERT_STREQ("123", att2.getName());
+}
+
+TEST(Attachment_MoveConstructor, AttachmentMoveConstructorValid)
+{
+    Attachment att1("test.png", "123");
+    Attachment att2(std::move(att1));
+    ASSERT_STREQ("test.png", att2.getFilename());
+    ASSERT_STREQ("123", att2.getName());
+}
+
+TEST(Attachment_MoveAssignment, AttachmentMoveAssignmentValid)
+{
+    Attachment att1("test.png", "123");
+    Attachment att2("aaa.png", "bbb");
+    att2 = std::move(att1);
+    ASSERT_STREQ("test.png", att2.getFilename());
+    ASSERT_STREQ("123", att2.getName());
 }
 
 TEST(Attachment_getmimetype_images, png)
@@ -96,7 +134,7 @@ TEST(Attachment_getmimetype_applications, xsl)
 TEST(Attachment_getmimetype_applications, xhtml)
 {
 	Attachment att1("test.xhtml", "");
-	ASSERT_STREQ(att1.getMimeType(), "application/xhtml+xml") ;	
+	ASSERT_STREQ(att1.getMimeType(), "application/xhtml+xml") ;
 }
 
 TEST(Attachment_getmimetype_applications, xht)
@@ -107,13 +145,13 @@ TEST(Attachment_getmimetype_applications, xht)
 TEST(Attachment_getmimetype_applications, pdf)
 {
 	Attachment att1("test.pdf", "");
-	ASSERT_STREQ(att1.getMimeType(), "application/pdf") ;	
+	ASSERT_STREQ(att1.getMimeType(), "application/pdf") ;
 }
 
 TEST(Attachment_getmimetype_applications, js)
 {
 	Attachment att1("test.js", "");
-	ASSERT_STREQ(att1.getMimeType(), "application/javascript") ;	
+	ASSERT_STREQ(att1.getMimeType(), "application/javascript") ;
 }
 
 TEST(Attachment_getmimetype_text, css)
@@ -239,19 +277,19 @@ TEST(Attachment_getmimetype_videos, qt)
 TEST(Attachment_getmimetype_videos, mov)
 {
 	Attachment att1("test.mov", "");
-	ASSERT_STREQ(att1.getMimeType(), "video/quicktime") ;	
+	ASSERT_STREQ(att1.getMimeType(), "video/quicktime") ;
 }
 
 TEST(Attachment_getmimetype_videos, wmv)
 {
 	Attachment att1("test.wmv", "");
-	ASSERT_STREQ(att1.getMimeType(), "video/x-ms-wmv") ;		
+	ASSERT_STREQ(att1.getMimeType(), "video/x-ms-wmv") ;
 }
 
 TEST(Attachment_getmimetype_videos, avi)
 {
 	Attachment att1("test.avi", "");
-	ASSERT_STREQ(att1.getMimeType(), "video/x-msvideo") ;	
+	ASSERT_STREQ(att1.getMimeType(), "video/x-msvideo") ;
 }
 
 TEST(Attachment_getmimetype_videos, flv)

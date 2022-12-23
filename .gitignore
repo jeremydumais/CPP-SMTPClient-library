@@ -13,3 +13,5 @@ simpleclient
 .cache
 tags
 Session.vim
+.vimspector.json
+.ccls-cache

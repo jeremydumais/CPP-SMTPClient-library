@@ -1,5 +1,6 @@
 #include "messageaddress.h"
 #include "stringutils.h"
+#include <cstddef>
 #include <regex>
 #include <stdexcept>
 #include <string>
@@ -21,11 +22,13 @@ MessageAddress::MessageAddress(const char *pEmailAddress, const char *pDisplayNa
 
     size_t email_len = strlen(pEmailAddress);
     mEmailAddress = new char[email_len+1];
-    strcpy(mEmailAddress, pEmailAddress);
+    strncpy(mEmailAddress, pEmailAddress, email_len);
+    mEmailAddress[email_len] = '\0';
 
     size_t name_len = strlen(pDisplayName);
     mDisplayName = new char[name_len+1];
-    strcpy(mDisplayName, pDisplayName);
+    strncpy(mDisplayName, pDisplayName, name_len);
+    mDisplayName[name_len] = '\0';
 }
 
 MessageAddress::~MessageAddress()
@@ -39,8 +42,12 @@ MessageAddress::MessageAddress(const MessageAddress& other)
 	: mEmailAddress(new char[strlen(other.mEmailAddress) + 1]),
       mDisplayName(new char[strlen(other.mDisplayName) + 1])
 {
-	strcpy(mEmailAddress, other.mEmailAddress);
-    strcpy(mDisplayName, other.mDisplayName);
+    size_t email_len = strlen(other.mEmailAddress);
+	strncpy(mEmailAddress, other.mEmailAddress, email_len);
+    mEmailAddress[email_len] = '\0';
+    size_t name_len = strlen(other.mDisplayName);
+    strncpy(mDisplayName, other.mDisplayName, name_len);
+    mDisplayName[name_len] = '\0';
 }
 
 //Assignment operator
@@ -51,11 +58,15 @@ MessageAddress& MessageAddress::operator=(const MessageAddress& other)
 		delete[] mEmailAddress;
 		delete[] mDisplayName;
 		//mEmailAddress
-		mEmailAddress = new char[strlen(other.mEmailAddress) + 1];
-		strcpy(mEmailAddress, other.mEmailAddress);
+        size_t email_len = strlen(other.mEmailAddress);
+		mEmailAddress = new char[email_len + 1];
+		strncpy(mEmailAddress, other.mEmailAddress, email_len);
+        mEmailAddress[email_len] = '\0';
         //mDisplayName
-		mDisplayName = new char[strlen(other.mDisplayName) + 1];
-		strcpy(mDisplayName, other.mDisplayName);
+        size_t name_len = strlen(other.mDisplayName);
+		mDisplayName = new char[name_len + 1];
+		strncpy(mDisplayName, other.mDisplayName, name_len);
+        mDisplayName[name_len] = '\0';
 	}
 	return *this;
 }
@@ -65,7 +76,7 @@ MessageAddress::MessageAddress(MessageAddress&& other) noexcept
 	: mEmailAddress(other.mEmailAddress),
       mDisplayName(other.mDisplayName)
 {
-	// Release the data pointer from the source object so that the destructor 
+	// Release the data pointer from the source object so that the destructor
 	// does not free the memory multiple times.
 	other.mEmailAddress = nullptr;
 	other.mDisplayName = nullptr;
@@ -91,7 +102,7 @@ MessageAddress& MessageAddress::operator=(MessageAddress&& other) noexcept
 
 bool MessageAddress::operator==(const MessageAddress &pMsgComp) const
 {
-    return (strcmp(mEmailAddress, pMsgComp.mEmailAddress) == 0 && 
+    return (strcmp(mEmailAddress, pMsgComp.mEmailAddress) == 0 &&
             strcmp(mDisplayName, pMsgComp.mDisplayName) == 0);
 }
 

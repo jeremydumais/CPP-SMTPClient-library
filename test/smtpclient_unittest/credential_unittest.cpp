@@ -10,7 +10,7 @@ TEST(Credential_Constructor, NullUsername)
 		Credential cred(nullptr, "123");
 		FAIL();
 	}
-	catch(std::invalid_argument &err) 
+	catch(std::invalid_argument &err)
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -23,7 +23,7 @@ TEST(Credential_Constructor, EmptyUsername)
 		Credential cred("", "123");
 		FAIL();
 	}
-	catch(std::invalid_argument &err) 
+	catch(std::invalid_argument &err)
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -36,7 +36,7 @@ TEST(Credential_Constructor, OnlySpacesUsername)
 		Credential cred("    ", "123");
 		FAIL();
 	}
-	catch(std::invalid_argument &err) 
+	catch(std::invalid_argument &err)
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -49,7 +49,7 @@ TEST(Credential_Constructor, NullPassword)
 		Credential cred("test", nullptr);
 		FAIL();
 	}
-	catch(std::invalid_argument &err) 
+	catch(std::invalid_argument &err)
 	{
         ASSERT_STREQ("Password cannot be null or empty", err.what());
 	}
@@ -62,7 +62,7 @@ TEST(Credential_Constructor, EmptyPassword)
 		Credential cred("test", "");
 		FAIL();
 	}
-	catch(std::invalid_argument &err) 
+	catch(std::invalid_argument &err)
 	{
         ASSERT_STREQ("Password cannot be null or empty", err.what());
 	}
@@ -71,6 +71,7 @@ TEST(Credential_Constructor, EmptyPassword)
 TEST(Credential_Constructor, ValidOnlySpacesPassword)
 {
 	Credential cred("Test3", "   ");
+    ASSERT_STREQ("Test3", cred.getUsername());
 	ASSERT_STREQ("   ", cred.getPassword());
 }
 
@@ -99,8 +100,6 @@ TEST(Credential_MoveConstructor, CredentialMoveConstructorValid)
 	Credential cred2(std::move(cred1));
 	ASSERT_STREQ("test", cred2.getUsername());
 	ASSERT_STREQ("123", cred2.getPassword());
-	ASSERT_EQ(nullptr, cred1.getUsername());
-	ASSERT_EQ(nullptr, cred1.getPassword());
 }
 
 TEST(Credential_MoveAssignment, CredentialMoveAssignmentValid)
@@ -110,8 +109,6 @@ TEST(Credential_MoveAssignment, CredentialMoveAssignmentValid)
 	cred2 = std::move(cred1);
 	ASSERT_STREQ("test", cred2.getUsername());
 	ASSERT_STREQ("123", cred2.getPassword());
-	ASSERT_EQ(nullptr, cred1.getUsername());
-	ASSERT_EQ(nullptr, cred1.getPassword());
 }
 
 TEST(Credential_getUsername, ValidUsername)
@@ -135,13 +132,13 @@ TEST(Credential_setUsername, ValidUsername)
 
 TEST(Credential_setUsername, NullUsername)
 {
-	Credential cred("Test", "123");	
+	Credential cred("Test", "123");
 	try
 	{
 		cred.setUsername(nullptr);
 		FAIL();
 	}
-	catch(std::invalid_argument &err) 
+	catch(std::invalid_argument &err)
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -149,13 +146,13 @@ TEST(Credential_setUsername, NullUsername)
 
 TEST(Credential_setUsername, EmptyUsername)
 {
-	Credential cred("Test", "123");	
+	Credential cred("Test", "123");
 	try
 	{
 		cred.setUsername("");
 		FAIL();
 	}
-	catch(std::invalid_argument &err) 
+	catch(std::invalid_argument &err)
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -163,13 +160,13 @@ TEST(Credential_setUsername, EmptyUsername)
 
 TEST(Credential_setUsername, OnlySpacesUsername)
 {
-	Credential cred("Test", "123");	
+	Credential cred("Test", "123");
 	try
 	{
 		cred.setUsername("    ");
 		FAIL();
 	}
-	catch(std::invalid_argument &err) 
+	catch(std::invalid_argument &err)
 	{
         ASSERT_STREQ("Username cannot be null or empty", err.what());
 	}
@@ -184,13 +181,13 @@ TEST(Credential_setPassword, ValidPassword)
 
 TEST(Credential_setPassword, NullPassword)
 {
-	Credential cred("Test", "123");	
+	Credential cred("Test", "123");
 	try
 	{
 		cred.setPassword(nullptr);
 		FAIL();
 	}
-	catch(std::invalid_argument &err) 
+	catch(std::invalid_argument &err)
 	{
         ASSERT_STREQ("Password cannot be null or empty", err.what());
 	}
@@ -198,13 +195,13 @@ TEST(Credential_setPassword, NullPassword)
 
 TEST(Credential_setPassword, EmptyPassword)
 {
-	Credential cred("Test", "123");	
+	Credential cred("Test", "123");
 	try
 	{
 		cred.setPassword("");
 		FAIL();
 	}
-	catch(std::invalid_argument &err) 
+	catch(std::invalid_argument &err)
 	{
         ASSERT_STREQ("Password cannot be null or empty", err.what());
 	}

@@ -2,6 +2,7 @@
 #include "smtpclienterrors.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
+#include <cstddef>
 #include <cstring>
 #include <string>
 
@@ -145,8 +146,10 @@ ErrorResolver::ErrorResolver(int pErrorCode)
             errorMessage = "No message correspond to this error code";
     }
 
-    mErrorMessage = new char[errorMessage.length() + 1];
-    std::strcpy(mErrorMessage, errorMessage.c_str());
+    size_t errorMessageLength = errorMessage.length();
+    mErrorMessage = new char[errorMessageLength + 1];
+    std::strncpy(mErrorMessage, errorMessage.c_str(), errorMessageLength);
+    mErrorMessage[errorMessageLength] = '\0';
 }
 
 ErrorResolver::~ErrorResolver()
@@ -158,9 +161,11 @@ ErrorResolver::~ErrorResolver()
 //Copy constructor
 ErrorResolver::ErrorResolver(const ErrorResolver& other)
     : mErrorCode(other.mErrorCode),
-    mErrorMessage(new char[std::strlen(other.mErrorMessage) + 1])
+      mErrorMessage(new char[std::strlen(other.mErrorMessage) + 1])
 {
-    std::strcpy(mErrorMessage, other.mErrorMessage);
+    size_t errorMessageLength = std::strlen(other.mErrorMessage);
+    std::strncpy(mErrorMessage, other.mErrorMessage, errorMessageLength);
+    mErrorMessage[errorMessageLength] = '\0';
 }
 
 //Assignment operator
@@ -170,8 +175,10 @@ ErrorResolver& ErrorResolver::operator=(const ErrorResolver& other)
     {
         mErrorCode = other.mErrorCode;
         delete[] mErrorMessage;
-        mErrorMessage = new char[std::strlen(other.mErrorMessage) + 1];
-        std::strcpy(mErrorMessage, other.mErrorMessage);
+        size_t errorMessageLength = std::strlen(other.mErrorMessage);
+        mErrorMessage = new char[errorMessageLength + 1];
+        std::strncpy(mErrorMessage, other.mErrorMessage, errorMessageLength);
+        mErrorMessage[errorMessageLength] = '\0';
     }
     return *this;
 }
