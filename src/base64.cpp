@@ -60,8 +60,7 @@ std::string Base64::Encode(unsigned char const *bytes_to_encode, size_t in_len) 
         }
     }
 
-    if (i)
-    {
+    if (i) {
         for (int j = i; j < 3; j++)
             char_array_3[j] = '\0';
 

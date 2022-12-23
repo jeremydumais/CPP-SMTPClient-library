@@ -1,17 +1,16 @@
 #include "attachment.h"
-#include "stringutils.h"
 #include <algorithm>
 #include <ios>
 #include <iostream>
 #include <limits>
 #include <sstream>
 #include <string>
+#include "stringutils.h"
 
 using namespace jed_utils;
 
 Attachment::Attachment(const char *pFilename, const char *pName)
-    : mName(nullptr), mFilename(nullptr)
-{
+    : mName(nullptr), mFilename(nullptr) {
     size_t pFileNameLength = strlen(pFilename);
     if (pFileNameLength == 0 || StringUtils::trim(std::string(pFilename)).length() == 0) {
         throw std::invalid_argument("filename");
@@ -28,19 +27,17 @@ Attachment::Attachment(const char *pFilename, const char *pName)
     mName[name_len] = '\0';
 }
 
-Attachment::~Attachment()
-{
+Attachment::~Attachment() {
     delete[] mName;
     mName = nullptr;
     delete[] mFilename;
     mFilename = nullptr;
 }
 
-//Copy constructor
+// Copy constructor
 Attachment::Attachment(const Attachment& other)
     : mName(new char[strlen(other.mName) + 1]),
-      mFilename(new char[strlen(other.mFilename) + 1])
-{
+      mFilename(new char[strlen(other.mFilename) + 1]) {
     size_t name_len = strlen(other.mName);
     strncpy(mName, other.mName, name_len);
     mName[name_len] = '\0';
@@ -49,19 +46,17 @@ Attachment::Attachment(const Attachment& other)
     mFilename[filename_len] = '\0';
 }
 
-//Assignment operator
-Attachment& Attachment::operator=(const Attachment& other)
-{
-    if (this != &other)
-    {
+// Assignment operator
+Attachment& Attachment::operator=(const Attachment& other) {
+    if (this != &other) {
         delete[] mName;
         delete[] mFilename;
-        //mName
+        // mName
         size_t name_len = strlen(other.mName);
         mName = new char[name_len + 1];
         strncpy(mName, other.mName, name_len);
         mName[name_len] = '\0';
-        //mFilename
+        // mFilename
         size_t filename_len = strlen(other.mFilename);
         mFilename = new char[filename_len + 1];
         strncpy(mFilename, other.mFilename, filename_len);
@@ -70,21 +65,18 @@ Attachment& Attachment::operator=(const Attachment& other)
     return *this;
 }
 
-//Move constructor
+// Move constructor
 Attachment::Attachment(Attachment&& other) noexcept
-: mName(other.mName), mFilename(other.mFilename)
-{
+: mName(other.mName), mFilename(other.mFilename) {
     // Release the data pointer from the source object so that the destructor
     // does not free the memory multiple times.
     other.mName = nullptr;
     other.mFilename = nullptr;
 }
 
-//Move assignement operator
-Attachment& Attachment::operator=(Attachment&& other) noexcept
-{
-    if (this != &other)
-    {
+// Move assignement operator
+Attachment& Attachment::operator=(Attachment&& other) noexcept {
+    if (this != &other) {
         delete[] mName;
         delete[] mFilename;
         // Copy the data pointer and its length from the source object.
@@ -98,19 +90,16 @@ Attachment& Attachment::operator=(Attachment&& other) noexcept
     return *this;
 }
 
-const char *Attachment::getName() const
-{
+const char *Attachment::getName() const {
     return mName;
 }
 
-const char *Attachment::getFilename() const
-{
+const char *Attachment::getFilename() const {
     return mFilename;
 }
 
-const char *Attachment::getBase64EncodedFile() const
-{
-    //Open the file
+const char *Attachment::getBase64EncodedFile() const {
+    // Open the file
     std::ifstream in(mFilename, std::ios::in | std::ios::binary);
     if (in) {
         std::string contents;
@@ -132,11 +121,10 @@ const char *Attachment::getBase64EncodedFile() const
     return nullptr;
 }
 
-const char *Attachment::getMimeType() const
-{
+const char *Attachment::getMimeType() const {
     std::string filename_str { mFilename };
     const std::string extension = StringUtils::toUpper(filename_str.substr(filename_str.find_last_of('.') + 1));
-    //Images
+    // Images
     if (extension == "PNG") {
         return "image/png";
     }
@@ -152,7 +140,7 @@ const char *Attachment::getMimeType() const
     if (extension == "ICO") {
         return "image/x-icon";
     }
-    //Application
+    // Application
     if (extension == "XML" || extension == "XSL") {
         return "application/xml";
     }
@@ -165,7 +153,7 @@ const char *Attachment::getMimeType() const
     if (extension == "JS") {
         return "application/javascript";
     }
-    //Text
+    // Text
     if (extension == "CSS") {
         return "text/css";
     }
@@ -180,7 +168,7 @@ const char *Attachment::getMimeType() const
             || extension == "IN") {
         return "text/plain";
     }
-    //Videos
+    // Videos
     if (extension == "MPEG" || extension == "MPG" || extension == "MPE"
             || extension == "M1V" || extension == "M2V") {
         return "video/mpeg";
@@ -203,14 +191,14 @@ const char *Attachment::getMimeType() const
     if (extension == "WEBM") {
         return "video/webm";
     }
-    //Archives
+    // Archives
     if (extension == "ZIP") {
         return "application/zip";
     }
     if (extension == "RAR") {
         return "application/x-rar-compressed";
     }
-    //Documents
+    // Documents
     if (extension == "ODT") {
         return "application/vnd.oasis.opendocument.text";
     }

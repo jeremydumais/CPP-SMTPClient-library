@@ -1,8 +1,10 @@
 #include "securesmtpclientbase.h"
+#include <openssl/err.h>
+#include <string>
+#include <utility>
 #include "smtpclienterrors.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
-#include <openssl/err.h>
 
 #ifdef _WIN32
     #include <WinSock2.h>
@@ -26,27 +28,23 @@ SecureSMTPClientBase::SecureSMTPClientBase(const char *pServerName, unsigned int
     : SMTPClientBase(pServerName, pPort),
     mBIO(nullptr),
     mCTX(nullptr),
-    mSSL(nullptr)
-{
+    mSSL(nullptr) {
 }
 
-SecureSMTPClientBase::~SecureSMTPClientBase()
-{
+SecureSMTPClientBase::~SecureSMTPClientBase() {
     SecureSMTPClientBase::cleanup();
 }
 
-//Copy constructor
+// Copy constructor
 SecureSMTPClientBase::SecureSMTPClientBase(const SecureSMTPClientBase& other)
     : SMTPClientBase(other),
     mBIO(nullptr),
     mCTX(nullptr),
-    mSSL(nullptr)
-{
+    mSSL(nullptr) {
 }
 
-//Assignment operator
-SecureSMTPClientBase& SecureSMTPClientBase::operator=(const SecureSMTPClientBase& other)
-{
+// Assignment operator
+SecureSMTPClientBase& SecureSMTPClientBase::operator=(const SecureSMTPClientBase& other) {
     if (this != &other) {
         SMTPClientBase::operator=(other);
         mBIO = nullptr;
@@ -56,13 +54,12 @@ SecureSMTPClientBase& SecureSMTPClientBase::operator=(const SecureSMTPClientBase
     return *this;
 }
 
-//Move constructor
+// Move constructor
 SecureSMTPClientBase::SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcept
 : SMTPClientBase(std::move(other)),
     mBIO(other.mBIO),
     mCTX(other.mCTX),
-    mSSL(other.mSSL)
-{
+    mSSL(other.mSSL) {
     // Release the data pointer from the source object so that the destructor
     // does not free the memory multiple times.
     other.mBIO = nullptr;
@@ -70,9 +67,8 @@ SecureSMTPClientBase::SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcep
     other.mSSL = nullptr;
 }
 
-//Move assignement operator
-SecureSMTPClientBase& SecureSMTPClientBase::operator=(SecureSMTPClientBase&& other) noexcept
-{
+// Move assignement operator
+SecureSMTPClientBase& SecureSMTPClientBase::operator=(SecureSMTPClientBase&& other) noexcept {
     if (this != &other) {
         // Copy the data pointer and its length from the source object.
         mBIO = other.mBIO;
@@ -88,8 +84,7 @@ SecureSMTPClientBase& SecureSMTPClientBase::operator=(SecureSMTPClientBase&& oth
     return *this;
 }
 
-void SecureSMTPClientBase::cleanup()
-{
+void SecureSMTPClientBase::cleanup() {
     if (mCTX != nullptr) {
         SSL_CTX_free(mCTX);
     }
@@ -114,13 +109,11 @@ void SecureSMTPClientBase::cleanup()
 #endif
 }
 
-BIO* SecureSMTPClientBase::getBIO() const
-{
+BIO* SecureSMTPClientBase::getBIO() const {
     return mBIO;
 }
 
-void SecureSMTPClientBase::initializeSSLContext()
-{
+void SecureSMTPClientBase::initializeSSLContext() {
     SSL_library_init();
 
     OpenSSL_add_all_algorithms();
@@ -133,8 +126,7 @@ void SecureSMTPClientBase::initializeSSLContext()
     }
 }
 
-int SecureSMTPClientBase::startTLSNegotiation()
-{
+int SecureSMTPClientBase::startTLSNegotiation() {
     addCommunicationLogItem("<Start TLS negotiation>");
     initializeSSLContext();
     if (mCTX == nullptr) {
@@ -168,12 +160,10 @@ int SecureSMTPClientBase::startTLSNegotiation()
     }
 
     pContext = CertEnumCertificatesInStore(hStore, pContext);
-    while (pContext)
-    {
+    while (pContext) {
         X509 *x509 = nullptr;
         x509 = d2i_X509(nullptr, (const unsigned char **)&pContext->pbCertEncoded, pContext->cbCertEncoded);
-        if (x509)
-        {
+        if (x509) {
             X509_STORE_add_cert(store, x509);
             X509_free(x509);
         }
@@ -210,10 +200,10 @@ int SecureSMTPClientBase::startTLSNegotiation()
     /* Step 1: Verify a server certificate was presented
        during the negotiation */
     X509* cert = SSL_get_peer_certificate(mSSL);
-    if(cert != nullptr) {
+    if (cert != nullptr) {
         X509_free(cert); /* Free immediately */
     }
-    if(cert == nullptr) {
+    if (cert == nullptr) {
         cleanup();
         return SSL_CLIENT_STARTTLS_GET_CERTIFICATE_ERROR;
     }
@@ -221,7 +211,7 @@ int SecureSMTPClientBase::startTLSNegotiation()
     /* Step 2: verify the result of chain verification */
     /* Verification performed according to RFC 4158    */
     int res = static_cast<int>(SSL_get_verify_result(mSSL));
-    if(!(X509_V_OK == res)) {
+    if (!(X509_V_OK == res)) {
         addCommunicationLogItem(X509_verify_cert_error_string(res), "s");
         cleanup();
         return SSL_CLIENT_STARTTLS_VERIFY_RESULT_ERROR;
@@ -236,8 +226,7 @@ int SecureSMTPClientBase::startTLSNegotiation()
     return 0;
 }
 
-int SecureSMTPClientBase::getServerSecureIdentification()
-{
+int SecureSMTPClientBase::getServerSecureIdentification() {
     const int EHLO_SUCCESS_CODE = 250;
     addCommunicationLogItem("Contacting the server again but via the secure channel...");
     std::string ehlo { "ehlo localhost\r\n"s };
@@ -248,13 +237,12 @@ int SecureSMTPClientBase::getServerSecureIdentification()
     if (tls_command_return_code != EHLO_SUCCESS_CODE) {
         return tls_command_return_code;
     }
-    //Inspect the returned values for authentication options
+    // Inspect the returned values for authentication options
     setAuthenticationOptions(SMTPClientBase::extractAuthenticationOptions(getLastServerResponse()));
     return EHLO_SUCCESS_CODE;
 }
 
-int SecureSMTPClientBase::sendCommand(const char *pCommand, int pErrorCode)
-{
+int SecureSMTPClientBase::sendCommand(const char *pCommand, int pErrorCode) {
     if (BIO_puts(mBIO, pCommand) < 0) {
         setLastSocketErrNo(static_cast<int>(ERR_get_error()));
         cleanup();
@@ -263,8 +251,7 @@ int SecureSMTPClientBase::sendCommand(const char *pCommand, int pErrorCode)
     return 0;
 }
 
-int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode)
-{
+int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) {
     unsigned int waitTime {0};
     int bytes_received {0};
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];

@@ -1,16 +1,15 @@
 #include "errorresolver.h"
-#include "smtpclienterrors.h"
-#include "socketerrors.h"
-#include "sslerrors.h"
 #include <cstddef>
 #include <cstring>
 #include <string>
+#include "smtpclienterrors.h"
+#include "socketerrors.h"
+#include "sslerrors.h"
 
 using namespace jed_utils;
 
 ErrorResolver::ErrorResolver(int pErrorCode)
-    : mErrorCode(pErrorCode)
-{
+    : mErrorCode(pErrorCode) {
     std::string errorMessage = "";
     switch (mErrorCode) {
         case SOCKET_INIT_SESSION_CREATION_ERROR:
@@ -152,27 +151,23 @@ ErrorResolver::ErrorResolver(int pErrorCode)
     mErrorMessage[errorMessageLength] = '\0';
 }
 
-ErrorResolver::~ErrorResolver()
-{
-    delete []mErrorMessage;
+ErrorResolver::~ErrorResolver() {
+    delete[] mErrorMessage;
     mErrorMessage = nullptr;
 }
 
-//Copy constructor
+// Copy constructor
 ErrorResolver::ErrorResolver(const ErrorResolver& other)
     : mErrorCode(other.mErrorCode),
-      mErrorMessage(new char[std::strlen(other.mErrorMessage) + 1])
-{
+      mErrorMessage(new char[std::strlen(other.mErrorMessage) + 1]) {
     size_t errorMessageLength = std::strlen(other.mErrorMessage);
     std::strncpy(mErrorMessage, other.mErrorMessage, errorMessageLength);
     mErrorMessage[errorMessageLength] = '\0';
 }
 
-//Assignment operator
-ErrorResolver& ErrorResolver::operator=(const ErrorResolver& other)
-{
-    if (this != &other)
-    {
+// Assignment operator
+ErrorResolver& ErrorResolver::operator=(const ErrorResolver& other) {
+    if (this != &other) {
         mErrorCode = other.mErrorCode;
         delete[] mErrorMessage;
         size_t errorMessageLength = std::strlen(other.mErrorMessage);
@@ -183,22 +178,19 @@ ErrorResolver& ErrorResolver::operator=(const ErrorResolver& other)
     return *this;
 }
 
-//Move constructor
+// Move constructor
 ErrorResolver::ErrorResolver(ErrorResolver&& other) noexcept
-: mErrorCode(other.mErrorCode),
-    mErrorMessage(other.mErrorMessage)
-{
+    : mErrorCode(other.mErrorCode),
+      mErrorMessage(other.mErrorMessage) {
     other.mErrorCode = 0;
     // Release the data pointer from the source object so that the destructor
     // does not free the memory multiple times.
     other.mErrorMessage = nullptr;
 }
 
-//Move assignement operator
-ErrorResolver& ErrorResolver::operator=(ErrorResolver&& other) noexcept
-{
-    if (this != &other)
-    {
+// Move assignement operator
+ErrorResolver& ErrorResolver::operator=(ErrorResolver&& other) noexcept {
+    if (this != &other) {
         mErrorCode = other.mErrorCode;
         delete[] mErrorMessage;
         // Copy the data pointer and its length from the source object.
@@ -211,12 +203,10 @@ ErrorResolver& ErrorResolver::operator=(ErrorResolver&& other) noexcept
     return *this;
 }
 
-int ErrorResolver::getErrorCode() const
-{
+int ErrorResolver::getErrorCode() const {
     return mErrorCode;
 }
 
-const char *ErrorResolver::getErrorMessage() const
-{
+const char *ErrorResolver::getErrorMessage() const {
     return mErrorMessage;
 }

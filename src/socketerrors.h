@@ -1,6 +1,6 @@
 #pragma once
 
-//Init Session error codes
+// Init Session error codes
 const int SOCKET_INIT_SESSION_CREATION_ERROR = -1;
 const int SOCKET_INIT_SESSION_CONNECT_ERROR = -2;
 const int SOCKET_INIT_SESSION_CONNECT_TIMEOUT = -3;
@@ -8,10 +8,10 @@ const int SOCKET_INIT_SESSION_WINSOCKET_STARTUP_ERROR = -4;
 const int SOCKET_INIT_SESSION_WINSOCKET_GETADDRINFO_ERROR = -5;
 const int SOCKET_INIT_SESSION_GETHOSTBYNAME_ERROR = -6;
 
-//Init Client error codes
+// Init Client error codes
 const int SOCKET_INIT_CLIENT_SEND_EHLO_ERROR = -20;
 const int SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT = -21;
 
-//Init TLS error codes
+// Init TLS error codes
 const int SOCKET_INIT_CLIENT_SEND_STARTTLS_ERROR = -30;
 const int SOCKET_INIT_CLIENT_SEND_STARTTLS_TIMEOUT = -31;
