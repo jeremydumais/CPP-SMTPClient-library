@@ -87,6 +87,26 @@ TEST(ErrorResolver_getErrorMessage, WithSOCKET_INIT_SESSION_GETHOSTBYNAME_ERROR_
     ASSERT_EQ("Unable to get host by name"s, errorResolver.getErrorMessage());
 }
 
+TEST(ErrorResolver_getErrorMessage, WithSOCKET_INIT_SESSION_FCNTL_GET_ERROR_ReturnValidMessage) {
+    ErrorResolver errorResolver(SOCKET_INIT_SESSION_FCNTL_GET_ERROR);
+    ASSERT_EQ("Unable to get socket file descriptor status flags"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithSOCKET_INIT_SESSION_FCNTL_SET_ERROR_ReturnValidMessage) {
+    ErrorResolver errorResolver(SOCKET_INIT_SESSION_FCNTL_SET_ERROR);
+    ASSERT_EQ("Unable to set socket file descriptor status flags"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithSOCKET_INIT_SESSION_GET_SOCKET_OPTIONS_ERROR_ReturnValidMessage) {
+    ErrorResolver errorResolver(SOCKET_INIT_SESSION_GET_SOCKET_OPTIONS_ERROR);
+    ASSERT_EQ("Unable to get socket options"s, errorResolver.getErrorMessage());
+}
+
+TEST(ErrorResolver_getErrorMessage, WithSOCKET_INIT_SESSION_DELAYED_CONNECTION_ERROR_ReturnValidMessage) {
+    ErrorResolver errorResolver(SOCKET_INIT_SESSION_DELAYED_CONNECTION_ERROR);
+    ASSERT_EQ("Error in delayed connection"s, errorResolver.getErrorMessage());
+}
+
 TEST(ErrorResolver_getErrorMessage, WithSOCKET_INIT_CLIENT_SEND_EHLO_ERROR_ReturnValidMessage) {
     ErrorResolver errorResolver(SOCKET_INIT_CLIENT_SEND_EHLO_ERROR);
     ASSERT_EQ("Unable to send the EHLO command"s, errorResolver.getErrorMessage());

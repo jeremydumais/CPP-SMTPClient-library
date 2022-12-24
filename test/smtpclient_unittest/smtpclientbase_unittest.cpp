@@ -208,9 +208,9 @@ TEST_F(SMTPClientBaseFixture, extractReturnCode_NullPtr_ReturnMinus1) {
     ASSERT_EQ(-1, extractReturnCode(nullptr));
 }
 
-TEST(SmtpClientBase_getCommandTimeout, DefaultTimeOut_Return3) {
+TEST(SmtpClientBase_getCommandTimeout, DefaultTimeOut_Return5) {
     FakeSMTPClientBase client("fdfdsfs", 587);
-    ASSERT_EQ(3, client.getCommandTimeout());
+    ASSERT_EQ(5, client.getCommandTimeout());
 }
 
 TEST(SmtpClientBase_getCommandTimeout, SetTimeOutWith2_Return2) {

@@ -1,5 +1,6 @@
 #include "smtpclientbase.h"
 #include <algorithm>
+#include <cerrno>
 #include <cstddef>
 #include <cstring>
 #include <limits>
@@ -40,7 +41,7 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
       mPort(pPort),
       mCommunicationLog(nullptr),
       mLastServerResponse(nullptr),
-      mCommandTimeOut(3),
+      mCommandTimeOut(5),
       mLastSocketErrNo(0),
       mAuthOptions(nullptr),
       mCredential(nullptr),
@@ -379,11 +380,22 @@ int SMTPClientBase::initializeSession() {
         setLastSocketErrNo(WSAGetLastError());
         return SOCKET_INIT_SESSION_CONNECT_ERROR;
     }
+    return 0;
 #else
+    return initializeSessionPOSIX();
+#endif
+}
+
+int SMTPClientBase::initializeSessionPOSIX() {
     // POSIX socket version
+    fd_set fdset;
+    struct timeval tv;
+    socklen_t lon;
+    int valopt;
     mSock = socket(AF_INET, SOCK_STREAM, 0);
     if (mSock < 0) {
         setLastSocketErrNo(errno);
+        addCommunicationLogItem(strerror(errno));
         return SOCKET_INIT_SESSION_CREATION_ERROR;
     }
     struct hostent *host = gethostbyname(getServerName());
@@ -394,16 +406,89 @@ int SMTPClientBase::initializeSession() {
     saddr_in.sin_family = AF_INET;
     saddr_in.sin_port = htons(static_cast<u_short>(getServerPort()));
     saddr_in.sin_addr.s_addr = 0;
-    memcpy(reinterpret_cast<char*>(&(saddr_in.sin_addr)), host->h_addr, static_cast<size_t>(host->h_length));
+    memcpy(reinterpret_cast<char*>(&(saddr_in.sin_addr)),
+           host->h_addr,
+           static_cast<size_t>(host->h_length));
+    // Set non-blocking
+    if (int socketSetFlagsResult = setSocketToNonBlockingPOSIX() != 0) {
+        return socketSetFlagsResult;
+    }
     std::stringstream ss;
     ss << "Trying to connect to " << getServerName() << " on port " << getServerPort();
     addCommunicationLogItem(ss.str().c_str());
-    if (connect(mSock, reinterpret_cast<struct sockaddr*>(&saddr_in), sizeof(saddr_in)) == -1) {
-        setLastSocketErrNo(errno);
-        return SOCKET_INIT_SESSION_CONNECT_ERROR;
+    int res = connect(mSock, reinterpret_cast<struct sockaddr*>(&saddr_in), sizeof(saddr_in));
+    if (res < 0) {
+        if (errno == EINPROGRESS) {
+            do {
+                tv.tv_sec = mCommandTimeOut;
+                tv.tv_usec = 0;
+                FD_ZERO(&fdset);
+                FD_SET(mSock, &fdset);
+                res = select(mSock+1, NULL, &fdset, NULL, &tv);
+                if (res < 0 && errno != EINTR) {
+                    setLastSocketErrNo(errno);
+                    addCommunicationLogItem(strerror(errno));
+                    return SOCKET_INIT_SESSION_CONNECT_ERROR;
+                } else if (res > 0) {
+                    // Socket selected for write
+                    lon = sizeof(int);
+                    if (getsockopt(mSock,
+                                   SOL_SOCKET,
+                                   SO_ERROR,
+                                   static_cast<void*>(&valopt), &lon) < 0) {
+                        setLastSocketErrNo(errno);
+                        addCommunicationLogItem(strerror(errno));
+                        return SOCKET_INIT_SESSION_GET_SOCKET_OPTIONS_ERROR;
+                    }
+                    // Check the value returned...
+                    if (valopt) {
+                        setLastSocketErrNo(valopt);
+                        addCommunicationLogItem(strerror(valopt));
+                        return SOCKET_INIT_SESSION_DELAYED_CONNECTION_ERROR;
+                    }
+                    break;
+                } else {
+                    return SOCKET_INIT_SESSION_CONNECT_TIMEOUT;
+                }
+            } while (1);
+        } else {
+            setLastSocketErrNo(errno);
+            addCommunicationLogItem(strerror(errno));
+            return SOCKET_INIT_SESSION_CONNECT_ERROR;
+        }
     }
-#endif
+    // Set to blocking mode again...
+    return setSocketToBlockingPOSIX();
+}
 
+int SMTPClientBase::setSocketToNonBlockingPOSIX() {
+    int arg;
+    if ((arg = fcntl(mSock, F_GETFL, NULL)) < 0) {
+        setLastSocketErrNo(errno);
+        addCommunicationLogItem(strerror(errno));
+    }
+    arg |= O_NONBLOCK;
+    if (fcntl(mSock, F_SETFL, arg) < 0) {
+        setLastSocketErrNo(errno);
+        addCommunicationLogItem(strerror(errno));
+        return SOCKET_INIT_SESSION_FCNTL_SET_ERROR;
+    }
+    return 0;
+}
+
+int SMTPClientBase::setSocketToBlockingPOSIX() {
+    int arg;
+    if ((arg = fcntl(mSock, F_GETFL, NULL)) < 0) {
+        setLastSocketErrNo(errno);
+        addCommunicationLogItem(strerror(errno));
+        return SOCKET_INIT_SESSION_FCNTL_GET_ERROR;
+    }
+    arg &= (~O_NONBLOCK);
+    if (fcntl(mSock, F_SETFL, arg) < 0) {
+        setLastSocketErrNo(errno);
+        addCommunicationLogItem(strerror(errno));
+        return SOCKET_INIT_SESSION_FCNTL_SET_ERROR;
+    }
     return 0;
 }
 

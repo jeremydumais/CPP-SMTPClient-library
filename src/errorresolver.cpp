@@ -30,6 +30,18 @@ ErrorResolver::ErrorResolver(int pErrorCode)
         case SOCKET_INIT_SESSION_GETHOSTBYNAME_ERROR:
             errorMessage = "Unable to get host by name";
             break;
+        case SOCKET_INIT_SESSION_FCNTL_GET_ERROR:
+            errorMessage = "Unable to get socket file descriptor status flags";
+            break;
+        case SOCKET_INIT_SESSION_FCNTL_SET_ERROR:
+            errorMessage = "Unable to set socket file descriptor status flags";
+            break;
+        case SOCKET_INIT_SESSION_GET_SOCKET_OPTIONS_ERROR:
+            errorMessage = "Unable to get socket options";
+            break;
+        case SOCKET_INIT_SESSION_DELAYED_CONNECTION_ERROR:
+            errorMessage = "Error in delayed connection";
+            break;
         case SOCKET_INIT_CLIENT_SEND_EHLO_ERROR:
             errorMessage = "Unable to send the EHLO command";
             break;
