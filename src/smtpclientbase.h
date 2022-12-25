@@ -146,9 +146,15 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     void setAuthenticationOptions(ServerAuthOptions *authOptions);
     // Methods used to establish the connection with server
     int initializeSession();
+    #ifdef _WIN32
+    int initializeSessionWinSock();
+    void addWSAMessageToCommunicationLog(const int errorCode);
+    void doWSACleanup();
+    #else
     int initializeSessionPOSIX();
     int setSocketToNonBlockingPOSIX();
     int setSocketToBlockingPOSIX();
+    #endif
     int sendServerIdentification();
     virtual int establishConnectionWithServer() = 0;
     virtual int checkServerGreetings();

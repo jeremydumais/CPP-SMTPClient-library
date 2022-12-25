@@ -23,6 +23,7 @@
     #include <BaseTsd.h>
     typedef SSIZE_T ssize_t;
     #include <windows.h>
+    #include <WinNT.h>
     constexpr auto sleep = Sleep;
 #else
     #include <fcntl.h>
@@ -347,12 +348,23 @@ int SMTPClientBase::initializeSession() {
     mCommunicationLog[0] = '\0';
 
 #ifdef _WIN32
+    return initializeSessionWinSock();
+#else
+    return initializeSessionPOSIX();
+#endif
+}
+
+#ifdef _WIN32
+int SMTPClientBase::initializeSessionWinSock() {
     // Windows Sockets version
     WSADATA wsaData;
     WORD wVersionRequested = MAKEWORD(2, 2);
     int wsa_retVal = WSAStartup(wVersionRequested, &wsaData);
     if (wsa_retVal != 0) {
+        std::stringstream ssError;
         setLastSocketErrNo(wsa_retVal);
+        ssError << "WSAStartup failed with error: " << wsa_retVal;
+        addCommunicationLogItem(ssError.str().c_str());
         return SOCKET_INIT_SESSION_WINSOCKET_STARTUP_ERROR;
     }
     struct addrinfo *result = nullptr;
@@ -363,29 +375,59 @@ int SMTPClientBase::initializeSession() {
 
     wsa_retVal = getaddrinfo(getServerName(), std::to_string(getServerPort()).c_str(), &hints, &result);
     if (wsa_retVal != 0) {
-        WSACleanup();
+        addWSAMessageToCommunicationLog(wsa_retVal);
         setLastSocketErrNo(wsa_retVal);
+        doWSACleanup();
         return SOCKET_INIT_SESSION_WINSOCKET_GETADDRINFO_ERROR;
     }
 
     mSock = static_cast<unsigned int>(socket(result->ai_family, result->ai_socktype, result->ai_protocol));
     if (mSock == INVALID_SOCKET) {
-        WSACleanup();
-        setLastSocketErrNo(WSAGetLastError());
+        int wsa_error = WSAGetLastError();
+        addWSAMessageToCommunicationLog(wsa_error);
+        setLastSocketErrNo(wsa_error);
+        doWSACleanup();
         return SOCKET_INIT_SESSION_CREATION_ERROR;
     }
+    std::stringstream ss;
+    ss << "Trying to connect to " << getServerName() << " on port " << getServerPort();
+    addCommunicationLogItem(ss.str().c_str());
     wsa_retVal = connect(mSock, result->ai_addr, static_cast<int>(result->ai_addrlen));
     if (wsa_retVal == SOCKET_ERROR) {
-        WSACleanup();
-        setLastSocketErrNo(WSAGetLastError());
+        int wsa_error = WSAGetLastError();
+        addWSAMessageToCommunicationLog(wsa_error);
+        setLastSocketErrNo(wsa_error);
+        doWSACleanup();
         return SOCKET_INIT_SESSION_CONNECT_ERROR;
     }
     return 0;
-#else
-    return initializeSessionPOSIX();
-#endif
 }
 
+void SMTPClientBase::addWSAMessageToCommunicationLog(const int errorCode) {
+    LPTSTR formattedErrorMessage = nullptr;
+    if(FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
+        nullptr,
+        errorCode,
+        0,
+        (LPTSTR)&formattedErrorMessage,
+        0,
+        nullptr) != 0) {
+        addCommunicationLogItem(formattedErrorMessage);
+        LocalFree(formattedErrorMessage);
+    }
+}
+
+void SMTPClientBase::doWSACleanup() {
+    if (WSACleanup() != 0) {
+        int wsa_retVal = WSAGetLastError();
+        std::stringstream ssError;
+        setLastSocketErrNo(wsa_retVal);
+        ssError << "WSACleanup failed with error: " << wsa_retVal;
+        addCommunicationLogItem(ssError.str().c_str());
+    }
+}
+
+#else
 int SMTPClientBase::initializeSessionPOSIX() {
     // POSIX socket version
     fd_set fdset;
@@ -491,6 +533,7 @@ int SMTPClientBase::setSocketToBlockingPOSIX() {
     }
     return 0;
 }
+#endif
 
 int SMTPClientBase::sendServerIdentification() {
     std::string ehlo { "ehlo localhost\r\n" };
