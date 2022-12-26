@@ -70,12 +70,93 @@ The SmtpClient should be used to communicate with internal relay servers. The co
 ## How it works
 
 ### Some examples
-- [Send a plaintext email via an unsecured server](#send-a-plaintext-email-via-an-unsecured-server)
-- [Send an html email to 2 recipients with an attachment via an unsecured server](#send-an-html-email-to-2-recipients-with-an-attachment-via-an-unsecured-server)
 - [Send a plaintext email via a secure server (opportunistic) -> SSL/TLS Port 587](#send-a-plaintext-email-via-a-secure-server-opportunistic)
 - [Send a plaintext email via a secure server (forced) -> SSL/TLS Port 465](#send-a-plaintext-email-via-a-secure-server-forced)
+- [Send a plaintext email via an unsecured server](#send-a-plaintext-email-via-an-unsecured-server)
+- [Send an html email to 2 recipients with an attachment via an unsecured server](#send-an-html-email-to-2-recipients-with-an-attachment-via-an-unsecured-server)
 
 <br/>
+
+
+#### Send a plaintext email via a secure server (opportunistic)
+
+```c++
+#include "opportunisticsecuresmtpclient.h"
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+
+using namespace jed_utils;
+
+int main()
+{
+	OpportunisticSecureSMTPClient client("<your smtp server address>", 587);
+	client.setCredentials(Credential("myfromaddress@test.com", "mypassword"));
+	try
+	{
+		PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
+			MessageAddress("youraddress@domain.com", "Another Adresse display"),
+			"This is a test (Subject)",
+			"Hello\nHow are you?");
+
+		int err_no = client.sendMail(msg);
+		if (err_no != 0) {
+			std::cout << client.getCommunicationLog() << '\n';
+			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
+			std::cerr << "An error occurred: " << errorMessage.get()
+                 << " (error no: " << err_no << ")" << '\n';
+			return 1;
+		}
+		std::cout << client.getCommunicationLog() << '\n';
+		std::cout << "Operation completed!" << std::endl;
+	}
+	catch (std::invalid_argument &err)
+	{
+		std::cerr << err.what() << std::endl;
+	}
+    return 0;
+}
+```
+
+#### Send a plaintext email via a secure server (forced)
+
+```c++
+#include "forcedsecuresmtpclient.h"
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+
+using namespace jed_utils;
+
+int main()
+{
+	ForcedSecureSMTPClient client("<your smtp server address>", 465);
+	client.setCredentials(Credential("myfromaddress@test.com", "mypassword"));
+	try
+	{
+		PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
+			MessageAddress("youraddress@domain.com", "Another Adresse display"),
+			"This is a test (Subject)",
+			"Hello\nHow are you?");
+
+		int err_no = client.sendMail(msg);
+		if (err_no != 0) {
+			std::cout << client.getCommunicationLog() << '\n';
+			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
+			std::cerr << "An error occurred: " << errorMessage.get()
+                 << " (error no: " << err_no << ")" << '\n';
+			return 1;
+		}
+		std::cout << client.getCommunicationLog() << '\n';
+		std::cout << "Operation completed!" << std::endl;
+	}
+	catch (std::invalid_argument &err)
+	{
+		std::cerr << err.what() << std::endl;
+	}
+    return 0;
+}
+```
 
 #### Send a plaintext email via an unsecured server
 
@@ -144,86 +225,6 @@ int main()
 			to_addr, TOADDR_COUNT,
 			"This is a test (Subject)",
 			"<html><body><h1>Hello,</h1><br/><br/>How are you?</body></html>", nullptr, 0, nullptr, 0, att1, ATTACHMENT_COUNT);
-
-		int err_no = client.sendMail(msg);
-		if (err_no != 0) {
-			std::cout << client.getCommunicationLog() << '\n';
-			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
-			std::cerr << "An error occurred: " << errorMessage.get()
-                 << " (error no: " << err_no << ")" << '\n';
-			return 1;
-		}
-		std::cout << client.getCommunicationLog() << '\n';
-		std::cout << "Operation completed!" << std::endl;
-	}
-	catch (std::invalid_argument &err)
-	{
-		std::cerr << err.what() << std::endl;
-	}
-    return 0;
-}
-```
-
-#### Send a plaintext email via a secure server (opportunistic)
-
-```c++
-#include "opportunisticsecuresmtpclient.h"
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-
-using namespace jed_utils;
-
-int main()
-{
-	OpportunisticSecureSMTPClient client("<your smtp server address>", 587);
-	client.setCredentials(Credential("myfromaddress@test.com", "mypassword"));
-	try
-	{
-		PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
-			MessageAddress("youraddress@domain.com", "Another Adresse display"),
-			"This is a test (Subject)",
-			"Hello\nHow are you?");
-
-		int err_no = client.sendMail(msg);
-		if (err_no != 0) {
-			std::cout << client.getCommunicationLog() << '\n';
-			std::unique_ptr<char> errorMessage(client.getErrorMessage(err_no));
-			std::cerr << "An error occurred: " << errorMessage.get()
-                 << " (error no: " << err_no << ")" << '\n';
-			return 1;
-		}
-		std::cout << client.getCommunicationLog() << '\n';
-		std::cout << "Operation completed!" << std::endl;
-	}
-	catch (std::invalid_argument &err)
-	{
-		std::cerr << err.what() << std::endl;
-	}
-    return 0;
-}
-```
-
-#### Send a plaintext email via a secure server (forced)
-
-```c++
-#include "forcedsecuresmtpclient.h"
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-
-using namespace jed_utils;
-
-int main()
-{
-	ForcedSecureSMTPClient client("<your smtp server address>", 465);
-	client.setCredentials(Credential("myfromaddress@test.com", "mypassword"));
-	try
-	{
-		PlaintextMessage msg(MessageAddress("myfromaddress@test.com", "Test Address Display"),
-			MessageAddress("youraddress@domain.com", "Another Adresse display"),
-			"This is a test (Subject)",
-			"Hello\nHow are you?");
 
 		int err_no = client.sendMail(msg);
 		if (err_no != 0) {
