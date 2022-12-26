@@ -1,5 +1,7 @@
 # Jed# C++ SMTP Client Library
 
+[![Build status](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml/badge.svg)](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
+
 ## A simple SMTP client library built in C++ that support authentication and secure connections (Forced SSL and Opportunistic SSL/TLS encryption).
 ##### For TLS 1.3 support you must build the library against OpenSSL 1.1.1
 <br/>
