@@ -48,19 +48,21 @@ dce3b4c0704c8aafd4b2c5e8fdd3a701
 
 See the section [Releases](https://github.com/jeremydumais/CPP-SMTPClient-library/releases) for previous versions.
 
-# 
+#
 ## The 3 client classes
 
 ### OpportunisticSecureSMTPClient
-##### The OpportunisticSecureSMTPClient should be your default choice for communicating with modern SMTP servers. The communication is usually done via port 587.
+
+The OpportunisticSecureSMTPClient **should be your default choice** for communicating with modern SMTP servers. The communication is usually done via port 587.
 <br/>
 
 ### ForcedSecureSMTPClient
-##### The ForcedSecureSMTPClient is useful to communicate with legacy systems which requires that the communication be encrypted from the initial connection. The communication is usually done via port 465.
+
+The ForcedSecureSMTPClient is useful to communicate with legacy systems which requires that the communication be encrypted from the initial connection. The communication is usually done via port 465.
 <br/>
 
 ### SmtpClient
-##### The SmtpClient should be used to communicate with internal relay servers. The communication is usually done via port 25.
+The SmtpClient should be used to communicate with internal relay servers. The communication is usually done via port 25.
 
 #
 ## How it works
@@ -132,7 +134,7 @@ int main()
 
 		Attachment att1[ATTACHMENT_COUNT] = { Attachment("C:\\Temp\\test.png", "test image.png") };
 
-		MessageAddress to_addr[TOADDR_COUNT] = { MessageAddress("youraddress@domain.com"), 
+		MessageAddress to_addr[TOADDR_COUNT] = { MessageAddress("youraddress@domain.com"),
 		MessageAddress("youraddress2@domain.com")
 		};
 
