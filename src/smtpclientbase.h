@@ -148,6 +148,8 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int initializeSession();
     #ifdef _WIN32
     int initializeSessionWinSock();
+    bool isWSAStarted();
+    void setWSAStopped();
     void addWSAMessageToCommunicationLog(const int errorCode);
     void doWSACleanup();
     #else
@@ -191,6 +193,9 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     ServerAuthOptions *mAuthOptions;
     Credential *mCredential;
     int mSock = 0;
+    #ifdef _WIN32
+    bool mWSAStarted = false;
+    #endif
 
     // This field indicate the class will keep using base send command even if a child class
     // as overriden the sendCommand and sendCommandWithFeedback.

@@ -56,13 +56,14 @@ void SmtpClient::cleanup() {
     }
     clearSocketFileDescriptor();
 #ifdef _WIN32
-    if (WSACleanup() != 0) {
+    if (isWSAStarted() && WSACleanup() != 0) {
         int wsa_retVal = WSAGetLastError();
         std::stringstream ssError;
         setLastSocketErrNo(wsa_retVal);
         ssError << "WSACleanup failed with error: " << wsa_retVal;
         addCommunicationLogItem(ssError.str().c_str());
     }
+    setWSAStopped();
 #endif
 }
 

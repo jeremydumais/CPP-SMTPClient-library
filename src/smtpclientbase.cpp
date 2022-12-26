@@ -367,6 +367,7 @@ int SMTPClientBase::initializeSessionWinSock() {
         addCommunicationLogItem(ssError.str().c_str());
         return SOCKET_INIT_SESSION_WINSOCKET_STARTUP_ERROR;
     }
+    mWSAStarted = true;
     struct addrinfo *result = nullptr;
     struct addrinfo hints;
     memset(&hints, 0, sizeof hints);
@@ -403,6 +404,14 @@ int SMTPClientBase::initializeSessionWinSock() {
     return 0;
 }
 
+bool SMTPClientBase::isWSAStarted() { 
+    return mWSAStarted; 
+};
+
+void SMTPClientBase::setWSAStopped() { 
+    mWSAStarted = false; 
+};
+
 void SMTPClientBase::addWSAMessageToCommunicationLog(const int errorCode) {
     LPTSTR formattedErrorMessage = nullptr;
     if(FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
@@ -425,6 +434,7 @@ void SMTPClientBase::doWSACleanup() {
         ssError << "WSACleanup failed with error: " << wsa_retVal;
         addCommunicationLogItem(ssError.str().c_str());
     }
+    mWSAStarted = false;
 }
 
 #else
