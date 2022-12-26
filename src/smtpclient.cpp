@@ -9,6 +9,7 @@
     #include <sys/socket.h>
     #include <unistd.h>
 #endif
+#include <sstream>
 #include <vector>
 #include <utility>
 
@@ -55,7 +56,13 @@ void SmtpClient::cleanup() {
     }
     clearSocketFileDescriptor();
 #ifdef _WIN32
-    WSACleanup();
+    if (WSACleanup() != 0) {
+        int wsa_retVal = WSAGetLastError();
+        std::stringstream ssError;
+        setLastSocketErrNo(wsa_retVal);
+        ssError << "WSACleanup failed with error: " << wsa_retVal;
+        addCommunicationLogItem(ssError.str().c_str());
+    }
 #endif
 }
 
