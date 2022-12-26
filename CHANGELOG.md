@@ -18,7 +18,7 @@ char * to keep a Plain C Interface.
 Google's C++ style guide.
 - Configured Linux Socket connect function to non-blocking mode to make
 the SmtpClientBase timeout working as expected.
-- Added WSACleanup error return code to the the communication log.
+- Added WSACleanup error return code to the communication log.
 
 ### Bug fixes
 
