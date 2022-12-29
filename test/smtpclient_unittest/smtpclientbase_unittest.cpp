@@ -1,34 +1,11 @@
-#include "../../src/smtpclientbase.h"
 #include <gtest/gtest.h>
+#include <string>
+#include "../../src/smtpclientbase.h"
+#include "../../src/cpp/smtpclient.hpp"
+#include "../../src/smtpclienterrors.h"
 #include "../../src/socketerrors.h"
 
 using namespace jed_utils;
-
-class SMTPClientBaseFixture : public ::testing::Test, public SMTPClientBase {
- public:
-    SMTPClientBaseFixture()
-        : SMTPClientBase("127.0.0.1", 587) {
-    }
-
-    SMTPClientBaseFixture(const char *pServerName, unsigned int pPort)
-        : SMTPClientBase(pServerName, pPort) {
-    }
-    void TestBody() override {}
-
-    void cleanup() override {}
-
-    int establishConnectionWithServer() override {
-        return 0;
-    }
-
-    int sendCommand(const char *pCommand, int pErrorCode) override {
-        return 0;
-    }
-
-    int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) override {
-        return 0;
-    }
-};
 
 class FakeSMTPClientBase : public SMTPClientBase {
  public:
@@ -49,11 +26,68 @@ class FakeSMTPClientBase : public SMTPClientBase {
     int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) override {
         return 0;
     }
+
+    static const char *getNullChar() { return nullptr; }
+
+    static int extractReturnCode(const char *pOutput) {
+        return SMTPClientBase::extractReturnCode(pOutput);
+    }
+
+    static ServerAuthOptions *extractAuthenticationOptions(const char *pEhloOutput) {
+        return SMTPClientBase::extractAuthenticationOptions(pEhloOutput);
+    }
 };
 
-TEST(SMTPClientBase_Constructor, NullServerName_ThrowInvalidArgument) {
+class FakeCPPSMTPClientBase : public jed_utils::cpp::SmtpClient {
+ public:
+    FakeCPPSMTPClientBase(const char *pServerName, unsigned int pPort)
+        : jed_utils::cpp::SmtpClient(pServerName == nullptr ? nullChar : std::string(pServerName), pPort) {
+    }
+
+    void cleanup() override {}
+
+    int establishConnectionWithServer() override {
+        return 0;
+    }
+
+    int sendCommand(const char *pCommand, int pErrorCode) override {
+        return 0;
+    }
+
+    int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) override {
+        return 0;
+    }
+
+    static const char *getNullChar() { return nullChar.c_str(); }
+
+    static int extractReturnCode(const char *pOutput) {
+        return jed_utils::cpp::SmtpClient::extractReturnCode(pOutput == nullptr ? getNullChar() : pOutput);
+    }
+
+    static ServerAuthOptions *extractAuthenticationOptions(const char *pEhloOutput) {
+        return jed_utils::cpp::SmtpClient::extractAuthenticationOptions(pEhloOutput == nullptr ? getNullChar() : pEhloOutput);
+    }
+
+ private:
+    static const std::string nullChar;
+};
+const std::string FakeCPPSMTPClientBase::nullChar = "";
+
+template <typename T>
+class MultiSmtpClientBaseFixture : public ::testing::Test {
+ public:
+    MultiSmtpClientBaseFixture<T>()
+        : client("127.0.0.1", 587) {
+    }
+    T client;
+};
+
+using MyTypes = ::testing::Types<FakeSMTPClientBase, FakeCPPSMTPClientBase>;
+TYPED_TEST_SUITE(MultiSmtpClientBaseFixture, MyTypes);
+
+TYPED_TEST(MultiSmtpClientBaseFixture, Constructor_NullServerName_ThrowInvalidArgument) {
     try {
-        FakeSMTPClientBase client(nullptr, 587);
+        TypeParam client1(TypeParam::getNullChar(), 587);
         FAIL();
     }
     catch(std::invalid_argument &err) {
@@ -61,9 +95,9 @@ TEST(SMTPClientBase_Constructor, NullServerName_ThrowInvalidArgument) {
     }
 }
 
-TEST(SMTPClientBase_Constructor, EmptyServerName_ThrowInvalidArgument) {
+TYPED_TEST(MultiSmtpClientBaseFixture, Constructor_EmptyServerName_ThrowInvalidArgument) {
     try {
-        FakeSMTPClientBase client("", 587);
+        TypeParam client1("", 587);
         FAIL();
     }
     catch(std::invalid_argument &err) {
@@ -71,9 +105,9 @@ TEST(SMTPClientBase_Constructor, EmptyServerName_ThrowInvalidArgument) {
     }
 }
 
-TEST(SMTPClientBase_Constructor, WhiteSpacesServerName_ThrowInvalidArgument) {
+TYPED_TEST(MultiSmtpClientBaseFixture, Constructor_WhiteSpacesServerName_ThrowInvalidArgument) {
     try {
-        FakeSMTPClientBase client("   ", 587);
+        TypeParam client1("   ", 587);
         FAIL();
     }
     catch(std::invalid_argument &err) {
@@ -81,52 +115,52 @@ TEST(SMTPClientBase_Constructor, WhiteSpacesServerName_ThrowInvalidArgument) {
     }
 }
 
-TEST(SMTPClientBase_Constructor, WithValidArgs_ReturnSuccess) {
-    FakeSMTPClientBase client("test", 587);
-    ASSERT_STREQ("test", client.getServerName());
-    ASSERT_EQ(587, client.getServerPort());
+TYPED_TEST(MultiSmtpClientBaseFixture, Constructor_WithValidArgs_ReturnSuccess) {
+    TypeParam client1("test", 587);
+    ASSERT_EQ("test", std::string(client1.getServerName()));
+    ASSERT_EQ(587, client1.getServerPort());
 }
 
-TEST(SMTPClientBase_CopyConstructor, CopyConstructorValid) {
-    FakeSMTPClientBase client1("test", 587);
-    FakeSMTPClientBase client2(client1);
-    ASSERT_STREQ("test", client2.getServerName());
+TYPED_TEST(MultiSmtpClientBaseFixture, CopyConstructorValid) {
+    TypeParam client1("test", 587);
+    TypeParam client2(client1);
+    ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
 }
 
-TEST(SMTPClientBase_CopyAssignment, CopyAssignmentValid) {
-    FakeSMTPClientBase client1("test", 587);
-    FakeSMTPClientBase client2("another_test", 25);
+TYPED_TEST(MultiSmtpClientBaseFixture, CopyAssignmentValid) {
+    TypeParam client1("test", 587);
+    TypeParam client2("another_test", 25);
     client2 = client1;
-    ASSERT_STREQ("test", client2.getServerName());
+    ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
 }
 
-TEST(SMTPClientBase_MoveConstructor, MoveConstructorValid) {
-    FakeSMTPClientBase client1("test", 587);
-    FakeSMTPClientBase client2(std::move(client1));
-    ASSERT_STREQ("test", client2.getServerName());
+TYPED_TEST(MultiSmtpClientBaseFixture, MoveConstructorValid) {
+    TypeParam client1("test", 587);
+    TypeParam client2(std::move(client1));
+    ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
 }
 
-TEST(SMTPClientBase_MoveAssignment, MoveAssignmentValid) {
-    FakeSMTPClientBase client1("test", 587);
-    FakeSMTPClientBase client2("another_test", 25);
+TYPED_TEST(MultiSmtpClientBaseFixture, MoveAssignmentValid) {
+    TypeParam client1("test", 587);
+    TypeParam client2("another_test", 25);
     client2 = std::move(client1);
-    ASSERT_STREQ("test", client2.getServerName());
+    ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
 }
 
-TEST(SmtpClientBase_setServerName, ValidName_ReturnSuccess) {
-    FakeSMTPClientBase client("test", 587);
-    client.setServerName("myServer");
-    ASSERT_STREQ("myServer", client.getServerName());
+TYPED_TEST(MultiSmtpClientBaseFixture, setServerName_ValidName_ReturnSuccess) {
+    TypeParam client1("test", 587);
+    client1.setServerName("myServer");
+    ASSERT_EQ("myServer", std::string(client1.getServerName()));
 }
 
-TEST(SmtpClientBase_setServerName, NullServerName_ThrowInvalidArgument) {
-    FakeSMTPClientBase client("test", 587);
+TYPED_TEST(MultiSmtpClientBaseFixture, setServerName_NullServerName_ThrowInvalidArgument) {
+    TypeParam client1("test", 587);
     try {
-        client.setServerName(nullptr);
+        client1.setServerName(client1.getNullChar());
         FAIL();
     }
     catch(std::invalid_argument &err) {
@@ -134,10 +168,10 @@ TEST(SmtpClientBase_setServerName, NullServerName_ThrowInvalidArgument) {
     }
 }
 
-TEST(SmtpClientBase_setServerName, EmptyServerName_ThrowInvalidArgument) {
-    FakeSMTPClientBase client("test", 587);
+TYPED_TEST(MultiSmtpClientBaseFixture, setServerName_EmptyServerName_ThrowInvalidArgument) {
+    TypeParam client1("test", 587);
     try {
-        client.setServerName("");
+        client1.setServerName("");
         FAIL();
     }
     catch(std::invalid_argument &err) {
@@ -145,10 +179,10 @@ TEST(SmtpClientBase_setServerName, EmptyServerName_ThrowInvalidArgument) {
     }
 }
 
-TEST(SmtpClientBase_setServerName, OnlySpacesServerName_ThrowInvalidArgument) {
-    FakeSMTPClientBase client("test", 587);
+TYPED_TEST(MultiSmtpClientBaseFixture, setServerName_OnlySpacesServerName_ThrowInvalidArgument) {
+    TypeParam client1("test", 587);
     try {
-        client.setServerName("    ");
+        client1.setServerName("    ");
         FAIL();
     }
     catch(std::invalid_argument &err) {
@@ -156,87 +190,101 @@ TEST(SmtpClientBase_setServerName, OnlySpacesServerName_ThrowInvalidArgument) {
     }
 }
 
-TEST(SmtpClientBase_getServerName, ReturnValidServerName) {
-    FakeSMTPClientBase client("test", 587);
-    ASSERT_STREQ("test", client.getServerName());
+TYPED_TEST(MultiSmtpClientBaseFixture, getServerName_ReturnValidServerName) {
+    ASSERT_EQ("127.0.0.1", std::string(this->client.getServerName()));
 }
 
-TEST(SmtpClientBase_setServerPort, WithPort465ReturnSuccess) {
-    FakeSMTPClientBase client("test", 587);
-    client.setServerPort(465);
-    ASSERT_EQ(465, client.getServerPort());
+TYPED_TEST(MultiSmtpClientBaseFixture, setServerPort_WithPort465ReturnSuccess) {
+    this->client.setServerPort(465);
+    ASSERT_EQ(465, this->client.getServerPort());
 }
 
-TEST(SmtpClientBase_getServerPort, ReturnValidServerPort) {
-    FakeSMTPClientBase client("test", 587);
-    ASSERT_EQ(587, client.getServerPort());
+TYPED_TEST(MultiSmtpClientBaseFixture, getServerPort_ReturnValidServerPort) {
+    ASSERT_EQ(587, this->client.getServerPort());
 }
 
-TEST_F(SMTPClientBaseFixture, extractReturnCode_ValidWelcomeCode220_Return220) {
-    ASSERT_EQ(220, extractReturnCode("220 smtp.gmail.com ESMTP z13sm224346qkj.34 - gsmtp"));
+TYPED_TEST(MultiSmtpClientBaseFixture, getCommunicationLog_WithNewClient_ReturnEmpty) {
+    ASSERT_EQ("", std::string(this->client.getCommunicationLog()));
 }
 
-TEST_F(SMTPClientBaseFixture, extractReturnCode_ValidClientCode250_Return250) {
-    ASSERT_EQ(250, extractReturnCode("250-smtp.gmail.com at your service, [24.48.180.30]"));
+TYPED_TEST(MultiSmtpClientBaseFixture, getCredentials_WithNewClient_ReturnNullPtr) {
+    ASSERT_EQ(nullptr, this->client.getCredentials());
 }
 
-TEST_F(SMTPClientBaseFixture, extractReturnCode_ValidClientCode250WithoutDash_Return250) {
-    ASSERT_EQ(250, extractReturnCode("250 smtp.gmail.com at your service, [24.48.180.30]"));
+TYPED_TEST(MultiSmtpClientBaseFixture, setCredentials_WithABCAnd123_ReturnSuccess) {
+    ASSERT_EQ(nullptr, this->client.getCredentials());
+    this->client.setCredentials(Credential("ABC", "123"));
+    const auto *credentials = this->client.getCredentials();
+    ASSERT_NE(nullptr, credentials);
+    ASSERT_EQ("ABC", std::string(credentials->getUsername()));
+    ASSERT_EQ("123", std::string(credentials->getPassword()));
 }
 
-TEST_F(SMTPClientBaseFixture, extractReturnCode_ValidClientCode250NoSpace_Return250) {
-    ASSERT_EQ(250, extractReturnCode("250smtp.gmail.com at your service, [24.48.180.30]"));
+TYPED_TEST(MultiSmtpClientBaseFixture, extractReturnCode_ValidWelcomeCode220_Return220) {
+    ASSERT_EQ(220, TypeParam::extractReturnCode("220 smtp.gmail.com ESMTP z13sm224346qkj.34 - gsmtp"));
 }
 
-TEST_F(SMTPClientBaseFixture, extractReturnCode_EmptyOutput_ReturnMinus1) {
-    ASSERT_EQ(-1, extractReturnCode(""));
+TYPED_TEST(MultiSmtpClientBaseFixture, extractReturnCode_ValidClientCode250_Return250) {
+    ASSERT_EQ(250, TypeParam::extractReturnCode("250-smtp.gmail.com at your service, [24.48.180.30]"));
 }
 
-TEST_F(SMTPClientBaseFixture, extractReturnCode_TwoSpaces_ReturnMinus1) {
-    ASSERT_EQ(-1, extractReturnCode("  "));
+TYPED_TEST(MultiSmtpClientBaseFixture, extractReturnCode_ValidClientCode250WithoutDash_Return250) {
+    ASSERT_EQ(250, TypeParam::extractReturnCode("250 smtp.gmail.com at your service, [24.48.180.30]"));
 }
 
-TEST_F(SMTPClientBaseFixture, extractReturnCode_ThreeSpaces_ReturnMinus1) {
-    ASSERT_EQ(-1, extractReturnCode("   "));
+TYPED_TEST(MultiSmtpClientBaseFixture, extractReturnCode_ValidClientCode250NoSpace_Return250) {
+    ASSERT_EQ(250, TypeParam::extractReturnCode("250smtp.gmail.com at your service, [24.48.180.30]"));
 }
 
-TEST_F(SMTPClientBaseFixture, extractReturnCode_NotNumeric_ReturnMinus1) {
-    ASSERT_EQ(-1, extractReturnCode("ABC"));
+TYPED_TEST(MultiSmtpClientBaseFixture, extractReturnCode_EmptyOutput_ReturnMinus1) {
+    ASSERT_EQ(-1, TypeParam::extractReturnCode(""));
 }
 
-TEST_F(SMTPClientBaseFixture, extractReturnCode_NullPtr_ReturnMinus1) {
-    ASSERT_EQ(-1, extractReturnCode(nullptr));
+TYPED_TEST(MultiSmtpClientBaseFixture, extractReturnCode_TwoSpaces_ReturnMinus1) {
+    ASSERT_EQ(-1, TypeParam::extractReturnCode("  "));
 }
 
-TEST(SmtpClientBase_getCommandTimeout, DefaultTimeOut_Return5) {
-    FakeSMTPClientBase client("fdfdsfs", 587);
-    ASSERT_EQ(5, client.getCommandTimeout());
+TYPED_TEST(MultiSmtpClientBaseFixture, extractReturnCode_ThreeSpaces_ReturnMinus1) {
+    ASSERT_EQ(-1, TypeParam::extractReturnCode("   "));
 }
 
-TEST(SmtpClientBase_getCommandTimeout, SetTimeOutWith2_Return2) {
-    FakeSMTPClientBase client("fdfdsfs", 587);
-    client.setCommandTimeout(2);
-    ASSERT_EQ(2, client.getCommandTimeout());
+TYPED_TEST(MultiSmtpClientBaseFixture, extractReturnCode_NotNumeric_ReturnMinus1) {
+    ASSERT_EQ(-1, TypeParam::extractReturnCode("ABC"));
 }
 
-TEST_F(SMTPClientBaseFixture, extractAuthenticationOptions_WithNullEhlo_ReturnNullptr) {
-    ASSERT_EQ(nullptr, extractAuthenticationOptions(nullptr));
+TYPED_TEST(MultiSmtpClientBaseFixture, extractReturnCode_NullPtr_ReturnMinus1) {
+    ASSERT_EQ(-1, TypeParam::extractReturnCode(TypeParam::getNullChar()));
 }
 
-TEST_F(SMTPClientBaseFixture, extractAuthenticationOptions_WithEmptyEhlo_ReturnNullptr) {
-    ASSERT_EQ(nullptr, extractAuthenticationOptions(""));
+TYPED_TEST(MultiSmtpClientBaseFixture, getCommandTimeout_DefaultTimeOut_Return5) {
+    TypeParam client1("fdfdsfs", 587);
+    ASSERT_EQ(5, client1.getCommandTimeout());
 }
 
-TEST_F(SMTPClientBaseFixture, extractAuthenticationOptions_WithOnlySpacesEhlo_ReturnNullptr) {
-    ASSERT_EQ(nullptr, extractAuthenticationOptions("    "));
+TYPED_TEST(MultiSmtpClientBaseFixture, setCommandTimeout_With2_Return2) {
+    TypeParam client1("fdfdsfs", 587);
+    client1.setCommandTimeout(2);
+    ASSERT_EQ(2, client1.getCommandTimeout());
 }
 
-TEST_F(SMTPClientBaseFixture, extractAuthenticationOptions_WithNoAuthOptionsEhlo_ReturnNullptr) {
-    ASSERT_EQ(nullptr, extractAuthenticationOptions("250-SIZE 35882577\r\n250-8BITMIME\r\n"));
+TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithNullEhlo_ReturnNullptr) {
+    ASSERT_EQ(nullptr, TypeParam::extractAuthenticationOptions(nullptr));
 }
 
-TEST_F(SMTPClientBaseFixture, extractAuthenticationOptions_WithAuthOnlyPlainEhlo_ReturnNullptr) {
-    ServerAuthOptions *options = extractAuthenticationOptions("250-AUTH PLAIN\r\n");
+TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithEmptyEhlo_ReturnNullptr) {
+    ASSERT_EQ(nullptr, TypeParam::extractAuthenticationOptions(""));
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithOnlySpacesEhlo_ReturnNullptr) {
+    ASSERT_EQ(nullptr, TypeParam::extractAuthenticationOptions("    "));
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithNoAuthOptionsEhlo_ReturnNullptr) {
+    ASSERT_EQ(nullptr, TypeParam::extractAuthenticationOptions("250-SIZE 35882577\r\n250-8BITMIME\r\n"));
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithAuthOnlyPlainEhlo_ReturnNullptr) {
+    ServerAuthOptions *options = TypeParam::extractAuthenticationOptions("250-AUTH PLAIN\r\n");
     ASSERT_NE(nullptr, options);
     ASSERT_TRUE(options->Plain);
     ASSERT_FALSE(options->Login);
@@ -246,8 +294,8 @@ TEST_F(SMTPClientBaseFixture, extractAuthenticationOptions_WithAuthOnlyPlainEhlo
     ASSERT_FALSE(options->XOAuth);
 }
 
-TEST_F(SMTPClientBaseFixture, extractAuthenticationOptions_WithAuthPlainLoginEhlo_ReturnNullptr) {
-    ServerAuthOptions *options = extractAuthenticationOptions("250-AUTH LOGIN PLAIN\r\n");
+TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithAuthPlainLoginEhlo_ReturnNullptr) {
+    ServerAuthOptions *options = TypeParam::extractAuthenticationOptions("250-AUTH LOGIN PLAIN\r\n");
     ASSERT_NE(nullptr, options);
     ASSERT_TRUE(options->Plain);
     ASSERT_TRUE(options->Login);
@@ -257,8 +305,8 @@ TEST_F(SMTPClientBaseFixture, extractAuthenticationOptions_WithAuthPlainLoginEhl
     ASSERT_FALSE(options->XOAuth);
 }
 
-TEST_F(SMTPClientBaseFixture, extractAuthenticationOptions_WithAuthMultipleEhlo_ReturnNullptr) {
-    ServerAuthOptions *options = extractAuthenticationOptions("250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH\r\n");
+TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithAuthMultipleEhlo_ReturnNullptr) {
+    ServerAuthOptions *options = TypeParam::extractAuthenticationOptions("250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH\r\n");
     ASSERT_NE(nullptr, options);
     ASSERT_TRUE(options->Plain);
     ASSERT_TRUE(options->Login);
@@ -268,29 +316,60 @@ TEST_F(SMTPClientBaseFixture, extractAuthenticationOptions_WithAuthMultipleEhlo_
     ASSERT_TRUE(options->XOAuth);
 }
 
-TEST_F(SMTPClientBaseFixture, getErrorMessage_r_WithNullPtr_ReturnMinus1) {
-    ASSERT_EQ(-1, getErrorMessage_r(-1, nullptr, 0));
+TYPED_TEST(MultiSmtpClientBaseFixture, getErrorMessage_WithZero_ReturnNoMessage) {
+    ASSERT_EQ("No message correspond to this error code",
+              std::string(TypeParam::getErrorMessage(0)));
 }
 
-TEST_F(SMTPClientBaseFixture, getErrorMessage_r_WithZeroLength_ReturnMinus1) {
+TYPED_TEST(MultiSmtpClientBaseFixture, getErrorMessage_WithMinusOne_ReturnErrorMessage) {
+    ASSERT_EQ("Unable to create the socket", std::string(TypeParam::getErrorMessage(-1)));
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, getErrorMessage_With538_ReturnErrorMessage) {
+    ASSERT_EQ("Encryption required for requested authentication mechanism",
+              std::string(TypeParam::getErrorMessage(SMTPSERVER_ENCRYPTIONREQUIREDFORAUTH_ERROR)));
+}
+
+TEST(SMTPClientBase, getErrorMessage_r_WithNullPtr_ReturnMinus1) {
+    ASSERT_EQ(-1, FakeSMTPClientBase::getErrorMessage_r(-1, nullptr, 0));
+}
+
+TEST(SMTPClientBase, getErrorMessage_r_WithZeroLength_ReturnMinus1) {
     const size_t length = 6;
     char *buffer = new char[length];
-    ASSERT_EQ(-1, getErrorMessage_r(-1, buffer, 0));
+    ASSERT_EQ(-1, FakeSMTPClientBase::getErrorMessage_r(-1, buffer, 0));
     delete[] buffer;
 }
 
-TEST_F(SMTPClientBaseFixture, getErrorMessage_r_WithCharPtrOfFive_Return6) {
+TEST(CPP_SmtpClient, getErrorMessage_r_WithZero_ReturnMinus1) {
+    std::string msg = "";
+    ASSERT_EQ(0, FakeCPPSMTPClientBase::getErrorMessage_r(0, msg));
+    ASSERT_EQ("No message correspond to this error code", msg);
+}
+
+TEST(SMTPClientBase, getErrorMessage_r_WithCharPtrOfFive_Return6) {
     const size_t length = 6;
     char *buffer = new char[length];
-    ASSERT_EQ(5, getErrorMessage_r(SOCKET_INIT_SESSION_CREATION_ERROR, buffer, length));
+    ASSERT_EQ(5, FakeSMTPClientBase::getErrorMessage_r(SOCKET_INIT_SESSION_CREATION_ERROR,
+                                                       buffer,
+                                                       length));
     ASSERT_STREQ("Unabl", buffer);
     delete[] buffer;
 }
 
-TEST_F(SMTPClientBaseFixture, getErrorMessage_r_WithCharPtrOf50_Return0) {
+TEST(CPP_SmtpClient, getErrorMessage_r_WithMinus1_Return0) {
+    std::string buffer = "";
+    ASSERT_EQ(0, FakeCPPSMTPClientBase::getErrorMessage_r(SOCKET_INIT_SESSION_CREATION_ERROR,
+                                                          buffer));
+    ASSERT_EQ("Unable to create the socket", buffer);
+}
+
+TEST(SMTPClientBase, getErrorMessage_r_WithCharPtrOf50_Return0) {
     const size_t length = 50;
     char *buffer = new char[length];
-    ASSERT_EQ(0, getErrorMessage_r(SOCKET_INIT_SESSION_CREATION_ERROR, buffer, length));
+    ASSERT_EQ(0, FakeSMTPClientBase::getErrorMessage_r(SOCKET_INIT_SESSION_CREATION_ERROR,
+                                                       buffer,
+                                                       length));
     ASSERT_STREQ("Unable to create the socket", buffer);
     delete[] buffer;
 }

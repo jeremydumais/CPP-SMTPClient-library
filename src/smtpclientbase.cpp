@@ -404,12 +404,12 @@ int SMTPClientBase::initializeSessionWinSock() {
     return 0;
 }
 
-bool SMTPClientBase::isWSAStarted() { 
-    return mWSAStarted; 
+bool SMTPClientBase::isWSAStarted() {
+    return mWSAStarted;
 };
 
-void SMTPClientBase::setWSAStopped() { 
-    mWSAStarted = false; 
+void SMTPClientBase::setWSAStopped() {
+    mWSAStarted = false;
 };
 
 void SMTPClientBase::addWSAMessageToCommunicationLog(const int errorCode) {

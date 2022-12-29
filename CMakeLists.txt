@@ -98,7 +98,12 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/opportunisticsecuresmtpclient.cpp
     ${SRC_PATH}/forcedsecuresmtpclient.cpp
     ${SRC_PATH}/stringutils.cpp
-    ${SRC_PATH}/errorresolver.cpp)
+    ${SRC_PATH}/errorresolver.cpp
+    ${SRC_PATH}/cpp/attachment.cpp
+    ${SRC_PATH}/cpp/htmlmessage.cpp
+    ${SRC_PATH}/cpp/message.cpp
+    ${SRC_PATH}/cpp/messageaddress.cpp
+    ${SRC_PATH}/cpp/smtpclient.cpp)
 
 if (WIN32)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules)
@@ -267,6 +272,7 @@ if (BUILD_TESTING)
         ${TEST_SRC_PATH}/main.cpp
         ${TEST_SRC_PATH}/messageaddress_unittest.cpp
         ${TEST_SRC_PATH}/message_unittest.cpp
+        ${TEST_SRC_PATH}/message_cpp_unittest.cpp
         ${TEST_SRC_PATH}/attachment_unittest.cpp
         ${TEST_SRC_PATH}/credential_unittest.cpp
         ${TEST_SRC_PATH}/plaintextmessage_unittest.cpp
