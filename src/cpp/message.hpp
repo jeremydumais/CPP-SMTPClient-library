@@ -79,13 +79,13 @@ class CPP_MESSAGE_API Message {
     size_t getAttachmentsCount() const;
 
  private:
-    MessageAddress mFrom;
-    std::vector<MessageAddress> mTo;
-    std::string mSubject;
-    std::string mBody;
-    std::vector<MessageAddress> mCc;
-    std::vector<MessageAddress> mBcc;
-    std::vector<Attachment> mAttachments;
+    CPP_MESSAGE_API MessageAddress mFrom;
+    CPP_MESSAGE_API std::vector<MessageAddress> mTo;
+    CPP_MESSAGE_API std::string mSubject;
+    CPP_MESSAGE_API std::string mBody;
+    CPP_MESSAGE_API std::vector<MessageAddress> mCc;
+    CPP_MESSAGE_API std::vector<MessageAddress> mBcc;
+    CPP_MESSAGE_API std::vector<Attachment> mAttachments;
 };
 }  // namespace cpp
 }  // namespace jed_utils
