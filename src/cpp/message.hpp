@@ -1,14 +1,14 @@
 #ifndef CPPMESSAGE_H
 #define CPPMESSAGE_H
 
-#pragma warning(disable: 4251)
-
 #include <string>
 #include <vector>
 #include "attachment.hpp"
+#include "../message.h"
 #include "messageaddress.hpp"
 
 #ifdef _WIN32
+    #pragma warning(disable: 4251)
     #ifdef SMTPCLIENT_EXPORTS
         #define CPP_MESSAGE_API __declspec(dllexport)
     #else
@@ -79,6 +79,10 @@ class CPP_MESSAGE_API Message {
 
     /** Return the number of message attachments in the vector. */
     size_t getAttachmentsCount() const;
+
+ protected:
+    std::vector<jed_utils::MessageAddress> getStdMessageAddressVec(const std::vector<MessageAddress> &src) const;
+    std::vector<jed_utils::Attachment> getStdAttachmentVec(const std::vector<Attachment> &src) const;
 
  private:
     MessageAddress mFrom;

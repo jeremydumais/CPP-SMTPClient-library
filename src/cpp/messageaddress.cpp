@@ -1,4 +1,5 @@
 #include "messageaddress.hpp"
+#include <algorithm>
 
 using namespace jed_utils::cpp;
 
@@ -17,5 +18,10 @@ std::string MessageAddress::getEmailAddress() const {
 
 std::string MessageAddress::getDisplayName() const {
     return jed_utils::MessageAddress::getDisplayName();
+}
+
+jed_utils::MessageAddress MessageAddress::toStdMessageAddress() const {
+    return jed_utils::MessageAddress(jed_utils::MessageAddress::getEmailAddress(),
+                                     jed_utils::MessageAddress::getDisplayName());
 }
 

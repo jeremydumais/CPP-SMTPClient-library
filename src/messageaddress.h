@@ -32,7 +32,7 @@ class MESSAGEADDRESS_API MessageAddress {
     explicit MessageAddress(const char *pEmailAddress, const char *pDisplayName = "");
 
     /** Destructor of the MessageAddress */
-    ~MessageAddress();
+    virtual ~MessageAddress();
 
     /** MessageAddress copy constructor. */
     MessageAddress(const MessageAddress& other);

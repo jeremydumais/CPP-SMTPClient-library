@@ -1,4 +1,7 @@
 #include "message.hpp"
+#include <algorithm>
+#include <stdexcept>
+#include <vector>
 
 using namespace jed_utils::cpp;
 
@@ -16,7 +19,9 @@ Message::Message(const MessageAddress &pFrom,
       mCc(pCc),
       mBcc(pBcc),
       mAttachments(pAttachments) {
-    //TODO Implement throw on empty To address
+    if (pTo.empty()) {
+        throw std::invalid_argument("To cannot be empty");
+    }
 }
 
 const MessageAddress &Message::getFrom() const {
@@ -63,3 +68,20 @@ size_t Message::getAttachmentsCount() const {
     return mAttachments.size();
 }
 
+std::vector<jed_utils::MessageAddress> Message::getStdMessageAddressVec(const std::vector<MessageAddress> &src) const {
+    std::vector<jed_utils::MessageAddress> retval = {};
+    std::transform(src.cbegin(),
+                   src.cend(),
+                   std::back_inserter(retval),
+                   [](const auto &recipient) { return recipient.toStdMessageAddress(); });
+    return retval;
+}
+
+std::vector<jed_utils::Attachment> Message::getStdAttachmentVec(const std::vector<Attachment> &src) const {
+    std::vector<jed_utils::Attachment> retval = {};
+    std::transform(src.cbegin(),
+                   src.cend(),
+                   std::back_inserter(retval),
+                   [](const auto &recipient) { return recipient.toStdAttachment(); });
+    return retval;
+}

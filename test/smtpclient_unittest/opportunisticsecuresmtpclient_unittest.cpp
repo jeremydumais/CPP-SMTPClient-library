@@ -1,4 +1,5 @@
 #include "../../src/opportunisticsecuresmtpclient.h"
+#include "../../src/cpp/opportunisticsecuresmtpclient.hpp"
 #include <gtest/gtest.h>
 
 using namespace jed_utils;
@@ -9,6 +10,18 @@ class FakeOpportunisticSecureSMTPClient : public ::testing::Test, public Opportu
         : OpportunisticSecureSMTPClient("127.0.0.1", 587) {
     }
 };
+
+template <typename T>
+class MultiOppSmtpClientFixture : public ::testing::Test {
+ public:
+    MultiOppSmtpClientFixture<T>()
+        : client("test", 587) {
+    }
+    T client;
+};
+
+using MyTypes = ::testing::Types<OpportunisticSecureSMTPClient, cpp::OpportunisticSecureSMTPClient>;
+TYPED_TEST_SUITE(MultiOppSmtpClientFixture, MyTypes);
 
 TEST(OpportunisticSecureSMTPClient_Constructor, NullServerName_ThrowInvalidArgument) {
     try {

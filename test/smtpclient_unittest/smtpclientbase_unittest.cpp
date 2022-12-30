@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <string>
 #include "../../src/smtpclientbase.h"
+#include "../../src/cpp/forcedsecuresmtpclient.hpp"
+#include "../../src/cpp/opportunisticsecuresmtpclient.hpp"
 #include "../../src/cpp/smtpclient.hpp"
 #include "../../src/smtpclienterrors.h"
 #include "../../src/socketerrors.h"
@@ -38,10 +40,11 @@ class FakeSMTPClientBase : public SMTPClientBase {
     }
 };
 
-class FakeCPPSMTPClientBase : public jed_utils::cpp::SmtpClient {
+template<typename T>
+class FakeCPPSMTPClientBase : public T {
  public:
     FakeCPPSMTPClientBase(const char *pServerName, unsigned int pPort)
-        : jed_utils::cpp::SmtpClient(pServerName == nullptr ? nullChar : std::string(pServerName), pPort) {
+        : T(pServerName == nullptr ? nullChar : std::string(pServerName), pPort) {
     }
 
     void cleanup() override {}
@@ -61,17 +64,19 @@ class FakeCPPSMTPClientBase : public jed_utils::cpp::SmtpClient {
     static const char *getNullChar() { return nullChar.c_str(); }
 
     static int extractReturnCode(const char *pOutput) {
-        return jed_utils::cpp::SmtpClient::extractReturnCode(pOutput == nullptr ? getNullChar() : pOutput);
+        return T::extractReturnCode(pOutput == nullptr ? getNullChar() : pOutput);
     }
 
     static ServerAuthOptions *extractAuthenticationOptions(const char *pEhloOutput) {
-        return jed_utils::cpp::SmtpClient::extractAuthenticationOptions(pEhloOutput == nullptr ? getNullChar() : pEhloOutput);
+        return T::extractAuthenticationOptions(pEhloOutput == nullptr ? getNullChar() : pEhloOutput);
     }
 
  private:
     static const std::string nullChar;
 };
-const std::string FakeCPPSMTPClientBase::nullChar = "";
+
+template<typename T>
+const std::string FakeCPPSMTPClientBase<T>::nullChar = "";
 
 template <typename T>
 class MultiSmtpClientBaseFixture : public ::testing::Test {
@@ -82,7 +87,10 @@ class MultiSmtpClientBaseFixture : public ::testing::Test {
     T client;
 };
 
-using MyTypes = ::testing::Types<FakeSMTPClientBase, FakeCPPSMTPClientBase>;
+using MyTypes = ::testing::Types<FakeSMTPClientBase,
+                                 FakeCPPSMTPClientBase<jed_utils::cpp::SmtpClient>,
+                                 FakeCPPSMTPClientBase<jed_utils::cpp::OpportunisticSecureSMTPClient>,
+                                 FakeCPPSMTPClientBase<jed_utils::cpp::ForcedSecureSMTPClient>>;
 TYPED_TEST_SUITE(MultiSmtpClientBaseFixture, MyTypes);
 
 TYPED_TEST(MultiSmtpClientBaseFixture, Constructor_NullServerName_ThrowInvalidArgument) {
@@ -211,10 +219,21 @@ TYPED_TEST(MultiSmtpClientBaseFixture, getCredentials_WithNewClient_ReturnNullPt
     ASSERT_EQ(nullptr, this->client.getCredentials());
 }
 
-TYPED_TEST(MultiSmtpClientBaseFixture, setCredentials_WithABCAnd123_ReturnSuccess) {
-    ASSERT_EQ(nullptr, this->client.getCredentials());
-    this->client.setCredentials(Credential("ABC", "123"));
-    const auto *credentials = this->client.getCredentials();
+TEST(Credential, setCredentials_WithABCAnd123_ReturnSuccess) {
+    FakeSMTPClientBase client("test", 587);
+    ASSERT_EQ(nullptr, client.getCredentials());
+    client.setCredentials(Credential("ABC", "123"));
+    const auto *credentials = client.getCredentials();
+    ASSERT_NE(nullptr, credentials);
+    ASSERT_EQ("ABC", std::string(credentials->getUsername()));
+    ASSERT_EQ("123", std::string(credentials->getPassword()));
+}
+
+TEST(CPP_Credential, setCredentials_WithABCAnd123_ReturnSuccess) {
+    FakeCPPSMTPClientBase<::jed_utils::cpp::SmtpClient> client("test", 587);
+    ASSERT_EQ(nullptr, client.getCredentials());
+    client.setCredentials(jed_utils::cpp::Credential("ABC", "123"));
+    const auto *credentials = client.getCredentials();
     ASSERT_NE(nullptr, credentials);
     ASSERT_EQ("ABC", std::string(credentials->getUsername()));
     ASSERT_EQ("123", std::string(credentials->getPassword()));
@@ -343,7 +362,7 @@ TEST(SMTPClientBase, getErrorMessage_r_WithZeroLength_ReturnMinus1) {
 
 TEST(CPP_SmtpClient, getErrorMessage_r_WithZero_ReturnMinus1) {
     std::string msg = "";
-    ASSERT_EQ(0, FakeCPPSMTPClientBase::getErrorMessage_r(0, msg));
+    ASSERT_EQ(0, FakeCPPSMTPClientBase<jed_utils::cpp::SmtpClient>::getErrorMessage_r(0, msg));
     ASSERT_EQ("No message correspond to this error code", msg);
 }
 
@@ -359,7 +378,7 @@ TEST(SMTPClientBase, getErrorMessage_r_WithCharPtrOfFive_Return6) {
 
 TEST(CPP_SmtpClient, getErrorMessage_r_WithMinus1_Return0) {
     std::string buffer = "";
-    ASSERT_EQ(0, FakeCPPSMTPClientBase::getErrorMessage_r(SOCKET_INIT_SESSION_CREATION_ERROR,
+    ASSERT_EQ(0, FakeCPPSMTPClientBase<jed_utils::cpp::SmtpClient>::getErrorMessage_r(SOCKET_INIT_SESSION_CREATION_ERROR,
                                                           buffer));
     ASSERT_EQ("Unable to create the socket", buffer);
 }

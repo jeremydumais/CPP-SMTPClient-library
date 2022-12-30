@@ -1,9 +1,23 @@
 #include "../../src/credential.h"
+#include "../../src/cpp/credential.hpp"
 #include <gtest/gtest.h>
+#include <string>
 
 using namespace jed_utils;
 
-TEST(Credential_Constructor, NullUsername) {
+template <typename T>
+class MultiCredentialFixture : public ::testing::Test {
+ public:
+    MultiCredentialFixture<T>()
+        : att("test", "123") {
+    }
+    T att;
+};
+
+using MyTypes = ::testing::Types<Credential, cpp::Credential>;
+TYPED_TEST_SUITE(MultiCredentialFixture, MyTypes);
+
+TEST(Credential, Constructor_NullUsername) {
     try {
         Credential cred(nullptr, "123");
         FAIL();
@@ -13,9 +27,9 @@ TEST(Credential_Constructor, NullUsername) {
     }
 }
 
-TEST(Credential_Constructor, EmptyUsername) {
+TYPED_TEST(MultiCredentialFixture, Constructor_EmptyUsername) {
     try {
-        Credential cred("", "123");
+        TypeParam cred("", "123");
         FAIL();
     }
     catch(std::invalid_argument &err) {
@@ -23,9 +37,9 @@ TEST(Credential_Constructor, EmptyUsername) {
     }
 }
 
-TEST(Credential_Constructor, OnlySpacesUsername) {
+TYPED_TEST(MultiCredentialFixture, Constructor_OnlySpacesUsername) {
     try {
-        Credential cred("    ", "123");
+        TypeParam cred("    ", "123");
         FAIL();
     }
     catch(std::invalid_argument &err) {
@@ -33,7 +47,7 @@ TEST(Credential_Constructor, OnlySpacesUsername) {
     }
 }
 
-TEST(Credential_Constructor, NullPassword) {
+TEST(Credential, Constructor_NullPassword) {
     try {
         Credential cred("test", nullptr);
         FAIL();
@@ -43,9 +57,9 @@ TEST(Credential_Constructor, NullPassword) {
     }
 }
 
-TEST(Credential_Constructor, EmptyPassword) {
+TYPED_TEST(MultiCredentialFixture, Constructor_EmptyPassword) {
     try {
-        Credential cred("test", "");
+        TypeParam cred("test", "");
         FAIL();
     }
     catch(std::invalid_argument &err) {
@@ -53,61 +67,61 @@ TEST(Credential_Constructor, EmptyPassword) {
     }
 }
 
-TEST(Credential_Constructor, ValidOnlySpacesPassword) {
-    Credential cred("Test3", "   ");
-    ASSERT_STREQ("Test3", cred.getUsername());
-    ASSERT_STREQ("   ", cred.getPassword());
+TYPED_TEST(MultiCredentialFixture, Constructor_ValidOnlySpacesPassword) {
+    TypeParam cred("Test3", "   ");
+    ASSERT_EQ("Test3", std::string(cred.getUsername()));
+    ASSERT_EQ("   ", std::string(cred.getPassword()));
 }
 
-TEST(Credential_CopyConstructor, CredentialCopyConstructorValid) {
-    Credential* cred1 = new Credential("test", "123");
-    Credential cred2(*cred1);
+TYPED_TEST(MultiCredentialFixture, CopyConstructor_CredentialCopyConstructorValid) {
+    TypeParam *cred1 = new TypeParam("test", "123");
+    TypeParam cred2(*cred1);
     delete cred1;
-    ASSERT_STREQ("test", cred2.getUsername());
-    ASSERT_STREQ("123", cred2.getPassword());
+    ASSERT_EQ("test", std::string(cred2.getUsername()));
+    ASSERT_EQ("123", std::string(cred2.getPassword()));
 }
 
-TEST(Credential_CopyAssignment, CredentialCopyAssignmentValid) {
-    Credential* cred1 = new Credential("test", "123");
-    Credential cred2("aaa", "bbb");
+TYPED_TEST(MultiCredentialFixture, CopyAssignment_CredentialCopyAssignmentValid) {
+    TypeParam *cred1 = new TypeParam("test", "123");
+    TypeParam cred2("aaa", "bbb");
     cred2 = *cred1;
     delete cred1;
-    ASSERT_STREQ("test", cred2.getUsername());
-    ASSERT_STREQ("123", cred2.getPassword());
+    ASSERT_EQ("test", std::string(cred2.getUsername()));
+    ASSERT_EQ("123", std::string(cred2.getPassword()));
 }
 
-TEST(Credential_MoveConstructor, CredentialMoveConstructorValid) {
-    Credential cred1("test", "123");
-    Credential cred2(std::move(cred1));
-    ASSERT_STREQ("test", cred2.getUsername());
-    ASSERT_STREQ("123", cred2.getPassword());
+TYPED_TEST(MultiCredentialFixture, MoveConstructor_CredentialMoveConstructorValid) {
+    TypeParam cred1("test", "123");
+    TypeParam cred2(std::move(cred1));
+    ASSERT_EQ("test", std::string(cred2.getUsername()));
+    ASSERT_EQ("123", std::string(cred2.getPassword()));
 }
 
-TEST(Credential_MoveAssignment, CredentialMoveAssignmentValid) {
-    Credential cred1("test", "123");
-    Credential cred2("aaa", "bbb");
+TYPED_TEST(MultiCredentialFixture, MoveAssignment_CredentialMoveAssignmentValid) {
+    TypeParam cred1("test", "123");
+    TypeParam cred2("aaa", "bbb");
     cred2 = std::move(cred1);
-    ASSERT_STREQ("test", cred2.getUsername());
-    ASSERT_STREQ("123", cred2.getPassword());
+    ASSERT_EQ("test", std::string(cred2.getUsername()));
+    ASSERT_EQ("123", std::string(cred2.getPassword()));
 }
 
-TEST(Credential_getUsername, ValidUsername) {
-    Credential cred("Test3", "123");
-    ASSERT_STREQ("Test3", cred.getUsername());
+TYPED_TEST(MultiCredentialFixture, getUsername_ValidUsername) {
+    TypeParam cred("Test3", "123");
+    ASSERT_EQ("Test3", std::string(cred.getUsername()));
 }
 
-TEST(Credential_getPassword, ValidPassword) {
-    Credential cred("Test3", "123");
-    ASSERT_STREQ("123", cred.getPassword());
+TYPED_TEST(MultiCredentialFixture, getPassword_ValidPassword) {
+    TypeParam cred("Test3", "123");
+    ASSERT_EQ("123", std::string(cred.getPassword()));
 }
 
-TEST(Credential_setUsername, ValidUsername) {
-    Credential cred("Test3", "123");
+TYPED_TEST(MultiCredentialFixture, setUsername_ValidUsername) {
+    TypeParam cred("Test3", "123");
     cred.setUsername("Test4");
-    ASSERT_STREQ("Test4", cred.getUsername());
+    ASSERT_EQ("Test4", std::string(cred.getUsername()));
 }
 
-TEST(Credential_setUsername, NullUsername) {
+TEST(Credential, setUsername_NullUsername) {
     Credential cred("Test", "123");
     try {
         cred.setUsername(nullptr);
@@ -118,8 +132,8 @@ TEST(Credential_setUsername, NullUsername) {
     }
 }
 
-TEST(Credential_setUsername, EmptyUsername) {
-    Credential cred("Test", "123");
+TYPED_TEST(MultiCredentialFixture, setUsername_EmptyUsername) {
+    TypeParam cred("Test", "123");
     try {
         cred.setUsername("");
         FAIL();
@@ -129,8 +143,8 @@ TEST(Credential_setUsername, EmptyUsername) {
     }
 }
 
-TEST(Credential_setUsername, OnlySpacesUsername) {
-    Credential cred("Test", "123");
+TYPED_TEST(MultiCredentialFixture, setUsername_OnlySpacesUsername) {
+    TypeParam cred("Test", "123");
     try {
         cred.setUsername("    ");
         FAIL();
@@ -140,13 +154,13 @@ TEST(Credential_setUsername, OnlySpacesUsername) {
     }
 }
 
-TEST(Credential_setPassword, ValidPassword) {
-    Credential cred("Test3", "123");
+TYPED_TEST(MultiCredentialFixture, setPassword_ValidPassword) {
+    TypeParam cred("Test3", "123");
     cred.setPassword("432");
-    ASSERT_STREQ("432", cred.getPassword());
+    ASSERT_EQ("432", std::string(cred.getPassword()));
 }
 
-TEST(Credential_setPassword, NullPassword) {
+TEST(Credential, setPassword_NullPassword) {
     Credential cred("Test", "123");
     try {
         cred.setPassword(nullptr);
@@ -157,8 +171,8 @@ TEST(Credential_setPassword, NullPassword) {
     }
 }
 
-TEST(Credential_setPassword, EmptyPassword) {
-    Credential cred("Test", "123");
+TYPED_TEST(MultiCredentialFixture, setPassword_EmptyPassword) {
+    TypeParam cred("Test", "123");
     try {
         cred.setPassword("");
         FAIL();
@@ -168,8 +182,8 @@ TEST(Credential_setPassword, EmptyPassword) {
     }
 }
 
-TEST(Credential_setPassword, ValidOnlySpacesPassword) {
-    Credential cred("Test3", "123");
+TYPED_TEST(MultiCredentialFixture, setPassword_ValidOnlySpacesPassword) {
+    TypeParam cred("Test3", "123");
     cred.setPassword("   ");
-    ASSERT_STREQ("   ", cred.getPassword());
+    ASSERT_EQ("   ", std::string(cred.getPassword()));
 }

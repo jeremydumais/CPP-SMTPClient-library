@@ -22,3 +22,9 @@ std::string Attachment::getBase64EncodedFile() const {
 std::string Attachment::getMimeType() const {
     return jed_utils::Attachment::getMimeType();
 }
+
+jed_utils::Attachment Attachment::toStdAttachment() const {
+    return jed_utils::Attachment(jed_utils::Attachment::getFilename(),
+                                 jed_utils::Attachment::getName());
+}
+

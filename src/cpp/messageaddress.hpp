@@ -4,6 +4,7 @@
 #include <cstring>
 #include <sstream>
 #include <string>
+#include <vector>
 #include "../messageaddress.h"
 
 #ifdef _WIN32
@@ -35,7 +36,7 @@ class CPP_MESSAGEADDRESS_API MessageAddress : private jed_utils::MessageAddress 
                             const std::string &pDisplayName = "");
 
     /** Destructor of the MessageAddress */
-    ~MessageAddress() = default;
+    ~MessageAddress() override = default;
 
     /** MessageAddress copy constructor. */
     MessageAddress(const MessageAddress& other) = default;
@@ -61,7 +62,10 @@ class CPP_MESSAGEADDRESS_API MessageAddress : private jed_utils::MessageAddress 
     /** Return the display name. */
     std::string getDisplayName() const;
 
+    jed_utils::MessageAddress toStdMessageAddress() const;
+
     friend class Message;
+
  private:
     MessageAddress();
 };

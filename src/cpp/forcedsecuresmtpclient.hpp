@@ -1,53 +1,50 @@
-#ifndef CPPSMTPCLIENT
-#define CPPSMTPCLIENT
+#ifndef CPPFORCEDSECURESMTPCLIENT_H
+#define CPPFORCEDSECURESMTPCLIENT_H
 
-#include <string>
 #include "credential.hpp"
-#include "message.hpp"
-#include "../serverauthoptions.h"
-#include "../smtpclient.h"
+#include "../forcedsecuresmtpclient.h"
 
 #ifdef _WIN32
     #ifdef SMTPCLIENT_EXPORTS
-        #define CPP_SMTPCLIENT_API __declspec(dllexport)
+        #define CPP_FORCEDSECURESMTPCLIENT_API __declspec(dllexport)
     #else
-        #define CPP_SMTPCLIENT_API __declspec(dllimport)
+        #define CPP_FORCEDSECURESMTPCLIENT_API __declspec(dllimport)
     #endif
 #else
-    #define CPP_SMTPCLIENT_API
+    #define CPP_FORCEDSECURESMTPCLIENT_API
 #endif
 
 namespace jed_utils {
 namespace cpp {
-/** @brief The SmtpClient should be used to communicate with internal relay servers.
- *  This client doesn't provided encryption for communication.
- *  The communication is usually done via port 25.
+/** @brief The ForcedSecureSMTPClient should be your default choice for
+ *  communicating with modern SMTP servers. The communication is usually done
+ *  via port 587.
  */
-class CPP_SMTPCLIENT_API SmtpClient : private jed_utils::SmtpClient {
+class CPP_FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : private jed_utils::ForcedSecureSMTPClient {
  public:
     /**
-     *  @brief  Construct a new SmtpClient.
+     *  @brief  Construct a new ForcedSecureSMTPClient.
      *  @param pServerName The name of the server.
      *  Example: smtp.domainexample.com
      *  @param pPort The server port number.
      *  Example: 25, 465, 587
      */
-    SmtpClient(const std::string &pServerName, unsigned int pPort);
+    ForcedSecureSMTPClient(const std::string &pServerName, unsigned int pPort);
 
-    /** Destructor of the SmtpClient. */
-    virtual ~SmtpClient() override;
+    /** Destructor of the ForcedSecureSMTPClient. */
+    virtual ~ForcedSecureSMTPClient() override;
 
-    /** SmtpClient copy constructor. */
-    SmtpClient(const SmtpClient &other) = default;
+    /** ForcedSecureSMTPClient copy constructor. */
+    ForcedSecureSMTPClient(const ForcedSecureSMTPClient& other) = default;
 
-    /** SmtpClient copy assignment operator. */
-    SmtpClient& operator=(const SmtpClient &other) = default;
+    /** ForcedSecureSMTPClient copy assignment operator. */
+    ForcedSecureSMTPClient& operator=(const ForcedSecureSMTPClient& other) = default;
 
-    /** SmtpClient move constructor. */
-    SmtpClient(SmtpClient &&other) noexcept = default;
+    /** ForcedSecureSMTPClient move constructor. */
+    ForcedSecureSMTPClient(ForcedSecureSMTPClient&& other) noexcept = default;
 
-    /** SmtpClient move assignment operator. */
-    SmtpClient& operator=(SmtpClient &&other) noexcept = default;
+    /** ForcedSecureSMTPClient move assignment operator. */
+    ForcedSecureSMTPClient& operator=(ForcedSecureSMTPClient&& other) noexcept = default;
 
     /** Return the server name. */
     std::string getServerName() const;
@@ -135,5 +132,6 @@ class CPP_SMTPCLIENT_API SmtpClient : private jed_utils::SmtpClient {
 };
 }  // namespace cpp
 }  // namespace jed_utils
+
 
 #endif

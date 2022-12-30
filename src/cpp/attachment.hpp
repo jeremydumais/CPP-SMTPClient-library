@@ -32,7 +32,7 @@ class CPP_ATTACHMENT_API Attachment : private jed_utils::Attachment {
     explicit Attachment(const std::string &pFilename, const std::string &pName = "");
 
     /** Destructor of the Attachment */
-    ~Attachment() = default;
+    ~Attachment() override = default;
 
     /** Attachment copy constructor. */
     Attachment(const Attachment& other) = default;
@@ -57,6 +57,8 @@ class CPP_ATTACHMENT_API Attachment : private jed_utils::Attachment {
 
     /** Return the MIME type corresponding to the file extension. */
     std::string getMimeType() const;
+
+    jed_utils::Attachment toStdAttachment() const;
 };
 }  // namespace cpp
 }  // namespace jed_utils

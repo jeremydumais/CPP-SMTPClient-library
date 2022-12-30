@@ -1,53 +1,50 @@
-#ifndef CPPSMTPCLIENT
-#define CPPSMTPCLIENT
+#ifndef CPPOPPORTUNISTICSECURESMTPCLIENT_H
+#define CPPOPPORTUNISTICSECURESMTPCLIENT_H
 
-#include <string>
 #include "credential.hpp"
-#include "message.hpp"
-#include "../serverauthoptions.h"
-#include "../smtpclient.h"
+#include "../opportunisticsecuresmtpclient.h"
 
 #ifdef _WIN32
     #ifdef SMTPCLIENT_EXPORTS
-        #define CPP_SMTPCLIENT_API __declspec(dllexport)
+        #define CPP_OPPORTUNISTICSECURESMTPCLIENT_API __declspec(dllexport)
     #else
-        #define CPP_SMTPCLIENT_API __declspec(dllimport)
+        #define CPP_OPPORTUNISTICSECURESMTPCLIENT_API __declspec(dllimport)
     #endif
 #else
-    #define CPP_SMTPCLIENT_API
+    #define CPP_OPPORTUNISTICSECURESMTPCLIENT_API
 #endif
 
 namespace jed_utils {
 namespace cpp {
-/** @brief The SmtpClient should be used to communicate with internal relay servers.
- *  This client doesn't provided encryption for communication.
- *  The communication is usually done via port 25.
+/** @brief The OpportunisticSecureSMTPClient should be your default choice for
+ *  communicating with modern SMTP servers. The communication is usually done
+ *  via port 587.
  */
-class CPP_SMTPCLIENT_API SmtpClient : private jed_utils::SmtpClient {
+class CPP_OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : private jed_utils::OpportunisticSecureSMTPClient {
  public:
     /**
-     *  @brief  Construct a new SmtpClient.
+     *  @brief  Construct a new OpportunisticSecureSMTPClient.
      *  @param pServerName The name of the server.
      *  Example: smtp.domainexample.com
      *  @param pPort The server port number.
      *  Example: 25, 465, 587
      */
-    SmtpClient(const std::string &pServerName, unsigned int pPort);
+    OpportunisticSecureSMTPClient(const std::string &pServerName, unsigned int pPort);
 
-    /** Destructor of the SmtpClient. */
-    virtual ~SmtpClient() override;
+    /** Destructor of the OpportunisticSecureSMTPClient. */
+    virtual ~OpportunisticSecureSMTPClient() override;
 
-    /** SmtpClient copy constructor. */
-    SmtpClient(const SmtpClient &other) = default;
+    /** OpportunisticSecureSMTPClient copy constructor. */
+    OpportunisticSecureSMTPClient(const OpportunisticSecureSMTPClient& other) = default;
 
-    /** SmtpClient copy assignment operator. */
-    SmtpClient& operator=(const SmtpClient &other) = default;
+    /** OpportunisticSecureSMTPClient copy assignment operator. */
+    OpportunisticSecureSMTPClient& operator=(const OpportunisticSecureSMTPClient& other) = default;
 
-    /** SmtpClient move constructor. */
-    SmtpClient(SmtpClient &&other) noexcept = default;
+    /** OpportunisticSecureSMTPClient move constructor. */
+    OpportunisticSecureSMTPClient(OpportunisticSecureSMTPClient&& other) noexcept = default;
 
-    /** SmtpClient move assignment operator. */
-    SmtpClient& operator=(SmtpClient &&other) noexcept = default;
+    /** OpportunisticSecureSMTPClient move assignment operator. */
+    OpportunisticSecureSMTPClient& operator=(OpportunisticSecureSMTPClient&& other) noexcept = default;
 
     /** Return the server name. */
     std::string getServerName() const;
@@ -135,5 +132,6 @@ class CPP_SMTPCLIENT_API SmtpClient : private jed_utils::SmtpClient {
 };
 }  // namespace cpp
 }  // namespace jed_utils
+
 
 #endif

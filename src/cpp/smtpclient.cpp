@@ -8,6 +8,10 @@ SmtpClient::SmtpClient(const std::string &pServerName, unsigned int pPort)
     : jed_utils::SmtpClient(pServerName.c_str(), pPort) {
 }
 
+SmtpClient::~SmtpClient() {
+    delete mCredential;
+}
+
 std::string SmtpClient::getServerName() const {
     return jed_utils::SmtpClient::getServerName();
 }
@@ -24,8 +28,8 @@ std::string SmtpClient::getCommunicationLog() const {
     return jed_utils::SmtpClient::getCommunicationLog();
 }
 
-const jed_utils::Credential *SmtpClient::getCredentials() const {
-    return jed_utils::SMTPClientBase::getCredentials();
+const Credential *SmtpClient::getCredentials() const {
+    return mCredential;
 }
 
 void SmtpClient::setServerName(const std::string &pServerName) {
@@ -40,8 +44,11 @@ void SmtpClient::setCommandTimeout(unsigned int pTimeOutInSeconds) {
     jed_utils::SMTPClientBase::setCommandTimeout(pTimeOutInSeconds);
 }
 
-void SmtpClient::setCredentials(const jed_utils::Credential &pCredential) {
-    jed_utils::SMTPClientBase::setCredentials(pCredential);
+void SmtpClient::setCredentials(const Credential &pCredential) {
+    jed_utils::SMTPClientBase::setCredentials(jed_utils::Credential(pCredential.getUsername().c_str(),
+                                                                    pCredential.getPassword().c_str()));
+    delete mCredential;
+    mCredential = new Credential(pCredential);
 }
 
 void SmtpClient::setKeepUsingBaseSendCommands(bool pValue) {
@@ -69,7 +76,6 @@ jed_utils::ServerAuthOptions *SmtpClient::extractAuthenticationOptions(const std
     return jed_utils::SMTPClientBase::extractAuthenticationOptions(pEhloOutput.c_str());
 }
 
-//TODO To implement
-//int sendMail(const Message &pMsg) {
-
-//}
+int SmtpClient::sendMail(const jed_utils::Message &pMsg) {
+    return jed_utils::SmtpClient::sendMail(pMsg);
+}

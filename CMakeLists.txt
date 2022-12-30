@@ -100,9 +100,13 @@ set(PROJECT_SOURCE_FILES ${SRC_PATH}/attachment.cpp
     ${SRC_PATH}/stringutils.cpp
     ${SRC_PATH}/errorresolver.cpp
     ${SRC_PATH}/cpp/attachment.cpp
+    ${SRC_PATH}/cpp/credential.cpp
+    ${SRC_PATH}/cpp/forcedsecuresmtpclient.cpp
     ${SRC_PATH}/cpp/htmlmessage.cpp
+    ${SRC_PATH}/cpp/plaintextmessage.cpp
     ${SRC_PATH}/cpp/message.cpp
     ${SRC_PATH}/cpp/messageaddress.cpp
+    ${SRC_PATH}/cpp/opportunisticsecuresmtpclient.cpp
     ${SRC_PATH}/cpp/smtpclient.cpp)
 
 if (WIN32)
@@ -204,36 +208,6 @@ else()
     endif()
 endif()
 
-# if (WIN32)
-#     # Copy the OpenSSL dependency files
-#     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-#         set(BUILD_MODE_OUTPUT_FOLDER "Debug")
-#     else()
-#         set(BUILD_MODE_OUTPUT_FOLDER "Release")
-#     endif()
-#     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-#         # 64 bits
-#         if (EXISTS "${OPENSSL_INCLUDE_DIR}/../bin64/libsslMD.dll")
-#             configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libsslMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMD.dll COPYONLY)
-#         endif()
-#         if (EXISTS "${OPENSSL_INCLUDE_DIR}/../bin64/libcryptoMD.dll")
-#             configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libcryptoMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMD.dll COPYONLY)
-#         endif()
-#         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-#             configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libsslMDd.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMDd.dll COPYONLY)
-#             configure_file(${OPENSSL_INCLUDE_DIR}/../bin64/libcryptoMDd.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMDd.dll COPYONLY)
-#         endif()
-#     elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-#         # 32 bits
-#         configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libsslMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMD.dll COPYONLY)
-#         configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libcryptoMD.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMD.dll COPYONLY)
-#         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-#             configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libsslMDd.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libsslMDd.dll COPYONLY)
-#             configure_file(${OPENSSL_INCLUDE_DIR}/../bin/libcryptoMDd.dll ${CMAKE_BINARY_DIR}/${BUILD_MODE_OUTPUT_FOLDER}/libcryptoMDd.dll COPYONLY)
-#         endif()
-#     endif()
-# endif()
-
 #Run clang-tidy on project
 if(CLANG_TIDY_EXE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set_target_properties(${PROJECT_NAME} PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
@@ -275,7 +249,9 @@ if (BUILD_TESTING)
         ${TEST_SRC_PATH}/message_cpp_unittest.cpp
         ${TEST_SRC_PATH}/attachment_unittest.cpp
         ${TEST_SRC_PATH}/credential_unittest.cpp
+        ${TEST_SRC_PATH}/htmlmessage_cpp_unittest.cpp
         ${TEST_SRC_PATH}/plaintextmessage_unittest.cpp
+        ${TEST_SRC_PATH}/plaintextmessage_cpp_unittest.cpp
         ${TEST_SRC_PATH}/stringutils_unittest.cpp
         ${TEST_SRC_PATH}/opportunisticsecuresmtpclient_unittest.cpp
         ${TEST_SRC_PATH}/smtpclientbase_unittest.cpp

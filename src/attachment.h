@@ -30,7 +30,7 @@ class ATTACHMENT_API Attachment {
     explicit Attachment(const char *pFilename, const char *pName = "");
 
     /** Destructor of the Attachment */
-    ~Attachment();
+    virtual ~Attachment();
 
     /** Attachment copy constructor. */
     Attachment(const Attachment& other);

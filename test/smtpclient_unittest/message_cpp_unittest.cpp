@@ -98,6 +98,19 @@ TEST(Message_constructor, WithExtendedInfos_Success) {
     validateFakeMessageSample2(msg);
 }
 
+TEST(Message_constructor, WithEmptyToArgs_ThrowInvalidArgumentException) {
+    try {
+        FakeMessage msg(MessageAddress("from@from.com"),
+                        {},
+                        "TestSubject",
+                        "TestBody");
+        FAIL();
+    }
+    catch(std::invalid_argument &err) {
+        ASSERT_STREQ("To cannot be empty", err.what());
+    }
+}
+
 TEST(Message_CopyConstructor, MessageCopyConstructorValid) {
     auto msg1 = getFakeMessageSample2();
     FakeMessage msg2(msg1);
@@ -124,5 +137,5 @@ TEST(Message_MoveAssignment, MessageMoveAssignmentValid) {
     validateFakeMessageSample2(msg2);
 }
 
-}  // namespace cpp_message_unitest
-}  // namespace jed_utils
+}  // namespace cpp_message
+}  // namespace jed_utils_unittest
