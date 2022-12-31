@@ -124,18 +124,6 @@ if (WIN32)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    #For MSVC create the library as a shared library
-    if (NOT DEFINED OPENSSL_LIBRARIES_BY_MACHINE_TYPE)
-        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-            # 64 bits
-            set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE "libsslMD" "libcryptoMD")
-            set(OPENSSL_ARCHITECTURE_SUFFIX "64")
-        elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-            # 32 bits
-            set(OPENSSL_LIBRARIES_BY_MACHINE_TYPE ${OPENSSL_LIBRARIES})
-            set(OPENSSL_ARCHITECTURE_SUFFIX "")
-        endif()
-    endif()
     #If OPENSSL_ROOT_DIR was not provided search for the environment variable
     if (NOT DEFINED OPENSSL_ROOT_DIR)
         message(STATUS "No OPENSSL_ROOT_DIR variable provided so searching for the OPENSSL_ROOT_DIR environment variable...")
@@ -147,15 +135,16 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
     endif()
     if (NOT DEFINED OPENSSL_INCLUDE_DIRECTORY)
-        set(OPENSSL_INCLUDE_DIRECTORY ${OPENSSL_ROOT_DIR}/include${OPENSSL_ARCHITECTURE_SUFFIX})
+        set(OPENSSL_INCLUDE_DIRECTORY ${OPENSSL_ROOT_DIR}/include)
     endif()
     message(STATUS "Will use OpenSSL include directory ${OPENSSL_INCLUDE_DIRECTORY}")
     include_directories(${OPENSSL_INCLUDE_DIRECTORY})
     if (NOT DEFINED OPENSSL_LIBRARY_DIRECTORY)
-        set(OPENSSL_LIBRARY_DIRECTORY ${OPENSSL_ROOT_DIR}/lib${OPENSSL_ARCHITECTURE_SUFFIX})
+        set(OPENSSL_LIBRARY_DIRECTORY ${OPENSSL_ROOT_DIR}/lib)
     endif()
     message(STATUS "Will use OpenSSL lib directory ${OPENSSL_LIBRARY_DIRECTORY}")
     link_directories(${OPENSSL_LIBRARY_DIRECTORY})
+    message(STATUS "Will use OpenSSL libraries files ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY}")
     add_library(${PROJECT_NAME} SHARED
         ${PROJECT_SOURCE_FILES} ${VersionFilesOutputVariable})
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -164,7 +153,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         PRIVATE SMTPCLIENT_EXPORTS
         INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
         INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
-    target_link_libraries(${PROJECT_NAME} Ws2_32 ${OPENSSL_LIBRARIES_BY_MACHINE_TYPE} crypt32 cryptui)
+    target_link_libraries(${PROJECT_NAME} Ws2_32 ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} crypt32 cryptui)
 else()
     #For other compiler create the library as a static library
     add_library(${PROJECT_NAME}
