@@ -14,6 +14,9 @@
 
 Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-build-the-SMTP-client-or-integrate-it-in-your-application) for a quick guide on how to build the SMTP client and integrate it in your application.
 
+Follow these guides to build the library on [Windows](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-Windows)
+and [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-Linux).
+
 ## Download latest binaries
 
 ### Windows
