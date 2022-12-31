@@ -1,156 +1,224 @@
 #include "errorresolver.h"
+#include <cstddef>
+#include <cstring>
+#include <string>
 #include "smtpclienterrors.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
 
 using namespace jed_utils;
-using namespace std::literals::string_literals;
 
 ErrorResolver::ErrorResolver(int pErrorCode)
-    : mErrorCode(pErrorCode),
-      mErrorMessage(""s)
-{
+    : mErrorCode(pErrorCode) {
+    std::string errorMessage = "";
     switch (mErrorCode) {
         case SOCKET_INIT_SESSION_CREATION_ERROR:
-            mErrorMessage = "Unable to create the socket"s;
-        break;
+            errorMessage = "Unable to create the socket";
+            break;
         case SOCKET_INIT_SESSION_CONNECT_ERROR:
-            mErrorMessage = "Unable to connect to the socket"s;
-        break;
+            errorMessage = "Unable to connect to the socket";
+            break;
         case SOCKET_INIT_SESSION_CONNECT_TIMEOUT:
-            mErrorMessage = "The connection attempt has timed out"s;
-        break;
+            errorMessage = "The connection attempt has timed out";
+            break;
         case SOCKET_INIT_SESSION_WINSOCKET_STARTUP_ERROR:
-            mErrorMessage = "Unable to start WSA (Winsock)"s;
-        break;
+            errorMessage = "Unable to start WSA (Winsock)";
+            break;
         case SOCKET_INIT_SESSION_WINSOCKET_GETADDRINFO_ERROR:
-            mErrorMessage = "Unable to get address info (Winsock)"s;
-        break;
+            errorMessage = "Unable to get address info (Winsock)";
+            break;
         case SOCKET_INIT_SESSION_GETHOSTBYNAME_ERROR:
-            mErrorMessage = "Unable to get host by name"s;
-        break;
+            errorMessage = "Unable to get host by name";
+            break;
+        case SOCKET_INIT_SESSION_FCNTL_GET_ERROR:
+            errorMessage = "Unable to get socket file descriptor status flags";
+            break;
+        case SOCKET_INIT_SESSION_FCNTL_SET_ERROR:
+            errorMessage = "Unable to set socket file descriptor status flags";
+            break;
+        case SOCKET_INIT_SESSION_GET_SOCKET_OPTIONS_ERROR:
+            errorMessage = "Unable to get socket options";
+            break;
+        case SOCKET_INIT_SESSION_DELAYED_CONNECTION_ERROR:
+            errorMessage = "Error in delayed connection";
+            break;
         case SOCKET_INIT_CLIENT_SEND_EHLO_ERROR:
-            mErrorMessage = "Unable to send the EHLO command"s;
-        break;
+            errorMessage = "Unable to send the EHLO command";
+            break;
         case SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT:
-            mErrorMessage = "The EHLO command has timed out"s;
-        break;
+            errorMessage = "The EHLO command has timed out";
+            break;
         case SOCKET_INIT_CLIENT_SEND_STARTTLS_ERROR:
-            mErrorMessage = "Unable to send the STARTTLS command"s;
-        break;
+            errorMessage = "Unable to send the STARTTLS command";
+            break;
         case SOCKET_INIT_CLIENT_SEND_STARTTLS_TIMEOUT:
-            mErrorMessage = "The STARTTLS command has timed out"s;
-        break;
+            errorMessage = "The STARTTLS command has timed out";
+            break;
         case SSL_CLIENT_STARTTLS_INITSSLCTX_ERROR:
-            mErrorMessage = "Unable to initialize the SSL Context"s;
-        break;
+            errorMessage = "Unable to initialize the SSL Context";
+            break;
         case SSL_CLIENT_STARTTLS_BIONEWSSLCONNECT_ERROR:
-            mErrorMessage = "Unable to create the SSL BIO"s;
-        break;
+            errorMessage = "Unable to create the SSL BIO";
+            break;
         case SSL_CLIENT_STARTTLS_WIN_CERTOPENSYSTEMSTORE_ERROR:
-            mErrorMessage = "Unable to open the Windows Certificate System Store"s;
-        break;
+            errorMessage = "Unable to open the Windows Certificate System Store";
+            break;
         case SSL_CLIENT_STARTTLS_CTX_SET_DEFAULT_VERIFY_PATHS_ERROR:
-            mErrorMessage = "Unable to open the specifies that the default locations from which CA certificates are loaded"s;
-        break;
+            errorMessage = "Unable to open the specifies that the default locations from which CA certificates are loaded";
+            break;
         case SSL_CLIENT_STARTTLS_BIO_CONNECT_ERROR:
-            mErrorMessage = "Unable to connect SSL BIO"s;
-        break;
+            errorMessage = "Unable to connect SSL BIO";
+            break;
         case SSL_CLIENT_STARTTLS_BIO_HANDSHAKE_ERROR:
-            mErrorMessage = "Unable to handshake with SSL BIO"s;
-        break;
+            errorMessage = "Unable to handshake with SSL BIO";
+            break;
         case SSL_CLIENT_STARTTLS_GET_CERTIFICATE_ERROR:
-            mErrorMessage = "Unable to get peer certificate"s;
-        break;
+            errorMessage = "Unable to get peer certificate";
+            break;
         case SSL_CLIENT_STARTTLS_VERIFY_RESULT_ERROR:
-            mErrorMessage = "Unable to verify the result of chain verification"s;
-        break;
+            errorMessage = "Unable to verify the result of chain verification";
+            break;
         case SSL_CLIENT_INITSECURECLIENT_ERROR:
-            mErrorMessage = "Unable to EHLO the server via the secure channel"s;
-        break;
+            errorMessage = "Unable to EHLO the server via the secure channel";
+            break;
         case SSL_CLIENT_INITSECURECLIENT_TIMEOUT:
-            mErrorMessage = "The EHLO command via the secure channel timed out"s;
-        break;
+            errorMessage = "The EHLO command via the secure channel timed out";
+            break;
         case CLIENT_AUTHENTICATE_ERROR:
-            mErrorMessage = "Unable to authenticate with the credentials provided"s;
-        break;
+            errorMessage = "Unable to authenticate with the credentials provided";
+            break;
         case CLIENT_AUTHENTICATE_TIMEOUT:
-            mErrorMessage = "The authentication to the server has timed out"s;
-        break;
+            errorMessage = "The authentication to the server has timed out";
+            break;
         case CLIENT_AUTHENTICATE_NONEED:
-            mErrorMessage = "The authentication is not needed on the server"s;
-        break;
+            errorMessage = "The authentication is not needed on the server";
+            break;
         case CLIENT_AUTHENTICATION_METHOD_NOTSUPPORTED:
-            mErrorMessage = "The authentication method selected is not supported by the server"s;
-        break;
+            errorMessage = "The authentication method selected is not supported by the server";
+            break;
         case CLIENT_SENDMAIL_MAILFROM_ERROR:
-            mErrorMessage = "The MAIL FROM command return an error"s;
-        break;
+            errorMessage = "The MAIL FROM command return an error";
+            break;
         case CLIENT_SENDMAIL_MAILFROM_TIMEOUT:
-            mErrorMessage = "The MAIL FROM command timed out"s;
-        break;
+            errorMessage = "The MAIL FROM command timed out";
+            break;
         case CLIENT_SENDMAIL_RCPTTO_ERROR:
-            mErrorMessage = "The RCPT TO command return an error"s;
-        break;
+            errorMessage = "The RCPT TO command return an error";
+            break;
         case CLIENT_SENDMAIL_RCPTTO_TIMEOUT:
-            mErrorMessage = "The RCPT TO command timed out"s;
-        break;
+            errorMessage = "The RCPT TO command timed out";
+            break;
         case CLIENT_SENDMAIL_DATA_ERROR:
-            mErrorMessage = "The DATA command return an error"s;
-        break;
+            errorMessage = "The DATA command return an error";
+            break;
         case CLIENT_SENDMAIL_DATA_TIMEOUT:
-            mErrorMessage = "The DATA command timed out"s;
-        break;
+            errorMessage = "The DATA command timed out";
+            break;
         case CLIENT_SENDMAIL_HEADERFROM_ERROR:
-            mErrorMessage = "The From header command return an error"s;
-        break;
+            errorMessage = "The From header command return an error";
+            break;
         case CLIENT_SENDMAIL_HEADERTOANDCC_ERROR:
-            mErrorMessage = "The To and CC header command return an error"s;
-        break;
+            errorMessage = "The To and CC header command return an error";
+            break;
         case CLIENT_SENDMAIL_HEADERSUBJECT_ERROR:
-            mErrorMessage = "The Subject header command return an error"s;
-        break;
+            errorMessage = "The Subject header command return an error";
+            break;
         case CLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR:
-            mErrorMessage = "The Content type header command return an error"s;
-        break;
+            errorMessage = "The Content type header command return an error";
+            break;
         case CLIENT_SENDMAIL_BODYPART_ERROR:
-            mErrorMessage = "The Body part return an error"s;
-        break;
+            errorMessage = "The Body part return an error";
+            break;
         case CLIENT_SENDMAIL_BODY_ERROR:
-            mErrorMessage = "The Body command return an error"s;
-        break;
+            errorMessage = "The Body command return an error";
+            break;
         case CLIENT_SENDMAIL_END_DATA_ERROR:
-            mErrorMessage = "The End data command return an error"s;
-        break;
+            errorMessage = "The End data command return an error";
+            break;
         case CLIENT_SENDMAIL_END_DATA_TIMEOUT:
-            mErrorMessage = "The End data command timed out"s;
-        break;
+            errorMessage = "The End data command timed out";
+            break;
         case CLIENT_SENDMAIL_QUIT_ERROR:
-            mErrorMessage = "The QUIT command return an error"s;
-        break;
+            errorMessage = "The QUIT command return an error";
+            break;
         case SMTPSERVER_AUTHENTICATIONREQUIRED_ERROR:
-            mErrorMessage = "Authentication required"s;
-        break; 
+            errorMessage = "Authentication required";
+            break;
         case SMTPSERVER_AUTHENTICATIONTOOWEAK_ERROR:
-            mErrorMessage = "Authentication mechanism is too weak"s;
-        break;
+            errorMessage = "Authentication mechanism is too weak";
+            break;
         case SMTPSERVER_CREDENTIALSINVALID_ERROR:
-            mErrorMessage = "Authentication credentials invalid"s;
-        break; 
+            errorMessage = "Authentication credentials invalid";
+            break;
         case SMTPSERVER_ENCRYPTIONREQUIREDFORAUTH_ERROR:
-            mErrorMessage = "Encryption required for requested authentication mechanism"s;
-        break;   
+            errorMessage = "Encryption required for requested authentication mechanism";
+            break;
         default:
-            mErrorMessage = "No message correspond to this error code"s;
+            errorMessage = "No message correspond to this error code";
     }
+
+    size_t errorMessageLength = errorMessage.length();
+    mErrorMessage = new char[errorMessageLength + 1];
+    std::strncpy(mErrorMessage, errorMessage.c_str(), errorMessageLength);
+    mErrorMessage[errorMessageLength] = '\0';
 }
 
-int ErrorResolver::getErrorCode() const
-{
+ErrorResolver::~ErrorResolver() {
+    delete[] mErrorMessage;
+    mErrorMessage = nullptr;
+}
+
+// Copy constructor
+ErrorResolver::ErrorResolver(const ErrorResolver& other)
+    : mErrorCode(other.mErrorCode),
+      mErrorMessage(new char[std::strlen(other.mErrorMessage) + 1]) {
+    size_t errorMessageLength = std::strlen(other.mErrorMessage);
+    std::strncpy(mErrorMessage, other.mErrorMessage, errorMessageLength);
+    mErrorMessage[errorMessageLength] = '\0';
+}
+
+// Assignment operator
+ErrorResolver& ErrorResolver::operator=(const ErrorResolver& other) {
+    if (this != &other) {
+        mErrorCode = other.mErrorCode;
+        delete[] mErrorMessage;
+        size_t errorMessageLength = std::strlen(other.mErrorMessage);
+        mErrorMessage = new char[errorMessageLength + 1];
+        std::strncpy(mErrorMessage, other.mErrorMessage, errorMessageLength);
+        mErrorMessage[errorMessageLength] = '\0';
+    }
+    return *this;
+}
+
+// Move constructor
+ErrorResolver::ErrorResolver(ErrorResolver&& other) noexcept
+    : mErrorCode(other.mErrorCode),
+      mErrorMessage(other.mErrorMessage) {
+    other.mErrorCode = 0;
+    // Release the data pointer from the source object so that the destructor
+    // does not free the memory multiple times.
+    other.mErrorMessage = nullptr;
+}
+
+// Move assignement operator
+ErrorResolver& ErrorResolver::operator=(ErrorResolver&& other) noexcept {
+    if (this != &other) {
+        mErrorCode = other.mErrorCode;
+        delete[] mErrorMessage;
+        // Copy the data pointer and its length from the source object.
+        mErrorMessage = other.mErrorMessage;
+        // Release the data pointer from the source object so that
+        // the destructor does not free the memory multiple times.
+        other.mErrorCode = 0;
+        other.mErrorMessage = nullptr;
+    }
+    return *this;
+}
+
+int ErrorResolver::getErrorCode() const {
     return mErrorCode;
 }
 
-const std::string &ErrorResolver::getErrorMessage() const
-{
+const char *ErrorResolver::getErrorMessage() const {
     return mErrorMessage;
 }

@@ -10,3 +10,8 @@
 /.vscode/launch.json
 /.vscode/settings.json
 simpleclient
+.cache
+tags
+Session.vim
+.vimspector.json
+.ccls-cache

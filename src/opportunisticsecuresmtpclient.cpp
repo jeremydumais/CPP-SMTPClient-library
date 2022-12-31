@@ -1,14 +1,16 @@
 #include "opportunisticsecuresmtpclient.h"
+#include <openssl/err.h>
+#include <algorithm>
+#include <string>
+#include <utility>
 #include "smtpclienterrors.h"
 #include "smtpserverstatuscodes.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
 #include "stringutils.h"
-#include <algorithm>
-#include <openssl/err.h>
 
 #ifdef _WIN32
-	#include <WinSock2.h>
+    #include <WinSock2.h>
     #include <ws2tcpip.h>
     #include <BaseTsd.h>
     typedef SSIZE_T ssize_t;
@@ -25,36 +27,31 @@
 using namespace jed_utils;
 
 OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(const char *pServerName, unsigned int pPort)
-    : SecureSMTPClientBase(pServerName, pPort)
-{
+    : SecureSMTPClientBase(pServerName, pPort) {
 }
 
-//Assignment operator
-OpportunisticSecureSMTPClient& OpportunisticSecureSMTPClient::operator=(const OpportunisticSecureSMTPClient& other)
-{
-	if (this != &other) {
+// Assignment operator
+OpportunisticSecureSMTPClient& OpportunisticSecureSMTPClient::operator=(const OpportunisticSecureSMTPClient& other) {
+    if (this != &other) {
         SecureSMTPClientBase::operator=(other);
-	}
-	return *this;
+    }
+    return *this;
 }
 
-//Move constructor
+// Move constructor
 OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(OpportunisticSecureSMTPClient&& other) noexcept
-	: SecureSMTPClientBase(std::move(other))
-{
+    : SecureSMTPClientBase(std::move(other)) {
 }
 
-//Move assignement operator
-OpportunisticSecureSMTPClient& OpportunisticSecureSMTPClient::operator=(OpportunisticSecureSMTPClient&& other) noexcept
-{
-	if (this != &other) {
+// Move assignement operator
+OpportunisticSecureSMTPClient& OpportunisticSecureSMTPClient::operator=(OpportunisticSecureSMTPClient&& other) noexcept {
+    if (this != &other) {
         SecureSMTPClientBase::operator=(std::move(other));
-	}
-	return *this;
+    }
+    return *this;
 }
 
-int OpportunisticSecureSMTPClient::establishConnectionWithServer()
-{
+int OpportunisticSecureSMTPClient::establishConnectionWithServer() {
     int session_init_return_code = initializeSession();
     if (session_init_return_code != 0) {
         return session_init_return_code;
@@ -90,26 +87,23 @@ int OpportunisticSecureSMTPClient::establishConnectionWithServer()
                 return client_auth_return_code;
             }
         }
-    }
-    else {
+    } else {
         addCommunicationLogItem("Info: STARTTLS is not an available option by the server, the communication will then remain unencrypted.");
-        setKeepUsingBaseSendCommands(true); 
+        setKeepUsingBaseSendCommands(true);
     }
     return 0;
 }
 
-int OpportunisticSecureSMTPClient::upgradeToSecureConnection()
-{
+int OpportunisticSecureSMTPClient::upgradeToSecureConnection() {
     std::string start_tls_cmd { "STARTTLS\r\n" };
     addCommunicationLogItem(start_tls_cmd.c_str());
-    return sendRawCommand(start_tls_cmd.c_str(), 
-        SOCKET_INIT_CLIENT_SEND_STARTTLS_ERROR, 
-        SOCKET_INIT_CLIENT_SEND_STARTTLS_TIMEOUT);
+    return sendRawCommand(start_tls_cmd.c_str(),
+            SOCKET_INIT_CLIENT_SEND_STARTTLS_ERROR,
+            SOCKET_INIT_CLIENT_SEND_STARTTLS_TIMEOUT);
 }
 
 
-bool OpportunisticSecureSMTPClient::isStartTLSSupported(const char *pServerResponse)
-{
+bool OpportunisticSecureSMTPClient::isStartTLSSupported(const char *pServerResponse) {
     if (pServerResponse == nullptr) {
         return false;
     }
@@ -117,7 +111,7 @@ bool OpportunisticSecureSMTPClient::isStartTLSSupported(const char *pServerRespo
     if (serverResponse.length() == 0 || StringUtils::trim(serverResponse).empty()) {
         return false;
     }
-    
+
     const std::string STARTTLS_LINE_PREFIX { "250-STARTTLS" };
     return serverResponse.find(STARTTLS_LINE_PREFIX) != std::string::npos;
 }
