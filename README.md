@@ -97,7 +97,7 @@ compatibility between major versions of the MSVC compiler toolsets.
 [C++ binary compatibility between Visual Studio versions](https://learn.microsoft.com/en-us/cpp/porting/binary-compat-2015-2017?view=msvc-170&viewFallbackFrom=vs-2019)
 
 To see some usage examples with Pure C Interface refer to the wiki
-[Some examples with Pure C Interface](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Some-examples-with-pure-c-interface.md)
+[Some examples with Pure C Interface](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Some-examples-with-pure-c-interface)
 
 This problem has been resolved since 2015 so it is no longer an issue.
 
