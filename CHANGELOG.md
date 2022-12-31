@@ -6,8 +6,11 @@ All notable changes to this project will be documented in this file
 
 ### Added
 
-- Added OpenSSL variables in CMakeLists to be able to specify include
-and library path.
+- Added OpenSSL variables in CMakeLists to be able to specify include,
+library path and library files.
+- A set of new classes has been added to the jed_utils::cpp namespace
+to provide a pure C++ way to consume the library. This is the new
+standard from version 1.1.5. See the new class documentation in the wiki.
 
 ### Updated
 
