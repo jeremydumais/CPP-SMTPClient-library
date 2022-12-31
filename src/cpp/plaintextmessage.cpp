@@ -22,3 +22,22 @@ PlaintextMessage::PlaintextMessage(const MessageAddress &pFrom,
 std::string PlaintextMessage::getMimeType() const {
     return "text/plain";
 }
+
+PlaintextMessage::operator jed_utils::PlaintextMessage() const {
+    const auto to = getStdMessageAddressVec(getTo());
+    const auto cc = getStdMessageAddressVec(getCc());
+    const auto bcc = getStdMessageAddressVec(getBcc());
+    const auto att = getStdAttachmentVec(getAttachments());
+    const jed_utils::PlaintextMessage msg (getFrom().toStdMessageAddress(),
+                                  to.data(),
+                                  to.size(),
+                                  getSubject().c_str(),
+                                  getBody().c_str(),
+                                  cc.data(),
+                                  cc.size(),
+                                  bcc.data(),
+                                  bcc.size(),
+                                  att.data(),
+                                  att.size());
+    return msg;
+}

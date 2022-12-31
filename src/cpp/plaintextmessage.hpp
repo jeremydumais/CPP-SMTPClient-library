@@ -6,6 +6,7 @@
 #include "attachment.hpp"
 #include "message.hpp"
 #include "messageaddress.hpp"
+#include "../plaintextmessage.h"
 
 #ifdef _WIN32
     #ifdef SMTPCLIENT_EXPORTS
@@ -45,6 +46,9 @@ class CPP_PLAINTEXTMESSAGE_API PlaintextMessage : public Message {
 
     /** Return the string MIME type of the message (Pure virtual function). */
     std::string getMimeType() const override;
+
+    operator jed_utils::PlaintextMessage() const;
+
 };
 }  // namespace cpp
 }  // namespace jed_utils
