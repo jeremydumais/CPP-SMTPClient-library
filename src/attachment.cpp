@@ -32,6 +32,8 @@ Attachment::~Attachment() {
     mName = nullptr;
     delete[] mFilename;
     mFilename = nullptr;
+    delete[] mContentId;
+    mContentId = nullptr;
 }
 
 // Copy constructor
@@ -44,6 +46,9 @@ Attachment::Attachment(const Attachment& other)
     size_t filename_len = strlen(other.mFilename);
     strncpy(mFilename, other.mFilename, filename_len);
     mFilename[filename_len] = '\0';
+    size_t contentid_len = strlen(other.mContentId);
+    strncpy(mContentId, other.mContentId, contentid_len);
+    mContentId[contentid_len] = '\0';
 }
 
 // Assignment operator
@@ -51,6 +56,7 @@ Attachment& Attachment::operator=(const Attachment& other) {
     if (this != &other) {
         delete[] mName;
         delete[] mFilename;
+        delete[] mContentId;
         // mName
         size_t name_len = strlen(other.mName);
         mName = new char[name_len + 1];
@@ -61,17 +67,23 @@ Attachment& Attachment::operator=(const Attachment& other) {
         mFilename = new char[filename_len + 1];
         strncpy(mFilename, other.mFilename, filename_len);
         mFilename[filename_len] = '\0';
+        // mContentId
+        size_t contentid_len = strlen(other.mContentId);
+        mContentId = new char[contentid_len + 1];
+        strncpy(mContentId, other.mContentId, contentid_len);
+        mContentId[filename_len] = '\0';
     }
     return *this;
 }
 
 // Move constructor
 Attachment::Attachment(Attachment&& other) noexcept
-: mName(other.mName), mFilename(other.mFilename) {
+: mName(other.mName), mFilename(other.mFilename), mContentId(other.mContentId) {
     // Release the data pointer from the source object so that the destructor
     // does not free the memory multiple times.
     other.mName = nullptr;
     other.mFilename = nullptr;
+    other.mContentId = nullptr;
 }
 
 // Move assignement operator
@@ -79,22 +91,25 @@ Attachment& Attachment::operator=(Attachment&& other) noexcept {
     if (this != &other) {
         delete[] mName;
         delete[] mFilename;
+        delete[] mContentId;
         // Copy the data pointer and its length from the source object.
         mName = other.mName;
         mFilename = other.mFilename;
+        mContentId = other.mContentId;
         // Release the data pointer from the source object so that
         // the destructor does not free the memory multiple times.
         other.mName = nullptr;
         other.mFilename = nullptr;
+        other.mContentId = nullptr;
     }
     return *this;
 }
 
 void Attachment::setContentId(char * contentId) {
-    size_t contentId_len = strlen(contentId);
-    mContentId = new char[contentId_len + 1];
-    strncpy(mContentId, contentId, contentId_len);
-    mContentId[contentId_len] = '\0';
+    size_t contentid_len = strlen(contentId);
+    mContentId = new char[contentid_len + 1];
+    strncpy(mContentId, contentId, contentid_len);
+    mContentId[contentid_len] = '\0';
 }
 
 const char *Attachment::getName() const {
