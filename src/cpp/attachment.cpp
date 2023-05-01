@@ -2,12 +2,12 @@
 
 using namespace jed_utils::cpp;
 
-Attachment::Attachment(const std::string &pFilename, const std::string &pName)
-    : jed_utils::Attachment(pFilename.c_str(), pName.c_str()) {
+Attachment::Attachment(const std::string &pFilename, const std::string &pName, const std::string &pContentId)
+    : jed_utils::Attachment(pFilename.c_str(), pName.c_str(), pContentId.c_str()) {
 }
 
-void Attachment::setContentId(std::string contentId) {
-    return jed_utils::Attachment::setContentId((char*)contentId.c_str());
+void Attachment::setContentId(std::string pContentId) {
+    return jed_utils::Attachment::setContentId(pContentId.c_str());
 }
 
 std::string Attachment::getName() const {

@@ -27,7 +27,7 @@ class ATTACHMENT_API Attachment {
      *  @param pName The display name of the file that will appear in
      *  the mail content
      */
-    explicit Attachment(const char *pFilename, const char *pName = "");
+    explicit Attachment(const char *pFilename, const char *pName = "", const char *pContentId = "");
 
     /** Destructor of the Attachment */
     virtual ~Attachment();
@@ -45,7 +45,7 @@ class ATTACHMENT_API Attachment {
     Attachment& operator=(Attachment&& other) noexcept;
 
     /** Set the attachment content id. */
-    void setContentId(char * contentId);
+    void setContentId(const char * pContentId);
 
     /** Return the display name. */
     const char *getName() const;

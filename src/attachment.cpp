@@ -9,7 +9,7 @@
 
 using namespace jed_utils;
 
-Attachment::Attachment(const char *pFilename, const char *pName)
+Attachment::Attachment(const char *pFilename, const char *pName, const char *pContentId)
     : mName(nullptr), mFilename(nullptr), mContentId(nullptr) {
     size_t pFileNameLength = strlen(pFilename);
     if (pFileNameLength == 0 || StringUtils::trim(std::string(pFilename)).length() == 0) {
@@ -26,7 +26,10 @@ Attachment::Attachment(const char *pFilename, const char *pName)
     strncpy(mName, pName, name_len);
     mName[name_len] = '\0';
 
-    mContentId = new char[1] {'\0'};
+    size_t contentid_len = strlen(pContentId);
+    mContentId = new char[contentid_len+1];
+    strncpy(mContentId, pContentId, contentid_len);
+    mContentId[contentid_len] = '\0';
 }
 
 Attachment::~Attachment() {
@@ -108,10 +111,10 @@ Attachment& Attachment::operator=(Attachment&& other) noexcept {
     return *this;
 }
 
-void Attachment::setContentId(char * contentId) {
-    size_t contentid_len = strlen(contentId);
+void Attachment::setContentId(const char * pContentId) {
+    size_t contentid_len = strlen(pContentId);
     mContentId = new char[contentid_len + 1];
-    strncpy(mContentId, contentId, contentid_len);
+    strncpy(mContentId, pContentId, contentid_len);
     mContentId[contentid_len] = '\0';
 }
 
