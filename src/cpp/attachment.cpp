@@ -33,6 +33,7 @@ std::string Attachment::getMimeType() const {
 
 jed_utils::Attachment Attachment::toStdAttachment() const {
     return jed_utils::Attachment(jed_utils::Attachment::getFilename(),
-                                 jed_utils::Attachment::getName());
+                                 jed_utils::Attachment::getName(),
+                                 jed_utils::Attachment::getContentId());
 }
 
