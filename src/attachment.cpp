@@ -10,7 +10,7 @@
 using namespace jed_utils;
 
 Attachment::Attachment(const char *pFilename, const char *pName)
-    : mName(nullptr), mFilename(nullptr) {
+    : mName(nullptr), mFilename(nullptr), mContentId(nullptr) {
     size_t pFileNameLength = strlen(pFilename);
     if (pFileNameLength == 0 || StringUtils::trim(std::string(pFilename)).length() == 0) {
         throw std::invalid_argument("filename");
@@ -25,6 +25,8 @@ Attachment::Attachment(const char *pFilename, const char *pName)
     mName = new char[name_len+1];
     strncpy(mName, pName, name_len);
     mName[name_len] = '\0';
+
+    mContentId = new char[1] {'\0'};
 }
 
 Attachment::~Attachment() {
