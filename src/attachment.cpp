@@ -74,7 +74,7 @@ Attachment& Attachment::operator=(const Attachment& other) {
         size_t contentid_len = strlen(other.mContentId);
         mContentId = new char[contentid_len + 1];
         strncpy(mContentId, other.mContentId, contentid_len);
-        mContentId[filename_len] = '\0';
+        mContentId[contentid_len] = '\0';
     }
     return *this;
 }
