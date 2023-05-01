@@ -885,6 +885,9 @@ std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*>
     std::string retval;
     for (const auto &item : pAttachments) {
         retval += "\r\n--sep\r\n";
+        if (item->getContentId() != nullptr && std::string(item->getContentId()).size() > 0) {
+            retval += "Content-ID: <" + std::string(item->getContentId()) + ">\"\r\n";
+        }
         retval += "Content-Type: " + std::string(item->getMimeType()) + "; file=\"" + std::string(item->getName()) + "\"\r\n";
         retval += "Content-Disposition: Inline; filename=\"" + std::string(item->getName()) + "\"\r\n";
         retval += "Content-Transfer-Encoding: base64\r\n\r\n";

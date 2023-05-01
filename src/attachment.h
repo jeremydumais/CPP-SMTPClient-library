@@ -44,11 +44,17 @@ class ATTACHMENT_API Attachment {
     /** Attachment move assignment operator. */
     Attachment& operator=(Attachment&& other) noexcept;
 
+    /** Set the attachment content id. */
+    void setContentId(char * contentId);
+
     /** Return the display name. */
     const char *getName() const;
 
     /** Return the file name including the path. */
     const char *getFilename() const;
+
+    /** Return the attachment content id. */
+    const char *getContentId() const;
 
     /** Return the base64 representation of the file content. */
     const char *getBase64EncodedFile() const;
@@ -62,6 +68,7 @@ class ATTACHMENT_API Attachment {
     Attachment() = default;
     char *mName;
     char *mFilename;
+    char *mContentId;
 };
 }  // namespace jed_utils
 

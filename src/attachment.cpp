@@ -90,12 +90,20 @@ Attachment& Attachment::operator=(Attachment&& other) noexcept {
     return *this;
 }
 
+void Attachment::setContentId(char * contentId) {
+    mContentId = contentId;
+}
+
 const char *Attachment::getName() const {
     return mName;
 }
 
 const char *Attachment::getFilename() const {
     return mFilename;
+}
+
+const char *Attachment::getContentId() const {
+    return mContentId;
 }
 
 const char *Attachment::getBase64EncodedFile() const {
