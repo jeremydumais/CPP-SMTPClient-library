@@ -46,11 +46,17 @@ class CPP_ATTACHMENT_API Attachment : private jed_utils::Attachment {
     /** Attachment move assignment operator. */
     Attachment& operator=(Attachment&& other) noexcept = default;
 
+    /** Set the attachment content id. */
+    void setContentId(std::string contentId);
+
     /** Return the display name. */
     std::string getName() const;
 
     /** Return the file name including the path. */
     std::string getFilename() const;
+
+    /** Return the attachment content id. */
+    std::string getContentId() const;
 
     /** Return the base64 representation of the file content. */
     std::string getBase64EncodedFile() const;
