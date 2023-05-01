@@ -778,7 +778,7 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg) {
     }
 
     // Content-Type
-    std::string content_type { "Content-Type: multipart/mixed; boundary=sep\r\n\r\n" };
+    std::string content_type { "Content-Type: multipart/related; boundary=sep\r\n\r\n" };
     addCommunicationLogItem(content_type.c_str());
     int header_content_type_ret_code = (*this.*sendCommandPtr)(content_type.c_str(), CLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR);
     if (header_content_type_ret_code != 0) {
@@ -885,11 +885,14 @@ std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*>
     std::string retval;
     for (const auto &item : pAttachments) {
         retval += "\r\n--sep\r\n";
-        if (item->getContentId() != nullptr && std::string(item->getContentId()).size() > 0) {
-            retval += "Content-ID: <" + std::string(item->getContentId()) + ">\r\n";
-        }
         retval += "Content-Type: " + std::string(item->getMimeType()) + "; file=\"" + std::string(item->getName()) + "\"\r\n";
-        retval += "Content-Disposition: Inline; filename=\"" + std::string(item->getName()) + "\"\r\n";
+        if (item->getContentId() != nullptr && std::string(item->getContentId()).size() > 0) {
+            retval += "X-Attachment-Id: " + std::string(item->getContentId()) + "\r\n";
+            retval += "Content-ID: <" + std::string(item->getContentId()) + ">\r\n";
+            retval += "Content-Disposition: attachment; filename=\"" + std::string(item->getName()) + "\"\r\n";
+        } else {
+            retval += "Content-Disposition: Inline; filename=\"" + std::string(item->getName()) + "\"\r\n";
+        }
         retval += "Content-Transfer-Encoding: base64\r\n\r\n";
         retval += std::string((item->getBase64EncodedFile() != nullptr ? item->getBase64EncodedFile() : ""));
     }
