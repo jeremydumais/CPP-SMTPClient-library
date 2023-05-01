@@ -91,7 +91,10 @@ Attachment& Attachment::operator=(Attachment&& other) noexcept {
 }
 
 void Attachment::setContentId(char * contentId) {
-    mContentId = contentId;
+    size_t contentId_len = strlen(contentId);
+    mContentId = new char[contentId_len + 1];
+    strncpy(mContentId, contentId, contentId_len);
+    mContentId[contentId_len] = '\0';
 }
 
 const char *Attachment::getName() const {
