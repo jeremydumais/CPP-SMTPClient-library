@@ -39,7 +39,8 @@ Attachment::~Attachment() {
 // Copy constructor
 Attachment::Attachment(const Attachment& other)
     : mName(new char[strlen(other.mName) + 1]),
-      mFilename(new char[strlen(other.mFilename) + 1]) {
+      mFilename(new char[strlen(other.mFilename) + 1]),
+      mContentId(new char[strlen(other.mContentId) + 1]) {
     size_t name_len = strlen(other.mName);
     strncpy(mName, other.mName, name_len);
     mName[name_len] = '\0';
