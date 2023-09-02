@@ -1,3 +1,4 @@
+#include "gtest/gtest.h"
 #include <gtest/gtest.h>
 #include "../../src/attachment.h"
 #include "../../src/cpp/attachment.hpp"
@@ -40,38 +41,67 @@ TYPED_TEST(MultiAttachmentFixture, Constructor_ValidParam) {
     TypeParam att1("test.png", "");
 }
 
+TYPED_TEST(MultiAttachmentFixture, Constructor_ValidParamAndCID) {
+    TypeParam att1("test.png", "", "CID1@localhost");
+}
+
 TYPED_TEST(MultiAttachmentFixture, CopyConstructor_AttachmentCopyConstructorValid) {
-    TypeParam att1("test.png", "Test");
+    TypeParam att1("test.png", "Test", "CID1@localhost");
     TypeParam att2(att1);
     ASSERT_EQ("test.png", std::string(att1.getFilename()));
     ASSERT_EQ("Test", std::string(att1.getName()));
+    ASSERT_EQ("CID1@localhost", std::string(att1.getContentId()));
     ASSERT_EQ("test.png", std::string(att2.getFilename()));
     ASSERT_EQ("Test", std::string(att2.getName()));
+    ASSERT_EQ("CID1@localhost", std::string(att2.getContentId()));
 }
 
 TYPED_TEST(MultiAttachmentFixture, CopyAssignment_AttachmentCopyAssignmentValid) {
-    TypeParam att1("test.png", "123");
-    TypeParam att2("aaa.png", "bbb");
+    TypeParam att1("test.png", "123", "CID1@localhost");
+    TypeParam att2("aaa.png", "bbb", "CID2@localhost");
     att2 = att1;
     ASSERT_EQ("test.png", std::string(att1.getFilename()));
     ASSERT_EQ("123", std::string(att1.getName()));
+    ASSERT_EQ("CID1@localhost", std::string(att1.getContentId()));
     ASSERT_EQ("test.png", std::string(att2.getFilename()));
     ASSERT_EQ("123", std::string(att2.getName()));
+    ASSERT_EQ("CID1@localhost", std::string(att2.getContentId()));
 }
 
 TYPED_TEST(MultiAttachmentFixture, MoveConstructor_AttachmentMoveConstructorValid) {
-    TypeParam att1("test.png", "123");
+    TypeParam att1("test.png", "123", "CID1@localhost");
     TypeParam att2(std::move(att1));
     ASSERT_EQ("test.png", std::string(att2.getFilename()));
     ASSERT_EQ("123", std::string(att2.getName()));
+    ASSERT_EQ("CID1@localhost", std::string(att2.getContentId()));
 }
 
 TYPED_TEST(MultiAttachmentFixture, MoveAssignment_AttachmentMoveAssignmentValid) {
-    TypeParam att1("test.png", "123");
+    TypeParam att1("test.png", "123", "CID1@localhost");
     TypeParam att2("aaa.png", "bbb");
     att2 = std::move(att1);
     ASSERT_EQ("test.png", std::string(att2.getFilename()));
     ASSERT_EQ("123", std::string(att2.getName()));
+    ASSERT_EQ("CID1@localhost", std::string(att2.getContentId()));
+}
+
+TYPED_TEST(MultiAttachmentFixture, getContentId_with_test_at_localhost_ReturnValid) {
+    TypeParam att("test.png", "test", "test@localhost");
+    ASSERT_EQ("test@localhost", std::string(att.getContentId()));
+}
+
+TYPED_TEST(MultiAttachmentFixture, setContentId_with_test2_at_localhost_ReturnValid) {
+    TypeParam att("test.png", "test", "test@localhost");
+    ASSERT_EQ("test@localhost", std::string(att.getContentId()));
+    att.setContentId("test2@localhost");
+    ASSERT_EQ("test2@localhost", std::string(att.getContentId()));
+}
+
+TYPED_TEST(MultiAttachmentFixture, setContentId_with_empty_ReturnValid) {
+    TypeParam att("test.png", "test", "test@localhost");
+    ASSERT_EQ("test@localhost", std::string(att.getContentId()));
+    att.setContentId("");
+    ASSERT_EQ("", std::string(att.getContentId()));
 }
 
 TYPED_TEST(MultiAttachmentFixture, getmimetype_images_png) {
