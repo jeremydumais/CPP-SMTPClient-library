@@ -11,6 +11,13 @@ useful to uniquely identify and reference resources to embed in the message.
 This change has been made by hesa2020 (https://github.com/hesa2020).
 Many thanks!
 
+### Enhancement
+
+- Correction to the CMakeLists.txt, so when the repository is added as a git
+submodule and linked in the parent cmake project, it will now compile.
+This change has been made by hesa2020 (https://github.com/hesa2020).
+Many thanks!
+
 ## [1.1.5]
 
 ### Added
