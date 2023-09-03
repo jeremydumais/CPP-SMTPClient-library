@@ -19,7 +19,7 @@ jobs:
 
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     # Install OS specific dependencies
     - name: Install Windows dependencies
@@ -56,7 +56,7 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=ON -DOPENSSL_INCLUDE_DIRECTORY="C:/Program Files/OpenSSL-Win64/include" -DOPENSSL_LIBRARY_DIRECTORY="C:/Program Files/OpenSSL-Win64/lib/VC" -DOPENSSL_LIBRARIES_BY_MACHINE_TYPE="libssl64MD;libcrypto64MD"
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=ON -DOPENSSL_INCLUDE_DIRECTORY="C:/Program Files/OpenSSL/include" -DOPENSSL_LIBRARY_DIRECTORY="C:/Program Files/OpenSSL/lib/VC" -DOPENSSL_LIBRARIES_BY_MACHINE_TYPE="libssl64MD;libcrypto64MD"
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
