@@ -9,8 +9,8 @@
 
 using namespace jed_utils;
 
-Attachment::Attachment(const char *pFilename, const char *pName)
-    : mName(nullptr), mFilename(nullptr) {
+Attachment::Attachment(const char *pFilename, const char *pName, const char *pContentId)
+    : mName(nullptr), mFilename(nullptr), mContentId(nullptr) {
     size_t pFileNameLength = strlen(pFilename);
     if (pFileNameLength == 0 || StringUtils::trim(std::string(pFilename)).length() == 0) {
         throw std::invalid_argument("filename");
@@ -25,6 +25,11 @@ Attachment::Attachment(const char *pFilename, const char *pName)
     mName = new char[name_len+1];
     strncpy(mName, pName, name_len);
     mName[name_len] = '\0';
+
+    size_t contentid_len = strlen(pContentId);
+    mContentId = new char[contentid_len+1];
+    strncpy(mContentId, pContentId, contentid_len);
+    mContentId[contentid_len] = '\0';
 }
 
 Attachment::~Attachment() {
@@ -32,18 +37,24 @@ Attachment::~Attachment() {
     mName = nullptr;
     delete[] mFilename;
     mFilename = nullptr;
+    delete[] mContentId;
+    mContentId = nullptr;
 }
 
 // Copy constructor
 Attachment::Attachment(const Attachment& other)
     : mName(new char[strlen(other.mName) + 1]),
-      mFilename(new char[strlen(other.mFilename) + 1]) {
+      mFilename(new char[strlen(other.mFilename) + 1]),
+      mContentId(new char[strlen(other.mContentId) + 1]) {
     size_t name_len = strlen(other.mName);
     strncpy(mName, other.mName, name_len);
     mName[name_len] = '\0';
     size_t filename_len = strlen(other.mFilename);
     strncpy(mFilename, other.mFilename, filename_len);
     mFilename[filename_len] = '\0';
+    size_t contentid_len = strlen(other.mContentId);
+    strncpy(mContentId, other.mContentId, contentid_len);
+    mContentId[contentid_len] = '\0';
 }
 
 // Assignment operator
@@ -51,6 +62,7 @@ Attachment& Attachment::operator=(const Attachment& other) {
     if (this != &other) {
         delete[] mName;
         delete[] mFilename;
+        delete[] mContentId;
         // mName
         size_t name_len = strlen(other.mName);
         mName = new char[name_len + 1];
@@ -61,17 +73,23 @@ Attachment& Attachment::operator=(const Attachment& other) {
         mFilename = new char[filename_len + 1];
         strncpy(mFilename, other.mFilename, filename_len);
         mFilename[filename_len] = '\0';
+        // mContentId
+        size_t contentid_len = strlen(other.mContentId);
+        mContentId = new char[contentid_len + 1];
+        strncpy(mContentId, other.mContentId, contentid_len);
+        mContentId[contentid_len] = '\0';
     }
     return *this;
 }
 
 // Move constructor
 Attachment::Attachment(Attachment&& other) noexcept
-: mName(other.mName), mFilename(other.mFilename) {
+: mName(other.mName), mFilename(other.mFilename), mContentId(other.mContentId) {
     // Release the data pointer from the source object so that the destructor
     // does not free the memory multiple times.
     other.mName = nullptr;
     other.mFilename = nullptr;
+    other.mContentId = nullptr;
 }
 
 // Move assignement operator
@@ -79,15 +97,25 @@ Attachment& Attachment::operator=(Attachment&& other) noexcept {
     if (this != &other) {
         delete[] mName;
         delete[] mFilename;
+        delete[] mContentId;
         // Copy the data pointer and its length from the source object.
         mName = other.mName;
         mFilename = other.mFilename;
+        mContentId = other.mContentId;
         // Release the data pointer from the source object so that
         // the destructor does not free the memory multiple times.
         other.mName = nullptr;
         other.mFilename = nullptr;
+        other.mContentId = nullptr;
     }
     return *this;
+}
+
+void Attachment::setContentId(const char * pContentId) {
+    size_t contentid_len = strlen(pContentId);
+    mContentId = new char[contentid_len + 1];
+    strncpy(mContentId, pContentId, contentid_len);
+    mContentId[contentid_len] = '\0';
 }
 
 const char *Attachment::getName() const {
@@ -96,6 +124,10 @@ const char *Attachment::getName() const {
 
 const char *Attachment::getFilename() const {
     return mFilename;
+}
+
+const char *Attachment::getContentId() const {
+    return mContentId;
 }
 
 const char *Attachment::getBase64EncodedFile() const {

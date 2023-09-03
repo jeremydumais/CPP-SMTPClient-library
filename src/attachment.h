@@ -27,7 +27,7 @@ class ATTACHMENT_API Attachment {
      *  @param pName The display name of the file that will appear in
      *  the mail content
      */
-    explicit Attachment(const char *pFilename, const char *pName = "");
+    explicit Attachment(const char *pFilename, const char *pName = "", const char *pContentId = "");
 
     /** Destructor of the Attachment */
     virtual ~Attachment();
@@ -44,11 +44,17 @@ class ATTACHMENT_API Attachment {
     /** Attachment move assignment operator. */
     Attachment& operator=(Attachment&& other) noexcept;
 
+    /** Set the attachment content id. */
+    void setContentId(const char * pContentId);
+
     /** Return the display name. */
     const char *getName() const;
 
     /** Return the file name including the path. */
     const char *getFilename() const;
+
+    /** Return the attachment content id. */
+    const char *getContentId() const;
 
     /** Return the base64 representation of the file content. */
     const char *getBase64EncodedFile() const;
@@ -62,6 +68,7 @@ class ATTACHMENT_API Attachment {
     Attachment() = default;
     char *mName;
     char *mFilename;
+    char *mContentId;
 };
 }  // namespace jed_utils
 
