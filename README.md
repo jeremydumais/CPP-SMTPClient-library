@@ -1,7 +1,7 @@
 # Jed# C++ SMTP Client Library
 
 [![Build status](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml/badge.svg)](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
-![Latest version](https://img.shields.io/badge/latest_version-1.1.5-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.6-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 
 ## A simple SMTP client library built in C++ that support authentication and secure connections (Opportunistic SSL/TLS and Forced SSL encryption).
@@ -17,7 +17,7 @@ Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/H
 Follow these guides to build the library on [Windows](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-Windows)
 and [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-Linux).
 
-## Download latest binaries
+## ⬇ Download latest binaries
 
 ### Windows
 
@@ -26,6 +26,32 @@ and [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-th
 <th> Release </th>
 <th> MD5 hash of smtpclient.dll </th>
 </tr>
+
+<tr>
+<td>
+
+[v1.1.6 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.6/CPP-SMTPClient-Library.1.1.6.x64.zip)
+
+</td>
+<td>
+
+fc417d787a4533d3b6c99c1b5e852b5b
+
+</td>
+</tr>
+<tr>
+<td>
+
+[v1.1.6 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.6/CPP-SMTPClient-Library.1.1.6.x86.zip)
+
+</td>
+<td>
+
+ffdd7f2adbf92b9a3dfd8bbf97c83008
+
+</td>
+</tr>
+
 <tr>
 <td>
 
@@ -51,37 +77,21 @@ d7bce46ec3cfd49bfb342d82a3905e5f
 </td>
 </tr>
 
-<tr>
-<td>
-
-[v1.1.4 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.4/CPP-SMTPClient-Library.1.1.4.x64.zip)
-
-</td>
-<td>
-
-c0c50a722e02dba488d6440ede046976
-
-</td>
-</tr>
-<tr>
-<td>
-
-[v1.1.4 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.4/CPP-SMTPClient-Library.1.1.4.x86.zip)
-
-</td>
-<td>
-
-dce3b4c0704c8aafd4b2c5e8fdd3a701
-
-</td>
-</tr>
 </table>
 
 See the section
 [Releases](https://github.com/jeremydumais/CPP-SMTPClient-library/releases)
 for previous versions.
 
-## The 3 client classes
+## 📰 What's new
+
+- Version 1.1.6: Added support in the attachment class for Content-ID. It will
+be really useful to uniquely identify and reference resources to embed in the
+message.
+This change has been made by hesa2020 (https://github.com/hesa2020).
+Many thanks!
+
+## ⚡️ Quickstart - The 3 client classes
 
 ### OpportunisticSecureSMTPClient
 
@@ -111,7 +121,7 @@ The SmtpClient should be used to communicate with internal relay servers.
 It does not support encryption of communications. The communication is usually done
 via port 25.
 
-## How it works
+## ⚙ How it works
 
 ### 2-ways of consuming the library
 ![From in version 1.1.5+](https://img.shields.io/badge/From_in_version-1.1.5+-green)
@@ -138,6 +148,9 @@ This problem has been resolved since 2015 so it is no longer an issue.
 - [Send a plaintext email via a secure server (opportunistic) -> SSL/TLS Port 587](#send-a-plaintext-email-via-a-secure-server-opportunistic)
 - [Send an html email to 2 recipients with an attachment via a secure server](#send-an-html-email-to-2-recipients-with-an-attachment-via-a-secure-server-opportunistic)
 - [Send a plaintext email via a secure server (forced) -> SSL/TLS Port 465](#send-a-plaintext-email-via-a-secure-server-forced)
+
+![From in version 1.1.6+](https://img.shields.io/badge/From_in_version-1.1.6+-green)
+- [Send an html email with an attachment using Content-ID via a secure server](#send-an-html-email-with-an-attachment-using-content-id-via-a-secured-server-opportunistic)
 
 #### Send a plaintext email via a secure server (opportunistic)
 
@@ -213,6 +226,26 @@ client.sendMail(msg);
 }
 ```
 
+#### Send an html email with an attachment using Content-ID via a secured server (opportunistic)
+
+*You will need to include cpp/htmlmessage.hpp*
+
+```c++
+OpportunisticSecureSMTPClient client("<your smtp server address>", 587);
+client.setCredentials(Credential("myfromaddress@test.com", "mypassword"));
+
+const MessageAddress from("myfromaddress@test.com", "Test Address Display");
+const auto to = { MessageAddress("youraddress@domain.com") };
+const auto subject = "This is a test (Subject)";
+const auto body = "<html><body><img src='cid:a.png@test.com' /></body></html>";
+const auto cc = { MessageAddress("youraddress2@domain.com") };
+const std::vector<MessageAddress> bcc = {};
+const auto attachment = { Attachment("C:\\Temp\\test.png", "test image.png", "a.png@test.com") };
+HTMLMessage msg(from, to, subject, body, cc, bcc, attachment);
+
+client.sendMail(msg);
+```
+
 ## Complete communication log
 
 The library keeps each exchange between the client and the server in the
@@ -269,10 +302,13 @@ c: QUIT\r\n
 Operation completed!
 ```
 
-## Unit tests
+## 🧪 Unit tests
 [How to run the unit tests](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Run-the-unit-tests)
 
-## Documentation
+## ❓ Documentation
 
 See the classes documentation [here](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Classes-Documentation)
 
+## ⚖️ License
+
+See [LICENSE](LICENSE)
