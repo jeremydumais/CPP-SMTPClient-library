@@ -1,5 +1,6 @@
 #include "attachment.h"
 #include <algorithm>
+#include <cstdint>
 #include <ios>
 #include <iostream>
 #include <limits>
