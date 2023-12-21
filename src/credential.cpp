@@ -8,7 +8,8 @@ using namespace jed_utils;
 
 Credential::Credential(const char *pUsername, const char *pPassword)
     : mUsername(nullptr),
-      mPassword(nullptr) {
+      mPassword(nullptr),
+      mRecommendedAuthMethod(RecommendedAuthenticationMethod::kImplicit) {
     std::string username_str { pUsername == nullptr ? "" : pUsername };
     if (pUsername == nullptr || strcmp(pUsername, "") == 0 || StringUtils::trim(username_str).empty()) {
         throw std::invalid_argument("Username cannot be null or empty");
@@ -39,7 +40,8 @@ Credential::~Credential() {
 // Copy constructor
 Credential::Credential(const Credential& other)
     : mUsername(new char[strlen(other.mUsername) + 1]),
-      mPassword(new char[strlen(other.mPassword) + 1]) {
+      mPassword(new char[strlen(other.mPassword) + 1]),
+      mRecommendedAuthMethod{other.mRecommendedAuthMethod} {
     size_t username_len = strlen(other.mUsername);
     strncpy(mUsername, other.mUsername, username_len);
     mUsername[username_len] = '\0';
@@ -47,6 +49,12 @@ Credential::Credential(const Credential& other)
     size_t password_len = strlen(other.mPassword);
     strncpy(mPassword, other.mPassword, password_len);
     mPassword[password_len] = '\0';
+}
+
+Credential::Credential(const char *pUsername, const char *pPassword,
+      RecommendedAuthenticationMethod authOption)
+    : Credential(pUsername, pPassword) {
+    mRecommendedAuthMethod = authOption;
 }
 
 // Assignment operator
@@ -64,6 +72,8 @@ Credential& Credential::operator=(const Credential& other) {
         mPassword = new char[password_len + 1];
         strncpy(mPassword, other.mPassword, password_len);
         mPassword[password_len] = '\0';
+
+        mRecommendedAuthMethod = other.mRecommendedAuthMethod;
     }
     return *this;
 }
@@ -71,7 +81,8 @@ Credential& Credential::operator=(const Credential& other) {
 // Move constructor
 Credential::Credential(Credential&& other) noexcept
     : mUsername(other.mUsername),
-      mPassword(other.mPassword) {
+      mPassword(other.mPassword),
+      mRecommendedAuthMethod{other.mRecommendedAuthMethod} {
     // Release the data pointer from the source object so that the destructor
     // does not free the memory multiple times.
     other.mUsername = nullptr;
@@ -86,6 +97,8 @@ Credential& Credential::operator=(Credential&& other) noexcept {
         // Copy the data pointer and its length from the source object.
         mUsername = other.mUsername;
         mPassword = other.mPassword;
+        mRecommendedAuthMethod = other.mRecommendedAuthMethod;
+
         // Release the data pointer from the source object so that
         // the destructor does not free the memory multiple times.
         other.mUsername = nullptr;
@@ -101,6 +114,11 @@ const char *Credential::getUsername() const {
 
 const char *Credential::getPassword() const {
     return mPassword;
+}
+
+auto Credential::getRecommendedAuthOption() const
+      -> RecommendedAuthenticationMethod {
+    return mRecommendedAuthMethod;
 }
 
 void Credential::setUsername(const char *pUsername) {
@@ -126,4 +144,9 @@ void Credential::setPassword(const char *pPassword) {
     mPassword = new char[password_len + 1];
     strncpy(mPassword, pPassword, password_len);
     mPassword[password_len] = '\0';
+}
+
+void Credential::setRecommendedAuthOption(
+    RecommendedAuthenticationMethod authOption) {
+    mRecommendedAuthMethod = authOption;
 }

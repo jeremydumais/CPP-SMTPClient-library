@@ -625,11 +625,21 @@ void SMTPClientBase::setLastServerResponse(const char *pResponse) {
 
 int SMTPClientBase::authenticateClient() {
     if (mCredential != nullptr) {
-        if (mAuthOptions->Plain) {
+        auto recommenedAuthOption = mCredential->getRecommendedAuthOption();
+        if (mAuthOptions->Plain
+            && (recommenedAuthOption == RecommendedAuthenticationMethod::kImplicit
+                    || recommenedAuthOption == RecommendedAuthenticationMethod::kPlain)) {
             return authenticateWithMethodPlain();
         }
-        if (mAuthOptions->Login) {
+        if (mAuthOptions->Login
+            && (recommenedAuthOption == RecommendedAuthenticationMethod::kImplicit
+                || recommenedAuthOption == RecommendedAuthenticationMethod::kLogin)) {
             return authenticateWithMethodLogin();
+        }
+        if (mAuthOptions->XOAuth2
+            && (recommenedAuthOption == RecommendedAuthenticationMethod::kImplicit
+                || recommenedAuthOption == RecommendedAuthenticationMethod::kXOauth2)) {
+            return authenticatedWithMethodXOauth2();
         }
         return CLIENT_AUTHENTICATION_METHOD_NOTSUPPORTED;
     }
@@ -674,6 +684,21 @@ int SMTPClientBase::authenticateWithMethodLogin() {
     std::stringstream ss_password;
     ss_password << encoded_password << "\r\n";
     return (*this.*sendCommandWithFeedbackPtr)(ss_password.str().c_str(), CLIENT_AUTHENTICATE_ERROR, CLIENT_AUTHENTICATE_TIMEOUT);
+}
+
+int SMTPClientBase::authenticatedWithMethodXOauth2() {
+    addCommunicationLogItem("XOauth 2 ***************\r\n");
+    std::stringstream encodedCredentials{};
+    encodedCredentials << "user=" << mCredential->getUsername() << "\001auth=Bearer " << mCredential->getPassword() << "\001\001";
+
+    auto rawCredentials = encodedCredentials.str();
+
+    std::string credentials = Base64::Encode(
+        reinterpret_cast<const unsigned char*>(rawCredentials.c_str()), rawCredentials.length());
+
+    std::stringstream cmd{};
+    cmd << "AUTH XOAUTH2 " << credentials << "\r\n";
+    return (*this.*sendCommandWithFeedbackPtr)(cmd.str().c_str(), CLIENT_AUTHENTICATE_ERROR, CLIENT_AUTHENTICATE_TIMEOUT);
 }
 
 int SMTPClientBase::setMailRecipients(const Message &pMsg) {

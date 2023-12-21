@@ -1,10 +1,13 @@
 #include "errorresolver.h"
-#include <cstddef>
-#include <cstring>
-#include <string>
+
+#include "base64.h"
+
 #include "smtpclienterrors.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
+#include <cstddef>
+#include <cstring>
+#include <string>
 
 using namespace jed_utils;
 
@@ -152,6 +155,9 @@ ErrorResolver::ErrorResolver(int pErrorCode)
             break;
         case SMTPSERVER_ENCRYPTIONREQUIREDFORAUTH_ERROR:
             errorMessage = "Encryption required for requested authentication mechanism";
+            break;
+        case SMTPSERVER_AUTHENTICATION_UNSUCCESSFUL_GMAIL_ERROR:
+            errorMessage = "Token based authentication failed. See https://support.google.com/mail/thread/204884242/334-authentication-unsuccessful?hl=en";
             break;
         default:
             errorMessage = "No message correspond to this error code";

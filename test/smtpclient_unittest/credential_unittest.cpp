@@ -187,3 +187,57 @@ TYPED_TEST(MultiCredentialFixture, setPassword_ValidOnlySpacesPassword) {
     cred.setPassword("   ");
     ASSERT_EQ("   ", std::string(cred.getPassword()));
 }
+
+TYPED_TEST(MultiCredentialFixture, RecommendedAuthenticationModeImplicit) {
+    TypeParam cred{"Test", "123"};
+    ASSERT_EQ("Test", std::string{cred.getUsername()});
+    ASSERT_EQ("123", std::string{cred.getPassword()});
+    ASSERT_EQ(RecommendedAuthenticationMethod::kImplicit,
+        cred.getRecommendedAuthOption());
+
+    std::vector<RecommendedAuthenticationMethod> methods{
+        RecommendedAuthenticationMethod::kPlain,
+        RecommendedAuthenticationMethod::kLogin,
+        RecommendedAuthenticationMethod::kXOauth2,
+        RecommendedAuthenticationMethod::kPlainClientToken,
+        RecommendedAuthenticationMethod::kOAuthBearer,
+        RecommendedAuthenticationMethod::kXOAuth,
+    };
+
+    std::for_each(methods.cbegin(), methods.cend(),
+        [cred](auto method) mutable {
+            cred.setRecommendedAuthOption(method);
+            ASSERT_EQ(method, cred.getRecommendedAuthOption());
+
+            TypeParam newCred{cred};
+            ASSERT_EQ(method, newCred.getRecommendedAuthOption());
+
+            TypeParam newCred2 = cred;
+            ASSERT_EQ(method, newCred2.getRecommendedAuthOption());
+
+            TypeParam movedCred{std::move(newCred)};
+            ASSERT_EQ(method, movedCred.getRecommendedAuthOption());
+
+            TypeParam movedCred2 = std::move(movedCred);
+            ASSERT_EQ(method, movedCred.getRecommendedAuthOption());
+        });
+}
+
+TYPED_TEST(MultiCredentialFixture, RecommendedAuthenticationModeSpecified) {
+    std::vector<RecommendedAuthenticationMethod> methods{
+        RecommendedAuthenticationMethod::kPlain,
+        RecommendedAuthenticationMethod::kLogin,
+        RecommendedAuthenticationMethod::kXOauth2,
+        RecommendedAuthenticationMethod::kPlainClientToken,
+        RecommendedAuthenticationMethod::kOAuthBearer,
+        RecommendedAuthenticationMethod::kXOAuth,
+    };
+
+    std::for_each(methods.cbegin(), methods.cend(),
+        [](auto method) {
+            TypeParam cred{"Test", "123", method};
+            ASSERT_EQ("Test", std::string{cred.getUsername()});
+            ASSERT_EQ("123", std::string{cred.getPassword()});
+            ASSERT_EQ(method, cred.getRecommendedAuthOption());
+        });
+}
