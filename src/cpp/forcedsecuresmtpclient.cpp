@@ -46,7 +46,8 @@ void ForcedSecureSMTPClient::setCommandTimeout(unsigned int pTimeOutInSeconds) {
 
 void ForcedSecureSMTPClient::setCredentials(const Credential &pCredential) {
     jed_utils::SMTPClientBase::setCredentials(jed_utils::Credential(pCredential.getUsername().c_str(),
-                                                                    pCredential.getPassword().c_str()));
+                                                                    pCredential.getPassword().c_str(),
+                                                                    pCredential.getRecommendedAuthOption()));
     delete mCredential;
     mCredential = new Credential(pCredential);
 }

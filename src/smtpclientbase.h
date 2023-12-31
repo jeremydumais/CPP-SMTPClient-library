@@ -170,6 +170,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int authenticateClient();
     int authenticateWithMethodPlain();
     int authenticateWithMethodLogin();
+    int authenticatedWithMethodXOauth2();
     // Methods to send an email
     int setMailRecipients(const Message &pMsg);
     int addMailRecipients(jed_utils::MessageAddress **list, size_t count, const int RECIPIENT_OK);

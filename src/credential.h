@@ -12,6 +12,22 @@
 #endif
 
 namespace jed_utils {
+/**
+ * @brief The RecommendedAuthenticationMethod contains all possible
+ * authentication options that developers can indicate for a set
+ * of credentials.
+ */
+enum RecommendedAuthenticationMethod {
+  kImplicit = 0,
+  kPlain,
+  kLogin,
+  kXOauth2,
+  kPlainClientToken,
+  kOAuthBearer,
+  kXOAuth,
+};
+
+
 /** @brief The Credential class is used to authenticate with the
  *  SMTP server.
  */
@@ -23,6 +39,14 @@ class CREDENTIAL_API Credential {
      *  @param pPassword The password.
      */
     Credential(const char *pUsername, const char *pPassword);
+
+   /**
+    *  @brief  Construct a new Credential.
+    *  @param pUsername The user name.
+    *  @param pPassword The password.
+    */
+    Credential(const char *pUsername, const char *pPassword,
+      RecommendedAuthenticationMethod authOption);
 
     /** The destructor og Credential */
     virtual ~Credential();
@@ -45,6 +69,10 @@ class CREDENTIAL_API Credential {
     /** Return the password. */
     const char *getPassword() const;
 
+    /** Returns the recommended authentication option
+     * currently set for the credentials. */
+    RecommendedAuthenticationMethod getRecommendedAuthOption() const;
+
     /**
      *  @brief  Set the user name.
      *  @param pUsername A char array pointer of the user name.
@@ -57,9 +85,18 @@ class CREDENTIAL_API Credential {
      */
     void setPassword(const char *pPassword);
 
+    /**
+     * @brief Changes the recommended authentication method for this set
+     *  of credentials.
+     * @param authOption The recommended authentication option that we should
+     * use while authenticating the client using the current set of credentials.
+     */
+    void setRecommendedAuthOption(RecommendedAuthenticationMethod authOption);
+
  private:
     char *mUsername;
     char *mPassword;
+    RecommendedAuthenticationMethod mRecommendedAuthMethod;
 };
 }  // namespace jed_utils
 

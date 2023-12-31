@@ -28,6 +28,14 @@ class CPP_CREDENTIAL_API Credential : private jed_utils::Credential {
      */
     Credential(const std::string &pUsername, const std::string &pPassword);
 
+    /**
+     *  @brief  Construct a new Credential.
+     *  @param pUsername The user name.
+     *  @param pPassword The password.
+     */
+    Credential(const std::string &pUsername, const std::string &pPassword,
+      RecommendedAuthenticationMethod authOption);
+
     /** The destructor og Credential */
     ~Credential() override = default;
 
@@ -49,6 +57,10 @@ class CPP_CREDENTIAL_API Credential : private jed_utils::Credential {
     /** Return the password. */
     std::string getPassword() const;
 
+    /** Returns the recommended authentication option
+     * currently set for the credentials. */
+    RecommendedAuthenticationMethod getRecommendedAuthOption() const;
+
     /**
      *  @brief  Set the user name.
      *  @param pUsername A char array pointer of the user name.
@@ -60,6 +72,14 @@ class CPP_CREDENTIAL_API Credential : private jed_utils::Credential {
      *  @param pPassword A char array pointer of the password.
      */
     void setPassword(const std::string &pPassword);
+
+    /**
+     * @brief Changes the recommended authentication method for this set
+     *  of credentials.
+     * @param authOption The recommended authentication option that we should use
+     *  while authenticating the client using the current set of credentials.
+     */
+    void setRecommendedAuthOption(RecommendedAuthenticationMethod authOption);
 };
 }  // namespace cpp
 }  // namespace jed_utils

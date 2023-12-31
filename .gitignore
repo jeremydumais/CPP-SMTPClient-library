@@ -15,3 +15,5 @@ tags
 Session.vim
 .vimspector.json
 .ccls-cache
+.idea
+cmake-build-debug

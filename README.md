@@ -309,6 +309,13 @@ Operation completed!
 
 See the classes documentation [here](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Classes-Documentation)
 
+## Complete example
+
+We also provide a fully working example. See [send-mail.cpp](./src/cpp/example/send-mail.cpp).
+Make sure you replace the username and password placeholders with correct values.
+
+The example uses GMail smtp server with [XOauth2 authentication mechanism](https://developers.google.com/gmail/imap/xoauth2-protocol).
+
 ## ⚖️ License
 
 See [LICENSE](LICENSE)

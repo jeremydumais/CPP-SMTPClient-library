@@ -291,3 +291,9 @@ TEST(ErrorResolver_getErrorMessage, WithSMTPSERVER_ENCRYPTIONREQUIREDFORAUTH_ERR
     ErrorResolver errorResolver(SMTPSERVER_ENCRYPTIONREQUIREDFORAUTH_ERROR);
     ASSERT_EQ("Encryption required for requested authentication mechanism"s, errorResolver.getErrorMessage());
 }
+
+TEST(ErrorResolver_getErrorMessage, WithSMTPSERVER_AUTHENTICATION_UNSUCCESSFUL_GMAIL_ERROR_ReturnValidMessage) {
+    ErrorResolver errorResolver(SMTPSERVER_AUTHENTICATION_UNSUCCESSFUL_GMAIL_ERROR);
+    ASSERT_EQ("Token based authentication failed. See https://support.google.com/mail/thread/204884242/334-authentication-unsuccessful?hl=en"s,
+        errorResolver.getErrorMessage());
+}
