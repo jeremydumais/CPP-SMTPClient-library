@@ -1,6 +1,7 @@
 #include "../../src/credential.h"
 #include "../../src/cpp/credential.hpp"
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <string>
 
 using namespace jed_utils;

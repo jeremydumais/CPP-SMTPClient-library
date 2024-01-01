@@ -24,7 +24,7 @@ enum RecommendedAuthenticationMethod {
   kXOauth2,
   kPlainClientToken,
   kOAuthBearer,
-  kXOAuth,
+  kXOAuth
 };
 
 
@@ -45,8 +45,9 @@ class CREDENTIAL_API Credential {
     *  @param pUsername The user name.
     *  @param pPassword The password.
     */
-    Credential(const char *pUsername, const char *pPassword,
-      RecommendedAuthenticationMethod authOption);
+    Credential(const char *pUsername,
+            const char *pPassword,
+            RecommendedAuthenticationMethod authOption);
 
     /** The destructor og Credential */
     virtual ~Credential();
@@ -100,4 +101,4 @@ class CREDENTIAL_API Credential {
 };
 }  // namespace jed_utils
 
-#endif
+#endif  // CREDENTIAL_H

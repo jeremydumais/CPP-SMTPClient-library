@@ -1,7 +1,7 @@
 # Jed# C++ SMTP Client Library
 
 [![Build status](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml/badge.svg)](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
-![Latest version](https://img.shields.io/badge/latest_version-1.1.6-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.7-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 
 ## A simple SMTP client library built in C++ that support authentication and secure connections (Opportunistic SSL/TLS and Forced SSL encryption).
@@ -85,6 +85,9 @@ for previous versions.
 
 ## 📰 What's new
 
+- Version 1.1.7: Added support for the XOAUTH2 authentication method.
+This change has been made by rcosnita (https://github.com/rcosnita).
+Many thanks!
 - Version 1.1.6: Added support in the attachment class for Content-ID. It will
 be really useful to uniquely identify and reference resources to embed in the
 message.
@@ -302,19 +305,22 @@ c: QUIT\r\n
 Operation completed!
 ```
 
+## 🗝 Complete XOAUTH2 authentication example
+
+We also provide a fully working example. See [send-mail.cpp](./src/cpp/example/send-mail.cpp).
+Make sure you replace the username and password (access token) placeholders with correct values.
+
+The example uses GMail smtp server with [XOauth2 authentication mechanism](https://developers.google.com/gmail/imap/xoauth2-protocol).
+
+For testing purposes, you can obtain an OAuth access token for you gmail account by using the [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/).
+You can follow this procedure for more details: [Obtaining an access token for your gmail account](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Obtain-An-Access-Token-Gmail)
+
 ## 🧪 Unit tests
 [How to run the unit tests](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Run-the-unit-tests)
 
 ## ❓ Documentation
 
 See the classes documentation [here](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Classes-Documentation)
-
-## Complete example
-
-We also provide a fully working example. See [send-mail.cpp](./src/cpp/example/send-mail.cpp).
-Make sure you replace the username and password placeholders with correct values.
-
-The example uses GMail smtp server with [XOauth2 authentication mechanism](https://developers.google.com/gmail/imap/xoauth2-protocol).
 
 ## ⚖️ License
 
