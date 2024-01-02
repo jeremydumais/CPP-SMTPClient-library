@@ -2,13 +2,11 @@
 #define SMTPCLIENTBASE_H
 
 #include <string>
-#include <tuple>
 #include <vector>
 #include "attachment.h"
 #include "credential.h"
-#include "htmlmessage.h"
+#include "message.h"
 #include "messageaddress.h"
-#include "plaintextmessage.h"
 #include "serverauthoptions.h"
 
 #ifdef _WIN32
@@ -63,6 +61,9 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     /** Return the server port number. */
     unsigned int getServerPort() const;
 
+    /** Return the batch mode enable flag. */
+    bool getBatchMode() const;
+
     /** Return the command timeout in seconds. */
     unsigned int getCommandTimeout() const;
 
@@ -85,6 +86,13 @@ class SMTPCLIENTBASE_API SMTPClientBase {
      *  Example: 25, 465, 587
      */
     void setServerPort(unsigned int pPort);
+
+    /**
+     *  @brief  Set the batch mode flag.
+     *  @param pEnabled Indicate if the batch mode is enabled.
+     *  Default: false
+     */
+    void setBatchMode(bool pEnabled);
 
     /**
      *  @brief  Set the command timeout in seconds.
@@ -138,6 +146,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int sendMail(const Message &pMsg);
 
  protected:
+    bool mIsConnected;
     virtual void cleanup() = 0;
     int getSocketFileDescriptor() const;
     void clearSocketFileDescriptor();
@@ -166,6 +175,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode);
     virtual int sendCommand(const char *pCommand, int pErrorCode) = 0;
     virtual int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) = 0;
+    int sendQuitCommand();
     // Methods used for authentication
     int authenticateClient();
     int authenticateWithMethodPlain();
@@ -186,6 +196,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
  private:
     char *mServerName;
     unsigned int mPort;
+    bool mBatchMode;
     char *mCommunicationLog;
     size_t mCommunicationLogSize = 0;
     char *mLastServerResponse;

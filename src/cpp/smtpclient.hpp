@@ -55,6 +55,9 @@ class CPP_SMTPCLIENT_API SmtpClient : private jed_utils::SmtpClient {
     /** Return the server port number. */
     unsigned int getServerPort() const;
 
+    /** Return the batch mode enable flag. */
+    bool getBatchMode() const;
+
     /** Return the command timeout in seconds. */
     unsigned int getCommandTimeout() const;
 
@@ -77,6 +80,13 @@ class CPP_SMTPCLIENT_API SmtpClient : private jed_utils::SmtpClient {
      *  Example: 25, 465, 587
      */
     void setServerPort(unsigned int pPort);
+
+    /**
+     *  @brief  Set the batch mode flag.
+     *  @param pEnabled Indicate if the batch mode is enabled.
+     *  Default: false
+     */
+    void setBatchMode(bool pEnabled);
 
     /**
      *  @brief  Set the command timeout in seconds.

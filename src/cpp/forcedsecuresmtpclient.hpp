@@ -52,6 +52,9 @@ class CPP_FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : private jed_utils:
     /** Return the server port number. */
     unsigned int getServerPort() const;
 
+    /** Return the batch mode enable flag. */
+    bool getBatchMode() const;
+
     /** Return the command timeout in seconds. */
     unsigned int getCommandTimeout() const;
 
@@ -74,6 +77,13 @@ class CPP_FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : private jed_utils:
      *  Example: 25, 465, 587
      */
     void setServerPort(unsigned int pPort);
+
+    /**
+     *  @brief  Set the batch mode flag.
+     *  @param pEnabled Indicate if the batch mode is enabled.
+     *  Default: false
+     */
+    void setBatchMode(bool pEnabled);
 
     /**
      *  @brief  Set the command timeout in seconds.

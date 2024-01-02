@@ -7,6 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include "base64.h"
 #include "errorresolver.h"
@@ -38,8 +39,10 @@ using namespace std::literals::string_literals;
 using namespace jed_utils;
 
 SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
-    : mServerName(nullptr),
+    : mIsConnected(false),
+      mServerName(nullptr),
       mPort(pPort),
+      mBatchMode(false),
       mCommunicationLog(nullptr),
       mLastServerResponse(nullptr),
       mCommandTimeOut(5),
@@ -73,8 +76,10 @@ SMTPClientBase::~SMTPClientBase() {
 
 // Copy constructor
 SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
-    : mServerName(new char[strlen(other.mServerName) + 1]),
+    : mIsConnected(false),
+      mServerName(new char[strlen(other.mServerName) + 1]),
       mPort(other.mPort),
+      mBatchMode(other.mBatchMode),
       mCommunicationLog(other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr),
       mCommunicationLogSize(other.mCommunicationLogSize),
       mLastServerResponse(other.mLastServerResponse != nullptr ? new char[strlen(other.mLastServerResponse) + 1]: nullptr),
@@ -114,6 +119,8 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
         mServerName[server_name_len] = '\0';
         // mPort
         mPort = other.mPort;
+        // mBatchMode
+        mBatchMode = other.mBatchMode;
         // mCommunicationLog
         mCommunicationLog = other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr;
         if (mCommunicationLog != nullptr) {
@@ -136,6 +143,7 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
         mAuthOptions = other.mAuthOptions != nullptr ? new ServerAuthOptions(*other.mAuthOptions) : nullptr;
         // mCredential
         mCredential = other.mCredential != nullptr ? new Credential(*other.mCredential) : nullptr;
+        mIsConnected = false;
         mSock = 0;
         setKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands);
     }
@@ -144,8 +152,10 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
 
 // Move constructor
 SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
-    : mServerName(other.mServerName),
+    : mIsConnected(other.mIsConnected),
+      mServerName(other.mServerName),
       mPort(other.mPort),
+      mBatchMode(other.mBatchMode),
       mCommunicationLog(other.mCommunicationLog),
       mCommunicationLogSize(other.mCommunicationLogSize),
       mLastServerResponse(other.mLastServerResponse),
@@ -159,6 +169,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
       sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback) {
     other.mServerName = nullptr;
     other.mPort = 0;
+    other.mBatchMode = false;
     other.mCommunicationLog = nullptr;
     other.mCommunicationLogSize = 0;
     other.mLastServerResponse = nullptr;
@@ -166,6 +177,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     other.mLastSocketErrNo = 0;
     other.mAuthOptions = nullptr;
     other.mCredential = nullptr;
+    other.mIsConnected = false;
     other.mSock = 0;
     other.mKeepUsingBaseSendCommands = false;
     setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
@@ -182,6 +194,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         // Copy the data pointer and its length from the source object.
         mServerName = other.mServerName;
         mPort = other.mPort;
+        mBatchMode = other.mBatchMode;
         mCommunicationLog = other.mCommunicationLog;
         mCommunicationLogSize = other.mCommunicationLogSize;
         mLastServerResponse = other.mLastServerResponse;
@@ -189,6 +202,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         mLastSocketErrNo = other.mLastSocketErrNo;
         mAuthOptions = other.mAuthOptions;
         mCredential = other.mCredential;
+        mIsConnected = other.mIsConnected;
         mSock = other.mSock;
         mKeepUsingBaseSendCommands = other.mKeepUsingBaseSendCommands;
         setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
@@ -196,6 +210,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         // the destructor does not free the memory multiple times.
         other.mServerName = nullptr;
         other.mPort = 0;
+        other.mBatchMode = false;
         other.mCommunicationLog = nullptr;
         other.mCommunicationLogSize = 0;
         other.mLastServerResponse = nullptr;
@@ -203,6 +218,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         other.mLastSocketErrNo = 0;
         other.mAuthOptions = nullptr;
         other.mCredential = nullptr;
+        other.mIsConnected = false;
         other.mSock = 0;
         other.mKeepUsingBaseSendCommands = false;
     }
@@ -215,6 +231,10 @@ const char *SMTPClientBase::getServerName() const {
 
 unsigned int SMTPClientBase::getServerPort() const {
     return mPort;
+}
+
+bool SMTPClientBase::getBatchMode() const {
+    return mBatchMode;
 }
 
 unsigned int SMTPClientBase::getCommandTimeout() const {
@@ -243,6 +263,10 @@ void SMTPClientBase::setServerName(const char *pServerName) {
     mServerName = new char[server_name_len + 1];
     strncpy(mServerName, pServerName, server_name_len);
     mServerName[server_name_len] = '\0';
+}
+
+void SMTPClientBase::setBatchMode(bool pEnabled) {
+    mBatchMode = pEnabled;
 }
 
 void SMTPClientBase::setCommandTimeout(unsigned int pTimeOutInSeconds) {
@@ -316,10 +340,13 @@ int SMTPClientBase::getErrorMessage_r(int errorCode,
 }
 
 int SMTPClientBase::sendMail(const Message &pMsg) {
-    int client_connect_ret_code = establishConnectionWithServer();
-    if (client_connect_ret_code != 0) {
-        return client_connect_ret_code;
+    if (!mIsConnected) {
+        int client_connect_ret_code = establishConnectionWithServer();
+        if (client_connect_ret_code != 0) {
+            return client_connect_ret_code;
+        }
     }
+    mIsConnected = true;
 
     int set_mail_recipients_ret_code = setMailRecipients(pMsg);
     if (set_mail_recipients_ret_code != 0) {
@@ -336,7 +363,9 @@ int SMTPClientBase::sendMail(const Message &pMsg) {
         return set_mail_body_ret_code;
     }
 
-    cleanup();
+    if (!mBatchMode) {
+        cleanup();
+    }
     return 0;
 }
 
@@ -406,15 +435,17 @@ int SMTPClientBase::initializeSessionWinSock() {
 
 bool SMTPClientBase::isWSAStarted() {
     return mWSAStarted;
-};
+}
 
 void SMTPClientBase::setWSAStopped() {
     mWSAStarted = false;
-};
+}
 
 void SMTPClientBase::addWSAMessageToCommunicationLog(const int errorCode) {
     LPTSTR formattedErrorMessage = nullptr;
-    if(FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
+    if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+            FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_MAX_WIDTH_MASK,
         nullptr,
         errorCode,
         0,
@@ -546,11 +577,18 @@ int SMTPClientBase::setSocketToBlockingPOSIX() {
 #endif
 
 int SMTPClientBase::sendServerIdentification() {
+    const int EHLO_SUCCESS_CODE = 250;
     std::string ehlo { "ehlo localhost\r\n" };
     addCommunicationLogItem(ehlo.c_str());
-    return sendRawCommand(ehlo.c_str(),
+    int command_return_code = sendCommandWithFeedback(ehlo.c_str(),
             SOCKET_INIT_CLIENT_SEND_EHLO_ERROR,
             SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT);
+    if (command_return_code != EHLO_SUCCESS_CODE) {
+        return command_return_code;
+    }
+    // Inspect the returned values for authentication options
+    setAuthenticationOptions(extractAuthenticationOptions(getLastServerResponse()));
+    return EHLO_SUCCESS_CODE;
 }
 
 int SMTPClientBase::checkServerGreetings() {
@@ -600,7 +638,8 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTi
         return pErrorCode;
     }
 
-    while ((bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0)) <= 0 && waitTime < mCommandTimeOut) {
+    while ((bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0)) <= 0
+            && waitTime < mCommandTimeOut) {
         sleep(1);
         waitTime += 1;
     }
@@ -613,6 +652,16 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTi
 
     cleanup();
     return pTimeoutCode;
+}
+
+int SMTPClientBase::sendQuitCommand() {
+    std::string quit_command { "QUIT\r\n" };
+    addCommunicationLogItem(quit_command.c_str());
+    int quit_ret_code = (*this.*sendCommandPtr)(quit_command.c_str(), CLIENT_SENDMAIL_QUIT_ERROR);
+    if (quit_ret_code != 0) {
+        return quit_ret_code;
+    }
+    return 0;
 }
 
 void SMTPClientBase::setLastServerResponse(const char *pResponse) {
@@ -707,9 +756,9 @@ int SMTPClientBase::setMailRecipients(const Message &pMsg) {
     const int RECIPIENT_OK { 250 };
     std::vector<std::string> mailFormats;
     // Method 1, 2 and 3
+    mailFormats.push_back("MAIL FROM: <"s + pMsg.getFrom().getEmailAddress() + ">\r\n"s);
     mailFormats.push_back("MAIL FROM: <"s + pMsg.getFrom().getDisplayName() + " " + pMsg.getFrom().getEmailAddress() + ">\r\n"s);
     mailFormats.push_back("MAIL FROM: "s + pMsg.getFrom().getEmailAddress() + "\r\n"s);
-    mailFormats.push_back("MAIL FROM: <"s + pMsg.getFrom().getEmailAddress() + ">\r\n"s);
 
 
     int mail_from_ret_code { 0 };
@@ -771,7 +820,14 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg) {
 
     // Mail headers
     // From
-    int header_from_ret_code = addMailHeader("From", pMsg.getFrom().getEmailAddress(), CLIENT_SENDMAIL_HEADERFROM_ERROR);
+    std::stringstream from_header_ss;
+    const MessageAddress &from_addr = pMsg.getFrom();
+    if (strlen(from_addr.getDisplayName()) > 0) {
+        from_header_ss << from_addr.getDisplayName() << " <" << from_addr.getEmailAddress() << ">";
+    } else {
+        from_header_ss << from_addr.getEmailAddress();
+    }
+    int header_from_ret_code = addMailHeader("From", from_header_ss.str().c_str(), CLIENT_SENDMAIL_HEADERFROM_ERROR);
     if (header_from_ret_code != 0) {
         return header_from_ret_code;
     }
@@ -864,11 +920,11 @@ int SMTPClientBase::setMailBody(const Message &pMsg) {
         return end_data_ret_code;
     }
 
-    std::string quit_command { "QUIT\r\n" };
-    addCommunicationLogItem(quit_command.c_str());
-    int quit_ret_code = (*this.*sendCommandPtr)(quit_command.c_str(), CLIENT_SENDMAIL_QUIT_ERROR);
-    if (quit_ret_code != 0) {
-        return quit_ret_code;
+    if (!mBatchMode) {
+        int quit_ret_code = sendQuitCommand();
+        if (quit_ret_code != 0) {
+            return quit_ret_code;
+        }
     }
     return 0;
 }
@@ -938,9 +994,47 @@ int SMTPClientBase::extractReturnCode(const char *pOutput) {
     return -1;
 }
 
+ServerAuthOptions *ParseAuthenticationOptions(const std::string &authLine) {
+    ServerAuthOptions *retval = nullptr;
+    const std::string AUTH_LINE_PREFIX = "250-AUTH";
+    const std::string AUTH_LINE_PREFIX_ALTERNATE = "250 AUTH";
+    std::string line = authLine;
+    // Find the line that begin with 250-AUTH or 250 AUTH
+    if (line.substr(0, AUTH_LINE_PREFIX.length()) == AUTH_LINE_PREFIX ||
+        line.substr(0, AUTH_LINE_PREFIX_ALTERNATE.length()) == AUTH_LINE_PREFIX_ALTERNATE) {
+        retval = new ServerAuthOptions();
+        // Find each options
+        std::vector<std::string> options;
+        size_t line_character_index { 0 };
+        while ((line_character_index = line.find(' ')) != std::string::npos) {
+            std::string option { line.substr(0, line_character_index)};
+            options.push_back(option);
+            line.erase(0, line_character_index + 1);
+        }
+        options.push_back(line);
+        // Try to match the string options with the ServerAuthOptions struct attributes
+        for_each(options.begin(), options.end(), [&retval](const std::string &option) {
+            if (option == "PLAIN") {
+                retval->Plain = true;
+            } else if (option == "LOGIN") {
+                retval->Login = true;
+            } else if (option == "XOAUTH2") {
+                retval->XOAuth2 = true;
+            } else if (option == "PLAIN-CLIENTTOKEN") {
+                retval->Plain_ClientToken = true;
+            } else if (option == "OAUTHBEARER") {
+                retval->OAuthBearer = true;
+            } else if (option == "XOAUTH") {
+                retval->XOAuth = true;
+            }
+            });
+    }
+
+    return retval;
+}
+
 ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhloOutput) {
     ServerAuthOptions *retVal = nullptr;
-    const std::string AUTH_LINE_PREFIX = "250-AUTH";
     if (pEhloOutput == nullptr) {
         return retVal;
     }
@@ -949,37 +1043,15 @@ ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhl
     size_t ehlo_character_index { 0 };
     while ((ehlo_character_index = ehlo_output.find(DELIMITER)) != std::string::npos) {
         std::string line { ehlo_output.substr(0, ehlo_character_index)};
-        // Find the line that begin with 250-AUTH
-        if (line.substr(0, AUTH_LINE_PREFIX.length()) == AUTH_LINE_PREFIX) {
-            retVal = new ServerAuthOptions();
-            // Find each options
-            std::vector<std::string> options;
-            size_t line_character_index { 0 };
-            while ((line_character_index = line.find(' ')) != std::string::npos) {
-                std::string option { line.substr(0, line_character_index)};
-                options.push_back(option);
-                line.erase(0, line_character_index + 1);
-            }
-            options.push_back(line);
-            // Try to match the string options with the ServerAuthOptions struct attributes
-            for_each(options.begin(), options.end(), [&retVal](const std::string &option) {
-                if (option == "PLAIN") {
-                    retVal->Plain = true;
-                } else if (option == "LOGIN") {
-                    retVal->Login = true;
-                } else if (option == "XOAUTH2") {
-                    retVal->XOAuth2 = true;
-                } else if (option == "PLAIN-CLIENTTOKEN") {
-                    retVal->Plain_ClientToken = true;
-                } else if (option == "OAUTHBEARER") {
-                    retVal->OAuthBearer = true;
-                } else if (option == "XOAUTH") {
-                    retVal->XOAuth = true;
-                }
-                });
+        ServerAuthOptions *parsedAuthOptions = ParseAuthenticationOptions(line);
+        if (parsedAuthOptions) {
+            retVal = parsedAuthOptions;
             break;
         }
         ehlo_output.erase(0, ehlo_character_index + DELIMITER.length());
+        if (!ehlo_output.empty() && retVal == nullptr) {
+            retVal = ParseAuthenticationOptions(ehlo_output);
+        }
     }
     return retVal;
 }

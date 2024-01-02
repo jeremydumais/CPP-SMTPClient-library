@@ -1,6 +1,5 @@
 #include "forcedsecuresmtpclient.hpp"
 #include <string>
-#include <utility>
 
 using namespace jed_utils::cpp;
 
@@ -18,6 +17,10 @@ std::string ForcedSecureSMTPClient::getServerName() const {
 
 unsigned int ForcedSecureSMTPClient::getServerPort() const {
     return jed_utils::ForcedSecureSMTPClient::getServerPort();
+}
+
+bool ForcedSecureSMTPClient::getBatchMode() const {
+    return jed_utils::ForcedSecureSMTPClient::getBatchMode();
 }
 
 unsigned int ForcedSecureSMTPClient::getCommandTimeout() const {
@@ -38,6 +41,10 @@ void ForcedSecureSMTPClient::setServerName(const std::string &pServerName) {
 
 void ForcedSecureSMTPClient::setServerPort(unsigned int pPort) {
     jed_utils::ForcedSecureSMTPClient::setServerPort(pPort);
+}
+
+void ForcedSecureSMTPClient::setBatchMode(bool pEnabled) {
+    jed_utils::ForcedSecureSMTPClient::setBatchMode(pEnabled);
 }
 
 void ForcedSecureSMTPClient::setCommandTimeout(unsigned int pTimeOutInSeconds) {

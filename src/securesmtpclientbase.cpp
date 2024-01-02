@@ -85,6 +85,10 @@ SecureSMTPClientBase& SecureSMTPClientBase::operator=(SecureSMTPClientBase&& oth
 }
 
 void SecureSMTPClientBase::cleanup() {
+    if (getBatchMode() && mIsConnected) {
+        sendQuitCommand();
+    }
+    mIsConnected = false;
     if (mCTX != nullptr) {
         SSL_CTX_free(mCTX);
     }

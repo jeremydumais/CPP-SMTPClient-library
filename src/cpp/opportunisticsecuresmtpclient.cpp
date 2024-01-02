@@ -1,6 +1,5 @@
 #include "opportunisticsecuresmtpclient.hpp"
 #include <string>
-#include <utility>
 
 using namespace jed_utils::cpp;
 
@@ -18,6 +17,10 @@ std::string OpportunisticSecureSMTPClient::getServerName() const {
 
 unsigned int OpportunisticSecureSMTPClient::getServerPort() const {
     return jed_utils::OpportunisticSecureSMTPClient::getServerPort();
+}
+
+bool OpportunisticSecureSMTPClient::getBatchMode() const {
+    return jed_utils::OpportunisticSecureSMTPClient::getBatchMode();
 }
 
 unsigned int OpportunisticSecureSMTPClient::getCommandTimeout() const {
@@ -38,6 +41,10 @@ void OpportunisticSecureSMTPClient::setServerName(const std::string &pServerName
 
 void OpportunisticSecureSMTPClient::setServerPort(unsigned int pPort) {
     jed_utils::OpportunisticSecureSMTPClient::setServerPort(pPort);
+}
+
+void OpportunisticSecureSMTPClient::setBatchMode(bool pEnabled) {
+    jed_utils::OpportunisticSecureSMTPClient::setBatchMode(pEnabled);
 }
 
 void OpportunisticSecureSMTPClient::setCommandTimeout(unsigned int pTimeOutInSeconds) {

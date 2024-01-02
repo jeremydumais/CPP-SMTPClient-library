@@ -1,6 +1,5 @@
 #include "smtpclient.hpp"
 #include <string>
-#include <utility>
 
 using namespace jed_utils::cpp;
 
@@ -18,6 +17,10 @@ std::string SmtpClient::getServerName() const {
 
 unsigned int SmtpClient::getServerPort() const {
     return jed_utils::SmtpClient::getServerPort();
+}
+
+bool SmtpClient::getBatchMode() const {
+    return jed_utils::SmtpClient::getBatchMode();
 }
 
 unsigned int SmtpClient::getCommandTimeout() const {
@@ -38,6 +41,10 @@ void SmtpClient::setServerName(const std::string &pServerName) {
 
 void SmtpClient::setServerPort(unsigned int pPort) {
     jed_utils::SmtpClient::setServerPort(pPort);
+}
+
+void SmtpClient::setBatchMode(bool pEnabled) {
+    jed_utils::SmtpClient::setBatchMode(pEnabled);
 }
 
 void SmtpClient::setCommandTimeout(unsigned int pTimeOutInSeconds) {
