@@ -64,6 +64,9 @@ class CPP_OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : priv
     /** Return the credentials configured. */
     const Credential *getCredentials() const;
 
+    /** Return the accept self certificate flag. */
+    bool getAcceptSelfSignedCert() const;
+
     /**
      *  @brief  Set the server name.
      *  @param pServerName A std::string of the server name.
@@ -97,6 +100,13 @@ class CPP_OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : priv
      *  @param pCredential The credential containing the username and the password.
      */
     void setCredentials(const Credential &pCredential);
+
+    /**
+     *  @brief  Set the accept self signed certificate
+     *  @param pValue Indicate if self signed certificate is accepted.
+     *  Default: false
+     */
+    void setAcceptSelfSignedCert(bool pValue);
 
     /**
      *  @brief  Indicate if the class will keep using base send command even

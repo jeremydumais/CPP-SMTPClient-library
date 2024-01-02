@@ -1,5 +1,6 @@
 #include "securesmtpclientbase.h"
 #include <openssl/err.h>
+#include <openssl/x509_vfy.h>
 #include <string>
 #include <utility>
 #include "smtpclienterrors.h"
@@ -28,7 +29,8 @@ SecureSMTPClientBase::SecureSMTPClientBase(const char *pServerName, unsigned int
     : SMTPClientBase(pServerName, pPort),
     mBIO(nullptr),
     mCTX(nullptr),
-    mSSL(nullptr) {
+    mSSL(nullptr),
+    mAcceptSelfSignedCert(false) {
 }
 
 SecureSMTPClientBase::~SecureSMTPClientBase() {
@@ -40,7 +42,8 @@ SecureSMTPClientBase::SecureSMTPClientBase(const SecureSMTPClientBase& other)
     : SMTPClientBase(other),
     mBIO(nullptr),
     mCTX(nullptr),
-    mSSL(nullptr) {
+    mSSL(nullptr),
+    mAcceptSelfSignedCert(other.mAcceptSelfSignedCert) {
 }
 
 // Assignment operator
@@ -50,6 +53,7 @@ SecureSMTPClientBase& SecureSMTPClientBase::operator=(const SecureSMTPClientBase
         mBIO = nullptr;
         mCTX = nullptr;
         mSSL = nullptr;
+        mAcceptSelfSignedCert = other.mAcceptSelfSignedCert;
     }
     return *this;
 }
@@ -59,12 +63,14 @@ SecureSMTPClientBase::SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcep
 : SMTPClientBase(std::move(other)),
     mBIO(other.mBIO),
     mCTX(other.mCTX),
-    mSSL(other.mSSL) {
+    mSSL(other.mSSL),
+    mAcceptSelfSignedCert(other.mAcceptSelfSignedCert) {
     // Release the data pointer from the source object so that the destructor
     // does not free the memory multiple times.
     other.mBIO = nullptr;
     other.mCTX = nullptr;
     other.mSSL = nullptr;
+    other.mAcceptSelfSignedCert = false;
 }
 
 // Move assignement operator
@@ -74,14 +80,24 @@ SecureSMTPClientBase& SecureSMTPClientBase::operator=(SecureSMTPClientBase&& oth
         mBIO = other.mBIO;
         mCTX = other.mCTX;
         mSSL = other.mSSL;
+        mAcceptSelfSignedCert = other.mAcceptSelfSignedCert;
         // Release the data pointer from the source object so that
         // the destructor does not free the memory multiple times.
         other.mBIO = nullptr;
         other.mCTX = nullptr;
         other.mSSL = nullptr;
+        other.mAcceptSelfSignedCert = false;
         SMTPClientBase::operator=(std::move(other));
     }
     return *this;
+}
+
+bool SecureSMTPClientBase::getAcceptSelfSignedCert() const {
+    return mAcceptSelfSignedCert;
+}
+
+void SecureSMTPClientBase::setAcceptSelfSignedCert(bool pValue) {
+    mAcceptSelfSignedCert = pValue;
 }
 
 void SecureSMTPClientBase::cleanup() {
@@ -222,10 +238,14 @@ int SecureSMTPClientBase::startTLSNegotiation() {
     /* Step 2: verify the result of chain verification */
     /* Verification performed according to RFC 4158    */
     int res = static_cast<int>(SSL_get_verify_result(mSSL));
-    if (!(X509_V_OK == res)) {
-        addCommunicationLogItem(X509_verify_cert_error_string(res), "s");
-        cleanup();
-        return SSL_CLIENT_STARTTLS_VERIFY_RESULT_ERROR;
+    if (res == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT && getAcceptSelfSignedCert()) {
+        addCommunicationLogItem("Warning: Self signed certificate", "s");
+    } else {
+        if (!(X509_V_OK == res)) {
+            addCommunicationLogItem(X509_verify_cert_error_string(res), "s");
+            cleanup();
+            return SSL_CLIENT_STARTTLS_VERIFY_RESULT_ERROR;
+        }
     }
 
     addCommunicationLogItem("TLS session ready!");
@@ -267,6 +287,10 @@ int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErr
     int bytes_received {0};
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
 
+    // Check if we are in the TLS mode of before it
+    if (mBIO == nullptr) {
+        return sendRawCommand(pCommand, pErrorCode, pTimeoutCode);
+    }
     if (BIO_puts(mBIO, pCommand) < 0) {
         setLastSocketErrNo(static_cast<int>(ERR_get_error()));
         cleanup();

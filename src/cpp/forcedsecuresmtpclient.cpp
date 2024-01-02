@@ -35,6 +35,10 @@ const Credential *ForcedSecureSMTPClient::getCredentials() const {
     return mCredential;
 }
 
+bool ForcedSecureSMTPClient::getAcceptSelfSignedCert() const {
+    return jed_utils::SecureSMTPClientBase::getAcceptSelfSignedCert();
+}
+
 void ForcedSecureSMTPClient::setServerName(const std::string &pServerName) {
     jed_utils::ForcedSecureSMTPClient::setServerName(pServerName.c_str());
 }
@@ -57,6 +61,10 @@ void ForcedSecureSMTPClient::setCredentials(const Credential &pCredential) {
                                                                     pCredential.getRecommendedAuthOption()));
     delete mCredential;
     mCredential = new Credential(pCredential);
+}
+
+void ForcedSecureSMTPClient::setAcceptSelfSignedCert(bool pValue) {
+    jed_utils::SecureSMTPClientBase::setAcceptSelfSignedCert(pValue);
 }
 
 void ForcedSecureSMTPClient::setKeepUsingBaseSendCommands(bool pValue) {

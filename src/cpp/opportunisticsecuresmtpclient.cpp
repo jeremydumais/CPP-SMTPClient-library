@@ -35,6 +35,10 @@ const Credential *OpportunisticSecureSMTPClient::getCredentials() const {
     return mCredential;
 }
 
+bool OpportunisticSecureSMTPClient::getAcceptSelfSignedCert() const {
+    return jed_utils::SecureSMTPClientBase::getAcceptSelfSignedCert();
+}
+
 void OpportunisticSecureSMTPClient::setServerName(const std::string &pServerName) {
     jed_utils::OpportunisticSecureSMTPClient::setServerName(pServerName.c_str());
 }
@@ -57,6 +61,10 @@ void OpportunisticSecureSMTPClient::setCredentials(const Credential &pCredential
                                                                     pCredential.getRecommendedAuthOption()));
     delete mCredential;
     mCredential = new Credential(pCredential);
+}
+
+void OpportunisticSecureSMTPClient::setAcceptSelfSignedCert(bool pValue) {
+    jed_utils::SecureSMTPClientBase::setAcceptSelfSignedCert(pValue);
 }
 
 void OpportunisticSecureSMTPClient::setKeepUsingBaseSendCommands(bool pValue) {
