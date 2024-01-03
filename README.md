@@ -30,6 +30,31 @@ and [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-th
 <tr>
 <td>
 
+[v1.1.7 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.7/CPP-SMTPClient-Library.1.1.7.x64.zip)
+
+</td>
+<td>
+
+fb041c2e377d6e399853b1fd4f0f2396
+
+</td>
+</tr>
+<tr>
+<td>
+
+[v1.1.7 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.7/CPP-SMTPClient-Library.1.1.7.x86.zip)
+
+</td>
+<td>
+
+bb98d97a03451ff579226b0361c2a7ce
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 [v1.1.6 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.6/CPP-SMTPClient-Library.1.1.6.x64.zip)
 
 </td>
@@ -52,31 +77,6 @@ ffdd7f2adbf92b9a3dfd8bbf97c83008
 </td>
 </tr>
 
-<tr>
-<td>
-
-[v1.1.5 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.5/CPP-SMTPClient-Library.1.1.5.x64.zip)
-
-</td>
-<td>
-
-b28a2fe6c85ef485b4175c60b6c8c018
-
-</td>
-</tr>
-<tr>
-<td>
-
-[v1.1.5 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.5/CPP-SMTPClient-Library.1.1.5.x86.zip)
-
-</td>
-<td>
-
-d7bce46ec3cfd49bfb342d82a3905e5f
-
-</td>
-</tr>
-
 </table>
 
 See the section
@@ -85,8 +85,19 @@ for previous versions.
 
 ## 📰 What's new
 
-- Version 1.1.7: Added support for the XOAUTH2 authentication method.
+- Version 1.1.7:
+    - Added support for the XOAUTH2 authentication method.
 This change has been made by rcosnita (https://github.com/rcosnita).
+Many thanks!
+    - Added a new flag in the different SMTP client classes to indicate whether we
+want to send emails in batch (getBatchMode/setBatchMode). In this mode the connection to an
+SMTP server will only be made once when the first email is sent and will
+remain open until the client instance is destroy.
+    - Added the authentication feature on the SMTPClient class.
+    - Added a new flag on the ForcedSecureSMTPClient and OpportunisticSecureSMTPClient
+to indicate whether we accept self signed certificate
+(getAcceptSelfSignedCert/setAcceptSelfSignedCert).
+    - Many more enhancements provided by ino-josh (https://github.com/ino-josh).
 Many thanks!
 - Version 1.1.6: Added support in the attachment class for Content-ID. It will
 be really useful to uniquely identify and reference resources to embed in the
