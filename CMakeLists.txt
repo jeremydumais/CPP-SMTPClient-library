@@ -118,7 +118,7 @@ if (WIN32)
         ICON "${PATH_TO_APPLICATION_ICON}"
         VERSION_MAJOR 1
         VERSION_MINOR 1
-        VERSION_PATCH 6
+        VERSION_PATCH 7
         VERSION_REVISION ${BUILD_REVISION}
         )
 endif()
