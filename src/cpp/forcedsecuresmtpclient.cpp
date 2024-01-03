@@ -1,15 +1,10 @@
 #include "forcedsecuresmtpclient.hpp"
 #include <string>
-#include <utility>
 
 using namespace jed_utils::cpp;
 
 ForcedSecureSMTPClient::ForcedSecureSMTPClient(const std::string &pServerName, unsigned int pPort)
     : jed_utils::ForcedSecureSMTPClient(pServerName.c_str(), pPort) {
-}
-
-ForcedSecureSMTPClient::~ForcedSecureSMTPClient() {
-    delete mCredential;
 }
 
 std::string ForcedSecureSMTPClient::getServerName() const {
@@ -18,6 +13,10 @@ std::string ForcedSecureSMTPClient::getServerName() const {
 
 unsigned int ForcedSecureSMTPClient::getServerPort() const {
     return jed_utils::ForcedSecureSMTPClient::getServerPort();
+}
+
+bool ForcedSecureSMTPClient::getBatchMode() const {
+    return jed_utils::ForcedSecureSMTPClient::getBatchMode();
 }
 
 unsigned int ForcedSecureSMTPClient::getCommandTimeout() const {
@@ -32,6 +31,10 @@ const Credential *ForcedSecureSMTPClient::getCredentials() const {
     return mCredential;
 }
 
+bool ForcedSecureSMTPClient::getAcceptSelfSignedCert() const {
+    return jed_utils::SecureSMTPClientBase::getAcceptSelfSignedCert();
+}
+
 void ForcedSecureSMTPClient::setServerName(const std::string &pServerName) {
     jed_utils::ForcedSecureSMTPClient::setServerName(pServerName.c_str());
 }
@@ -40,15 +43,24 @@ void ForcedSecureSMTPClient::setServerPort(unsigned int pPort) {
     jed_utils::ForcedSecureSMTPClient::setServerPort(pPort);
 }
 
+void ForcedSecureSMTPClient::setBatchMode(bool pEnabled) {
+    jed_utils::ForcedSecureSMTPClient::setBatchMode(pEnabled);
+}
+
 void ForcedSecureSMTPClient::setCommandTimeout(unsigned int pTimeOutInSeconds) {
     jed_utils::SMTPClientBase::setCommandTimeout(pTimeOutInSeconds);
 }
 
 void ForcedSecureSMTPClient::setCredentials(const Credential &pCredential) {
     jed_utils::SMTPClientBase::setCredentials(jed_utils::Credential(pCredential.getUsername().c_str(),
-                                                                    pCredential.getPassword().c_str()));
+                                                                    pCredential.getPassword().c_str(),
+                                                                    pCredential.getRecommendedAuthOption()));
     delete mCredential;
     mCredential = new Credential(pCredential);
+}
+
+void ForcedSecureSMTPClient::setAcceptSelfSignedCert(bool pValue) {
+    jed_utils::SecureSMTPClientBase::setAcceptSelfSignedCert(pValue);
 }
 
 void ForcedSecureSMTPClient::setKeepUsingBaseSendCommands(bool pValue) {

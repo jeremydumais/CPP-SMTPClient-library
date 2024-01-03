@@ -298,6 +298,31 @@ TYPED_TEST(MultiAttachmentFixture, getmimetype_videos_webm) {
     ASSERT_EQ(std::string(att1.getMimeType()), "video/webm");
 }
 
+TYPED_TEST(MultiAttachmentFixture, getmimetype_audio_wav) {
+        TypeParam att1("test.wav", "");
+            ASSERT_EQ(std::string(att1.getMimeType()), "audio/wav");
+}
+
+TYPED_TEST(MultiAttachmentFixture, getmimetype_audio_mp3) {
+        TypeParam att1("test.mp3", "");
+            ASSERT_EQ(std::string(att1.getMimeType()), "audio/mpeg");
+}
+
+TYPED_TEST(MultiAttachmentFixture, getmimetype_audio_ogg) {
+        TypeParam att1("test.oga", "");
+            ASSERT_EQ(std::string(att1.getMimeType()), "audio/ogg");
+}
+
+TYPED_TEST(MultiAttachmentFixture, getmimetype_audio_opus) {
+        TypeParam att1("test.opus", "");
+            ASSERT_EQ(std::string(att1.getMimeType()), "audio/opus");
+}
+
+TYPED_TEST(MultiAttachmentFixture, getmimetype_audio_aac) {
+        TypeParam att1("test.aac", "");
+            ASSERT_EQ(std::string(att1.getMimeType()), "audio/aac");
+}
+
 TYPED_TEST(MultiAttachmentFixture, getmimetype_archives_zip) {
     TypeParam att1("test.zip", "");
     ASSERT_EQ(std::string(att1.getMimeType()), "application/zip");

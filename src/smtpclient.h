@@ -30,7 +30,7 @@ class SMTPCLIENT_API SmtpClient : public SMTPClientBase {
     SmtpClient(const char *pServerName, unsigned int pPort);
 
     /** Destructor of the SmtpClient. */
-    virtual ~SmtpClient();
+    ~SmtpClient() override;
 
     /** SmtpClient copy constructor. */
     SmtpClient(const SmtpClient &other) = default;

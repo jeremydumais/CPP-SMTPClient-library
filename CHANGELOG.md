@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file
 
+## [1.1.7]
+
+### Added
+- Added an option in the Credential class to indicate the preferred
+authentication option. Support for the XOAUTH2 authentication has also been
+added.This change has been made by rcosnita (https://github.com/rcosnita).
+Many thanks!
+- Added a new flag in the different SMTP client classes to indicate whether we
+want to send emails in batch (getBatchMode/setBatchMode). In this mode the connection to an
+SMTP server will only be made once when the first email is sent and will
+remain open until the client instance is destroy.
+- Added the authentication feature on the SMTPClient class.
+- Added a new flag on the ForcedSecureSMTPClient and OpportunisticSecureSMTPClient
+to indicate whether we accept self signed certificate
+(getAcceptSelfSignedCert/setAcceptSelfSignedCert).
+
+
+### Enhancement / Bug fixes
+The following changes have been made by ino-josh (https://github.com/ino-josh).
+Many thanks!
+
+- Changed the default MAIL FROM format to fit the RFC.
+- mCredential being a member of SMTPClientBase is now freed by it.
+- Base64 encoding: added CRLF every so often to prevent rejection.
+- Attachments: added mime types for audio files.
+- Fix massive memory leak in createAttachmentsText of the SMTPClientBase class.
+
+
 ## [1.1.6]
 
 ### Added

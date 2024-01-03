@@ -32,7 +32,7 @@ class CPP_OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : priv
     OpportunisticSecureSMTPClient(const std::string &pServerName, unsigned int pPort);
 
     /** Destructor of the OpportunisticSecureSMTPClient. */
-    virtual ~OpportunisticSecureSMTPClient() override;
+    ~OpportunisticSecureSMTPClient() override = default;
 
     /** OpportunisticSecureSMTPClient copy constructor. */
     OpportunisticSecureSMTPClient(const OpportunisticSecureSMTPClient& other) = default;
@@ -52,6 +52,9 @@ class CPP_OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : priv
     /** Return the server port number. */
     unsigned int getServerPort() const;
 
+    /** Return the batch mode enable flag. */
+    bool getBatchMode() const;
+
     /** Return the command timeout in seconds. */
     unsigned int getCommandTimeout() const;
 
@@ -60,6 +63,9 @@ class CPP_OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : priv
 
     /** Return the credentials configured. */
     const Credential *getCredentials() const;
+
+    /** Return the accept self certificate flag. */
+    bool getAcceptSelfSignedCert() const;
 
     /**
      *  @brief  Set the server name.
@@ -76,6 +82,13 @@ class CPP_OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : priv
     void setServerPort(unsigned int pPort);
 
     /**
+     *  @brief  Set the batch mode flag.
+     *  @param pEnabled Indicate if the batch mode is enabled.
+     *  Default: false
+     */
+    void setBatchMode(bool pEnabled);
+
+    /**
      *  @brief  Set the command timeout in seconds.
      *  @param pTimeOutInSeconds The timeout in seconds.
      *  Default: 3 seconds
@@ -87,6 +100,13 @@ class CPP_OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : priv
      *  @param pCredential The credential containing the username and the password.
      */
     void setCredentials(const Credential &pCredential);
+
+    /**
+     *  @brief  Set the accept self signed certificate
+     *  @param pValue Indicate if self signed certificate is accepted.
+     *  Default: false
+     */
+    void setAcceptSelfSignedCert(bool pValue);
 
     /**
      *  @brief  Indicate if the class will keep using base send command even

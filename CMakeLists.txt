@@ -118,7 +118,7 @@ if (WIN32)
         ICON "${PATH_TO_APPLICATION_ICON}"
         VERSION_MAJOR 1
         VERSION_MINOR 1
-        VERSION_PATCH 6
+        VERSION_PATCH 7
         VERSION_REVISION ${BUILD_REVISION}
         )
 endif()
@@ -158,6 +158,9 @@ else()
     #For other compiler create the library as a static library
     add_library(${PROJECT_NAME}
         ${PROJECT_SOURCE_FILES})
+    target_include_directories(${PROJECT_NAME} PUBLIC ${OPENSSL_INCLUDE_DIR})
+    get_filename_component(ssl_libdir ${OPENSSL_SSL_LIBRARY} DIRECTORY)
+    target_link_directories(${PROJECT_NAME} PUBLIC ${ssl_libdir})
     target_link_libraries(${PROJECT_NAME} ssl crypto)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") #gcc
         # https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
@@ -183,6 +186,7 @@ else()
             "-Wuseless-cast" # (only in GCC >= 4.8) warn if you perform a cast to the same type
             "-Wdouble-promotion" # (GCC >= 4.6, Clang >= 3.8) warn if float is implicit promoted to double
             "-Wformat=2" # warn on security issues around functions that format output (ie printf)
+            "-fPIC"
             )
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         target_compile_options(${PROJECT_NAME}
@@ -193,6 +197,7 @@ else()
             "-Wno-unused-lambda-capture" # FIX: It is necessary when building on MSVC
             "-pedantic" # Issue all the warnings demanded by strict ISO C and ISO C++
             "-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
+            "-fPIC"
             )
     endif()
 endif()
@@ -265,4 +270,10 @@ ADD_CUSTOM_TARGET(uninstall
 
 if(EXISTS ${PROJECT_PATH}/simpleclient AND IS_DIRECTORY ${PROJECT_PATH}/simpleclient)
     add_subdirectory(${PROJECT_PATH}/simpleclient)
+endif()
+
+if(BUILD_EXAMPLE)
+    add_executable(emails-example src/cpp/example/send-mail.cpp)
+    target_include_directories(emails-example PUBLIC ${CMAKE_SOURCE_DIR}/src)
+    target_link_libraries(emails-example smtpclient ssl crypto stdc++)
 endif()

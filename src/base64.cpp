@@ -43,6 +43,7 @@ static inline bool is_base64(unsigned char c) {
 std::string Base64::Encode(unsigned char const *bytes_to_encode, size_t in_len) {
     std::string ret;
     int i = 0;
+    size_t out_len = 0;
     unsigned char char_array_3[3];
     unsigned char char_array_4[4];
 
@@ -57,6 +58,13 @@ std::string Base64::Encode(unsigned char const *bytes_to_encode, size_t in_len) 
             for (i = 0; (i < 4); i++)
                 ret += base64_chars[char_array_4[i]];
             i = 0;
+
+            // Some servers reject any email with a line that is "too long" (hMailServer does this, for example).
+            // Since attachments can be quite large, we break up the output with \r\n to avoid this.
+            out_len += 4;
+            if (out_len % (64 * 1024) == 0) {
+                ret += "\r\n";
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 # Jed# C++ SMTP Client Library
 
 [![Build status](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml/badge.svg)](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
-![Latest version](https://img.shields.io/badge/latest_version-1.1.6-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.7-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 
 ## A simple SMTP client library built in C++ that support authentication and secure connections (Opportunistic SSL/TLS and Forced SSL encryption).
@@ -30,6 +30,31 @@ and [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-th
 <tr>
 <td>
 
+[v1.1.7 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.7/CPP-SMTPClient-Library.1.1.7.x64.zip)
+
+</td>
+<td>
+
+fb041c2e377d6e399853b1fd4f0f2396
+
+</td>
+</tr>
+<tr>
+<td>
+
+[v1.1.7 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.7/CPP-SMTPClient-Library.1.1.7.x86.zip)
+
+</td>
+<td>
+
+bb98d97a03451ff579226b0361c2a7ce
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 [v1.1.6 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.6/CPP-SMTPClient-Library.1.1.6.x64.zip)
 
 </td>
@@ -52,31 +77,6 @@ ffdd7f2adbf92b9a3dfd8bbf97c83008
 </td>
 </tr>
 
-<tr>
-<td>
-
-[v1.1.5 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.5/CPP-SMTPClient-Library.1.1.5.x64.zip)
-
-</td>
-<td>
-
-b28a2fe6c85ef485b4175c60b6c8c018
-
-</td>
-</tr>
-<tr>
-<td>
-
-[v1.1.5 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.5/CPP-SMTPClient-Library.1.1.5.x86.zip)
-
-</td>
-<td>
-
-d7bce46ec3cfd49bfb342d82a3905e5f
-
-</td>
-</tr>
-
 </table>
 
 See the section
@@ -85,6 +85,20 @@ for previous versions.
 
 ## 📰 What's new
 
+- Version 1.1.7:
+    - Added support for the XOAUTH2 authentication method.
+This change has been made by rcosnita (https://github.com/rcosnita).
+Many thanks!
+    - Added a new flag in the different SMTP client classes to indicate whether we
+want to send emails in batch (getBatchMode/setBatchMode). In this mode the connection to an
+SMTP server will only be made once when the first email is sent and will
+remain open until the client instance is destroy.
+    - Added the authentication feature on the SMTPClient class.
+    - Added a new flag on the ForcedSecureSMTPClient and OpportunisticSecureSMTPClient
+to indicate whether we accept self signed certificate
+(getAcceptSelfSignedCert/setAcceptSelfSignedCert).
+    - Many more enhancements provided by ino-josh (https://github.com/ino-josh).
+Many thanks!
 - Version 1.1.6: Added support in the attachment class for Content-ID. It will
 be really useful to uniquely identify and reference resources to embed in the
 message.
@@ -301,6 +315,16 @@ s: 250 2.0.0 OK  1672495787 v2-20020a05620a440200b006fed2788751sm17411101qkp.76 
 c: QUIT\r\n
 Operation completed!
 ```
+
+## 🗝 Complete XOAUTH2 authentication example
+
+We also provide a fully working example. See [send-mail.cpp](./src/cpp/example/send-mail.cpp).
+Make sure you replace the username and password (access token) placeholders with correct values.
+
+The example uses GMail smtp server with [XOauth2 authentication mechanism](https://developers.google.com/gmail/imap/xoauth2-protocol).
+
+For testing purposes, you can obtain an OAuth access token for you gmail account by using the [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/).
+You can follow this procedure for more details: [Obtaining an access token for your gmail account](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Obtain-An-Access-Token-Gmail)
 
 ## 🧪 Unit tests
 [How to run the unit tests](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Run-the-unit-tests)

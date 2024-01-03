@@ -1,10 +1,8 @@
 #include "attachment.h"
-#include <algorithm>
 #include <cstdint>
 #include <ios>
 #include <iostream>
 #include <limits>
-#include <sstream>
 #include <string>
 #include "stringutils.h"
 
@@ -223,6 +221,22 @@ const char *Attachment::getMimeType() const {
     }
     if (extension == "WEBM") {
         return "video/webm";
+    }
+    // Audio
+    if (extension == "WAV") {
+        return "audio/wav";
+    }
+    if (extension == "MP3") {
+        return "audio/mpeg";
+    }
+    if (extension == "OGA") {
+        return "audio/ogg";
+    }
+    if (extension == "OPUS") {
+        return "audio/opus";
+    }
+    if (extension == "AAC") {
+        return "audio/aac";
     }
     // Archives
     if (extension == "ZIP") {

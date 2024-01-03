@@ -45,6 +45,10 @@ SmtpClient& SmtpClient::operator=(SmtpClient &&other) noexcept {
 }
 
 void SmtpClient::cleanup() {
+    if (getBatchMode() && mIsConnected) {
+        sendQuitCommand();
+    }
+    mIsConnected = false;
     int socket { getSocketFileDescriptor() };
     if (socket != 0) {
 #ifdef _WIN32
@@ -81,6 +85,13 @@ int SmtpClient::establishConnectionWithServer() {
     int client_init_return_code = sendServerIdentification();
     if (client_init_return_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
         return client_init_return_code;
+    }
+
+    if (getCredentials() != nullptr) {
+        int client_auth_return_code = authenticateClient();
+        if (client_auth_return_code != STATUS_CODE_AUTHENTICATION_SUCCEEDED) {
+            return client_auth_return_code;
+        }
     }
 
     return 0;

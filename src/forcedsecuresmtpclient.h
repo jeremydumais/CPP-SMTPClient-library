@@ -30,7 +30,7 @@ class FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : public SecureSMTPClien
     ForcedSecureSMTPClient(const char *pServerName, unsigned int pPort);
 
     /** Destructor of the ForcedSecureSMTPClient. */
-    ~ForcedSecureSMTPClient() = default;
+    ~ForcedSecureSMTPClient() override = default;
 
     /** ForcedSecureSMTPClient copy constructor. */
     ForcedSecureSMTPClient(const ForcedSecureSMTPClient& other) = default;

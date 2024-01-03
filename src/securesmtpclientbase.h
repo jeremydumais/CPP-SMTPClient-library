@@ -44,6 +44,16 @@ class SECURESMTPCLIENTBASE_API SecureSMTPClientBase : public SMTPClientBase {
     /** SecureSMTPClientBase move assignment operator. */
     SecureSMTPClientBase& operator=(SecureSMTPClientBase&& other) noexcept;
 
+    /** Return the accept self certificate flag. */
+    bool getAcceptSelfSignedCert() const;
+
+    /**
+     *  @brief  Set the accept self signed certificate
+     *  @param pValue Indicate if self signed certificate is accepted.
+     *  Default: false
+     */
+    void setAcceptSelfSignedCert(bool pValue);
+
  protected:
     // Methods
     void cleanup() override;
@@ -61,6 +71,7 @@ class SECURESMTPCLIENTBASE_API SecureSMTPClientBase : public SMTPClientBase {
     BIO *mBIO;
     SSL_CTX *mCTX;
     SSL *mSSL;
+    bool mAcceptSelfSignedCert;
 };
 }  // namespace jed_utils
 
