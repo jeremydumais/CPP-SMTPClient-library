@@ -7,10 +7,6 @@ ForcedSecureSMTPClient::ForcedSecureSMTPClient(const std::string &pServerName, u
     : jed_utils::ForcedSecureSMTPClient(pServerName.c_str(), pPort) {
 }
 
-ForcedSecureSMTPClient::~ForcedSecureSMTPClient() {
-    delete mCredential;
-}
-
 std::string ForcedSecureSMTPClient::getServerName() const {
     return jed_utils::ForcedSecureSMTPClient::getServerName();
 }

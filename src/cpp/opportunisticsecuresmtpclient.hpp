@@ -32,7 +32,7 @@ class CPP_OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : priv
     OpportunisticSecureSMTPClient(const std::string &pServerName, unsigned int pPort);
 
     /** Destructor of the OpportunisticSecureSMTPClient. */
-    virtual ~OpportunisticSecureSMTPClient() override;
+    ~OpportunisticSecureSMTPClient() override = default;
 
     /** OpportunisticSecureSMTPClient copy constructor. */
     OpportunisticSecureSMTPClient(const OpportunisticSecureSMTPClient& other) = default;

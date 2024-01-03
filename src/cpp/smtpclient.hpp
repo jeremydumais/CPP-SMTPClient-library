@@ -35,7 +35,7 @@ class CPP_SMTPCLIENT_API SmtpClient : private jed_utils::SmtpClient {
     SmtpClient(const std::string &pServerName, unsigned int pPort);
 
     /** Destructor of the SmtpClient. */
-    virtual ~SmtpClient() override;
+    ~SmtpClient() override = default;
 
     /** SmtpClient copy constructor. */
     SmtpClient(const SmtpClient &other) = default;

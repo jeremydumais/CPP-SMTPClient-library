@@ -7,10 +7,6 @@ OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(const std::string &
     : jed_utils::OpportunisticSecureSMTPClient(pServerName.c_str(), pPort) {
 }
 
-OpportunisticSecureSMTPClient::~OpportunisticSecureSMTPClient() {
-    delete mCredential;
-}
-
 std::string OpportunisticSecureSMTPClient::getServerName() const {
     return jed_utils::OpportunisticSecureSMTPClient::getServerName();
 }

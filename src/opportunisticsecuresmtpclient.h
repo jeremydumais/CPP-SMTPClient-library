@@ -30,7 +30,7 @@ class OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : public S
     OpportunisticSecureSMTPClient(const char *pServerName, unsigned int pPort);
 
     /** Destructor of the OpportunisticSecureSMTPClient. */
-    ~OpportunisticSecureSMTPClient() = default;
+    ~OpportunisticSecureSMTPClient() override = default;
 
     /** OpportunisticSecureSMTPClient copy constructor. */
     OpportunisticSecureSMTPClient(const OpportunisticSecureSMTPClient& other) = default;
