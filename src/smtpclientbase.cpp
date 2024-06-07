@@ -14,6 +14,7 @@
 #include "message.h"
 #include "messageaddress.h"
 #include "serverauthoptions.h"
+#include "serveroptionsanalyzer.h"
 #include "smtpclienterrors.h"
 #include "smtpserverstatuscodes.h"
 #include "socketerrors.h"
@@ -587,8 +588,20 @@ int SMTPClientBase::sendServerIdentification() {
     if (command_return_code != EHLO_SUCCESS_CODE) {
         return command_return_code;
     }
+    std::string returnedOptions = getLastServerResponse();
+    // Check that the last returned option has no hyphen otherwise options are
+    // still missing from the server.
+    while (!ServerOptionsAnalyzer::containsAllOptions(returnedOptions)) {
+        int replyCode = getServerReply();
+        if (replyCode == -1) {
+            return SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT;
+        } else if (replyCode != EHLO_SUCCESS_CODE) {
+            return replyCode;
+        }
+        returnedOptions += "\n" + std::string(getLastServerResponse());
+    }
     // Inspect the returned values for authentication options
-    setAuthenticationOptions(extractAuthenticationOptions(getLastServerResponse()));
+    setAuthenticationOptions(extractAuthenticationOptions(returnedOptions.c_str()));
     return EHLO_SUCCESS_CODE;
 }
 
@@ -631,24 +644,49 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode) {
     return 0;
 }
 
-int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode) {
+int SMTPClientBase::getRawCommandReply() {
+    std::string fullResponse;
+    bool receivedAtLeastOnce = false;
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
     unsigned int waitTime {0};
-    ssize_t bytes_received {0};
+    ssize_t bytes_received;
+    setSocketToNonBlockingPOSIX();
+
+    do {
+        bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0);
+        if (bytes_received > 0) {
+            receivedAtLeastOnce = true;
+            outbuf[bytes_received] = '\0';  // Null-terminate the received data
+            fullResponse += outbuf;
+        } else {
+            if (bytes_received == -1 && receivedAtLeastOnce) {
+                break;
+            }
+            sleep(1);
+            waitTime += 1;
+        }
+    } while (waitTime < mCommandTimeOut);
+    setSocketToBlockingPOSIX();
+    if (waitTime < mCommandTimeOut || receivedAtLeastOnce) {
+        setLastServerResponse(fullResponse.c_str());
+        addCommunicationLogItem(fullResponse.c_str(), "s");
+        return extractReturnCode(fullResponse.c_str());
+    }
+    return -1;
+}
+
+int SMTPClientBase::getServerReply() {
+    return getRawCommandReply();
+}
+
+int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode) {
     if (sendRawCommand(pCommand, pErrorCode) != 0) {
         return pErrorCode;
     }
 
-    while ((bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0)) <= 0
-            && waitTime < mCommandTimeOut) {
-        sleep(1);
-        waitTime += 1;
-    }
-    if (waitTime < mCommandTimeOut) {
-        outbuf[bytes_received-1] = '\0';
-        setLastServerResponse(outbuf);
-        addCommunicationLogItem(outbuf, "s");
-        return extractReturnCode(outbuf);
+    int serverReplyCode = getRawCommandReply();
+    if (serverReplyCode != -1) {
+        return serverReplyCode;
     }
 
     cleanup();

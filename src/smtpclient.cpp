@@ -104,3 +104,7 @@ int SmtpClient::sendCommand(const char *pCommand, int pErrorCode) {
 int SmtpClient::sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) {
     return sendRawCommand(pCommand, pErrorCode, pTimeoutCode);
 }
+
+int SmtpClient::getServerReply() {
+    return getRawCommandReply();
+}

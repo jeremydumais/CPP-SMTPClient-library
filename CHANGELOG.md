@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file
 
+## [1.1.8]
+
+## Enhancement / Bug fixes
+- Some SMTP server send their list of supported extensions in multiple
+buffers like Zoho Mail. The EHLO command when in uncrypted mode, now supports
+receiving multiple buffers. In return, a delay of one second must be added for
+each segment sent by the SMTP server. For SMTP servers that send the list of
+supported extensions in a single segment like Gmail and Live, no additional
+delay is added for the EHLO command. This doesn't affect the other commands.
+
 ## [1.1.7]
 
 ### Added

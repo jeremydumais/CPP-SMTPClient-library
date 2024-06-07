@@ -29,6 +29,10 @@ class FakeSMTPClientBase : public SMTPClientBase {
         return 0;
     }
 
+    int getServerReply() override {
+        return 0;
+    }
+
     static const char *getNullChar() { return nullptr; }
 
     static int extractReturnCode(const char *pOutput) {
@@ -58,6 +62,10 @@ class FakeCPPSMTPClientBase : public T {
     }
 
     int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) override {
+        return 0;
+    }
+
+    int getServerReply() override {
         return 0;
     }
 

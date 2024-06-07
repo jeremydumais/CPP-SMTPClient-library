@@ -173,8 +173,10 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     void setLastServerResponse(const char *pResponse);
     int sendRawCommand(const char *pCommand, int pErrorCode);
     int sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode);
+    int getRawCommandReply();
     virtual int sendCommand(const char *pCommand, int pErrorCode) = 0;
     virtual int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) = 0;
+    virtual int getServerReply() = 0;
     int sendQuitCommand();
     // Methods used for authentication
     int authenticateClient();
