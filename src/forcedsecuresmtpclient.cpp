@@ -83,7 +83,7 @@ int ForcedSecureSMTPClient::checkServerGreetings() {
     unsigned int waitTime = 0;
     ssize_t bytes_received = 0;
     while ((bytes_received = BIO_read(getBIO(), outbuf, SERVERRESPONSE_BUFFER_LENGTH)) <= 0 && waitTime < getCommandTimeout()) {
-        sleep(1);
+        crossPlatformSleep(1);
         waitTime += 1;
     }
     if (waitTime < getCommandTimeout()) {

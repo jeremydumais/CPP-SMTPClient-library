@@ -435,6 +435,28 @@ int SMTPClientBase::initializeSessionWinSock() {
     return 0;
 }
 
+int SMTPClientBase::setSocketToNonBlockingWinSock() {
+    u_long mode = 1; // 1 to enable non-blocking mode
+    if (ioctlsocket(mSock, FIONBIO, &mode) != NO_ERROR) {
+        int err = WSAGetLastError();
+        setLastSocketErrNo(err);
+        addCommunicationLogItem(strerror(err));
+        return SOCKET_INIT_SESSION_FCNTL_SET_ERROR;
+    }
+    return 0;
+}
+    
+int SMTPClientBase::setSocketToBlockingWinSock() {
+    u_long mode = 0; // 0 to enable blocking mode
+    if (ioctlsocket(mSock, FIONBIO, &mode) != NO_ERROR) {
+        int err = WSAGetLastError();
+        setLastSocketErrNo(err);
+        addCommunicationLogItem(strerror(err));
+        return SOCKET_INIT_SESSION_FCNTL_GET_ERROR;
+    }
+    return 0;
+}
+
 bool SMTPClientBase::isWSAStarted() {
     return mWSAStarted;
 }
@@ -578,6 +600,23 @@ int SMTPClientBase::setSocketToBlockingPOSIX() {
 }
 #endif
 
+int SMTPClientBase::setSocketToNonBlocking() {
+#ifdef _WIN32
+    return setSocketToNonBlockingWinSock();
+#else
+    return setSocketToNonBlockingPOSIX();
+#endif
+}
+
+int SMTPClientBase::setSocketToBlocking() {
+#ifdef _WIN32
+    return setSocketToBlockingWinSock();
+#else
+    return setSocketToBlockingPOSIX();
+#endif    
+}
+
+
 int SMTPClientBase::sendServerIdentification() {
     const int EHLO_SUCCESS_CODE = 250;
     std::string ehlo { "ehlo localhost\r\n" };
@@ -611,7 +650,7 @@ int SMTPClientBase::checkServerGreetings() {
     ssize_t bytes_received = 0;
     while ((bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0)) <= 0
             && waitTime < mCommandTimeOut) {
-        sleep(1);
+        crossPlatformSleep(1);
         waitTime += 1;
     }
     if (waitTime < mCommandTimeOut) {
@@ -650,7 +689,7 @@ int SMTPClientBase::getRawCommandReply() {
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
     unsigned int waitTime {0};
     ssize_t bytes_received;
-    setSocketToNonBlockingPOSIX();
+    setSocketToNonBlocking();
 
     do {
         bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0);
@@ -662,11 +701,11 @@ int SMTPClientBase::getRawCommandReply() {
             if (bytes_received == -1 && receivedAtLeastOnce) {
                 break;
             }
-            sleep(1);
+            crossPlatformSleep(1);
             waitTime += 1;
         }
     } while (waitTime < mCommandTimeOut);
-    setSocketToBlockingPOSIX();
+    setSocketToBlocking();
     if (waitTime < mCommandTimeOut || receivedAtLeastOnce) {
         setLastServerResponse(fullResponse.c_str());
         addCommunicationLogItem(fullResponse.c_str(), "s");
@@ -701,6 +740,14 @@ int SMTPClientBase::sendQuitCommand() {
         return quit_ret_code;
     }
     return 0;
+}
+
+void SMTPClientBase::crossPlatformSleep(unsigned int seconds) {
+    #ifdef _WIN32
+        sleep(seconds * 1000);
+    #else
+        sleep(seconds);
+    #endif
 }
 
 void SMTPClientBase::setLastServerResponse(const char *pResponse) {

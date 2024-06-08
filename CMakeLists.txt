@@ -149,7 +149,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     add_library(${PROJECT_NAME} SHARED
         ${PROJECT_SOURCE_FILES} ${VersionFilesOutputVariable})
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+    add_compile_options(/EHsc)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W3 /WX)
     target_compile_definitions(${PROJECT_NAME}
         PRIVATE SMTPCLIENT_EXPORTS
         INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one

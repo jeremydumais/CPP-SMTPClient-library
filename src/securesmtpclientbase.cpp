@@ -320,7 +320,7 @@ int SecureSMTPClientBase::getServerReply() {
     int bytes_received {0};
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
     while ((bytes_received = BIO_read(mBIO, outbuf, SERVERRESPONSE_BUFFER_LENGTH)) <= 0 && waitTime < getCommandTimeout()) {
-        sleep(1);
+        crossPlatformSleep(1);
         waitTime += 1;
     }
     if (waitTime < getCommandTimeout()) {

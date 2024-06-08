@@ -157,6 +157,8 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int initializeSession();
     #ifdef _WIN32
     int initializeSessionWinSock();
+    int setSocketToNonBlockingWinSock();
+    int setSocketToBlockingWinSock();
     bool isWSAStarted();
     void setWSAStopped();
     void addWSAMessageToCommunicationLog(const int errorCode);
@@ -166,6 +168,8 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int setSocketToNonBlockingPOSIX();
     int setSocketToBlockingPOSIX();
     #endif
+    int setSocketToNonBlocking();
+    int setSocketToBlocking();
     int sendServerIdentification();
     virtual int establishConnectionWithServer() = 0;
     virtual int checkServerGreetings();
@@ -178,6 +182,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     virtual int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) = 0;
     virtual int getServerReply() = 0;
     int sendQuitCommand();
+    void crossPlatformSleep(unsigned int seconds);
     // Methods used for authentication
     int authenticateClient();
     int authenticateWithMethodPlain();
