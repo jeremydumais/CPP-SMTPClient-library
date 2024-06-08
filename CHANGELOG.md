@@ -11,6 +11,20 @@ receiving multiple buffers. In return, a delay of one second must be added for
 each segment sent by the SMTP server. For SMTP servers that send the list of
 supported extensions in a single segment like Gmail and Live, no additional
 delay is added for the EHLO command. This doesn't affect the other commands.
+- Now when we send an email to multiple recipients (to or cc), the recipients
+appears as a single mail header instead of multiple headers. The old method was
+not RFC 5322 compliant.
+
+  Before:
+
+  To: test@example.com
+
+  To: test2@example.com
+
+  After:
+
+  To: test@example.com, test2@example.com
+
 
 ## [1.1.7]
 

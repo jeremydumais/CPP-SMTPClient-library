@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 #include <string>
+#include <vector>
+#include "../../src/messageaddress.h"
 #include "../../src/smtpclientbase.h"
 #include "../../src/cpp/forcedsecuresmtpclient.hpp"
 #include "../../src/cpp/opportunisticsecuresmtpclient.hpp"
@@ -41,6 +43,10 @@ class FakeSMTPClientBase : public SMTPClientBase {
 
     static ServerAuthOptions *extractAuthenticationOptions(const char *pEhloOutput) {
         return SMTPClientBase::extractAuthenticationOptions(pEhloOutput);
+    }
+
+    static std::string generateHeaderAddressValues(const std::vector<MessageAddress *> &pList) {
+        return SMTPClientBase::generateHeaderAddressValues(pList);
     }
 };
 
@@ -426,3 +432,34 @@ TEST(SMTPClientBase, getErrorMessage_r_WithCharPtrOf50_Return0) {
     ASSERT_STREQ("Unable to create the socket", buffer);
     delete[] buffer;
 }
+
+TEST(SMTPClientBase, generateHeaderAddressValues_WithToAndEmptyAddress_ReturnEmptyTo) {
+    ASSERT_EQ("", FakeSMTPClientBase::generateHeaderAddressValues({}));
+}
+
+TEST(SMTPClientBase, generateHeaderAddressValues_WithToAndOneAddress_ReturnValidHeader) {
+    MessageAddress addr1("test@test.com", "test");
+    ASSERT_EQ("test <test@test.com>",
+            FakeSMTPClientBase::generateHeaderAddressValues({ &addr1 }));
+}
+
+TEST(SMTPClientBase, generateHeaderAddressValues_WithToAndOneAddressWithoutDisplay_ReturnValidHeader) {
+    MessageAddress addr1("test@test.com");
+    ASSERT_EQ("test@test.com",
+            FakeSMTPClientBase::generateHeaderAddressValues({ &addr1 }));
+}
+
+TEST(SMTPClientBase, generateHeaderAddressValues_WithToAndTwoAddresses_ReturnValidHeader) {
+    MessageAddress addr1("test@test.com", "test");
+    MessageAddress addr2("test2@test.com", "test2");
+    ASSERT_EQ("test <test@test.com>, test2 <test2@test.com>", FakeSMTPClientBase::generateHeaderAddressValues({
+                &addr1, &addr2 }));
+}
+
+TEST(SMTPClientBase, generateHeaderAddressValues_WithToAndTwoAddressesWithoutDisplay_ReturnValidHeader) {
+    MessageAddress addr1("test@test.com");
+    MessageAddress addr2("test2@test.com", "test2");
+    ASSERT_EQ("test@test.com, test2 <test2@test.com>", FakeSMTPClientBase::generateHeaderAddressValues({
+                &addr1, &addr2 }));
+}
+

@@ -7,8 +7,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <tuple>
 #include <utility>
+#include <vector>
 #include "base64.h"
 #include "errorresolver.h"
 #include "message.h"
@@ -436,7 +436,7 @@ int SMTPClientBase::initializeSessionWinSock() {
 }
 
 int SMTPClientBase::setSocketToNonBlockingWinSock() {
-    u_long mode = 1; // 1 to enable non-blocking mode
+    u_long mode = 1;  // 1 to enable non-blocking mode
     if (ioctlsocket(mSock, FIONBIO, &mode) != NO_ERROR) {
         int err = WSAGetLastError();
         setLastSocketErrNo(err);
@@ -445,9 +445,9 @@ int SMTPClientBase::setSocketToNonBlockingWinSock() {
     }
     return 0;
 }
-    
+
 int SMTPClientBase::setSocketToBlockingWinSock() {
-    u_long mode = 0; // 0 to enable blocking mode
+    u_long mode = 0;  // 0 to enable blocking mode
     if (ioctlsocket(mSock, FIONBIO, &mode) != NO_ERROR) {
         int err = WSAGetLastError();
         setLastSocketErrNo(err);
@@ -613,7 +613,7 @@ int SMTPClientBase::setSocketToBlocking() {
     return setSocketToBlockingWinSock();
 #else
     return setSocketToBlockingPOSIX();
-#endif    
+#endif
 }
 
 
@@ -688,11 +688,10 @@ int SMTPClientBase::getRawCommandReply() {
     bool receivedAtLeastOnce = false;
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
     unsigned int waitTime {0};
-    ssize_t bytes_received;
     setSocketToNonBlocking();
 
     do {
-        bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0);
+        ssize_t bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0);
         if (bytes_received > 0) {
             receivedAtLeastOnce = true;
             outbuf[bytes_received] = '\0';  // Null-terminate the received data
@@ -918,21 +917,16 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg) {
         return header_from_ret_code;
     }
 
-    // To and Cc.
-    // Note : Bcc are not included in the header
-    std::vector<std::tuple<MessageAddress **, size_t, const char *>> recipients {
-        std::tuple<MessageAddress **, size_t, const char *>(pMsg.getTo(), pMsg.getToCount(), "To"),
-            std::tuple<MessageAddress **, size_t, const char *>(pMsg.getCc(), pMsg.getCcCount(), "Cc")
-    };
-    for (const auto &item : recipients) {
-        MessageAddress **list = std::get<0>(item);
-        size_t count = std::get<1>(item);
-        const char *field = std::get<2>(item);
-        if (list != nullptr) {
-            std::for_each(list, list + count, [this, &field](MessageAddress *address) {
-                    return addMailHeader(field, address->getEmailAddress(), CLIENT_SENDMAIL_HEADERTOANDCC_ERROR);
-                    });
-        }
+    // To
+    if (pMsg.getToCount() > 0) {
+        std::vector<MessageAddress*> toAddrs(pMsg.getTo(), pMsg.getTo() + pMsg.getToCount());
+        addMailHeader("To", generateHeaderAddressValues(toAddrs).c_str(), CLIENT_SENDMAIL_HEADERTOANDCC_ERROR);
+    }
+
+    // Cc
+    if (pMsg.getCcCount() > 0) {
+        std::vector<MessageAddress*> toCcs(pMsg.getCc(), pMsg.getCc() + pMsg.getCcCount());
+        addMailHeader("Cc", generateHeaderAddressValues(toCcs).c_str(), CLIENT_SENDMAIL_HEADERTOANDCC_ERROR);
     }
 
     // Subject
@@ -1144,4 +1138,17 @@ ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhl
         }
     }
     return retVal;
+}
+
+std::string SMTPClientBase::generateHeaderAddressValues(const std::vector<jed_utils::MessageAddress *> &pList) {
+    std::stringstream retval;
+    size_t index = 0;
+    for (auto addr : pList) {
+        if (index > 0) {
+            retval << ", ";
+        }
+        retval << std::string(*addr);
+        index++;
+    }
+    return retval.str();
 }

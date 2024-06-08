@@ -199,6 +199,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     static std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments);
     static int extractReturnCode(const char *pOutput);
     static ServerAuthOptions *extractAuthenticationOptions(const char *pEhloOutput);
+    static std::string generateHeaderAddressValues(const std::vector<jed_utils::MessageAddress *> &pList);
 
  private:
     char *mServerName;
