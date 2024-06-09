@@ -1,7 +1,7 @@
 # Jed# C++ SMTP Client Library
 
 [![Build status](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml/badge.svg)](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
-![Latest version](https://img.shields.io/badge/latest_version-1.1.7-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.8-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 
 ## A simple SMTP client library built in C++ that support authentication and secure connections (Opportunistic SSL/TLS and Forced SSL encryption).
@@ -27,6 +27,30 @@ and [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-th
 <th> MD5 hash of smtpclient.dll </th>
 </tr>
 
+<tr>
+<td>
+
+[v1.1.8 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.8/CPP-SMTPClient-Library.1.1.8.x64.zip)
+
+</td>
+<td>
+
+813e656a811af15891d4c1160a21dec9
+
+</td>
+</tr>
+<tr>
+<td>
+
+[v1.1.8 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.8/CPP-SMTPClient-Library.1.1.8.x86.zip)
+
+</td>
+<td>
+
+277b9c257decc619a6358de58b213928
+
+</td>
+</tr>
 <tr>
 <td>
 
