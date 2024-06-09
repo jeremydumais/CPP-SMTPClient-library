@@ -51,6 +51,7 @@ class SMTPCLIENT_API SmtpClient : public SMTPClientBase {
     // Methods to send commands to the server
     int sendCommand(const char *pCommand, int pErrorCode) override;
     int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) override;
+    int getServerReply() override;
 };
 }  // namespace jed_utils
 

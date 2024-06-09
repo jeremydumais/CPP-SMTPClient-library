@@ -65,6 +65,7 @@ class SECURESMTPCLIENTBASE_API SecureSMTPClientBase : public SMTPClientBase {
     // Methods to send commands to the server
     int sendCommand(const char *pCommand, int pErrorCode) override;
     int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) override;
+    int getServerReply() override;
 
  private:
     // Attributes used to communicate with the server

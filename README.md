@@ -85,6 +85,16 @@ for previous versions.
 
 ## 📰 What's new
 
+- Version 1.1.8:
+    - Some SMTP server send their list of supported extensions in multiple
+buffers like Zoho Mail. The EHLO command when in uncrypted mode, now supports
+receiving multiple buffers. In return, a delay of one second must be added for
+each segment sent by the SMTP server. For SMTP servers that send the list of
+supported extensions in a single segment like Gmail and Live, no additional
+delay is added for the EHLO command. This doesn't affect the other commands.
+    - Now when we send an email to multiple recipients (to or cc), the recipients
+appears as a single mail header instead of multiple headers. The old method was
+not RFC 5322 compliant.
 - Version 1.1.7:
     - Added support for the XOAUTH2 authentication method.
 This change has been made by rcosnita (https://github.com/rcosnita).

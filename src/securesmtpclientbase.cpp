@@ -3,6 +3,7 @@
 #include <openssl/x509_vfy.h>
 #include <string>
 #include <utility>
+#include "serveroptionsanalyzer.h"
 #include "smtpclienterrors.h"
 #include "socketerrors.h"
 #include "sslerrors.h"
@@ -268,8 +269,20 @@ int SecureSMTPClientBase::getServerSecureIdentification() {
     if (tls_command_return_code != EHLO_SUCCESS_CODE) {
         return tls_command_return_code;
     }
+    std::string returnedOptions = getLastServerResponse();
+    // Check that the last returned option has no hyphen otherwise options are
+    // still missing from the server.
+    while (!ServerOptionsAnalyzer::containsAllOptions(returnedOptions)) {
+        int replyCode = getServerReply();
+        if (replyCode == -1) {
+            return SSL_CLIENT_INITSECURECLIENT_TIMEOUT;
+        } else if (replyCode != EHLO_SUCCESS_CODE) {
+            return replyCode;
+        }
+        returnedOptions += "\n" + std::string(getLastServerResponse());
+    }
     // Inspect the returned values for authentication options
-    setAuthenticationOptions(SMTPClientBase::extractAuthenticationOptions(getLastServerResponse()));
+    setAuthenticationOptions(SMTPClientBase::extractAuthenticationOptions(returnedOptions.c_str()));
     return EHLO_SUCCESS_CODE;
 }
 
@@ -283,10 +296,6 @@ int SecureSMTPClientBase::sendCommand(const char *pCommand, int pErrorCode) {
 }
 
 int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) {
-    unsigned int waitTime {0};
-    int bytes_received {0};
-    char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
-
     // Check if we are in the TLS mode of before it
     if (mBIO == nullptr) {
         return sendRawCommand(pCommand, pErrorCode, pTimeoutCode);
@@ -297,8 +306,21 @@ int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErr
         return pErrorCode;
     }
 
+    int serverReplyCode = getServerReply();
+    if (serverReplyCode != -1) {
+        return serverReplyCode;
+    }
+
+    cleanup();
+    return pTimeoutCode;
+}
+
+int SecureSMTPClientBase::getServerReply() {
+    unsigned int waitTime {0};
+    int bytes_received {0};
+    char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
     while ((bytes_received = BIO_read(mBIO, outbuf, SERVERRESPONSE_BUFFER_LENGTH)) <= 0 && waitTime < getCommandTimeout()) {
-        sleep(1);
+        crossPlatformSleep(1);
         waitTime += 1;
     }
     if (waitTime < getCommandTimeout()) {
@@ -307,7 +329,5 @@ int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErr
         addCommunicationLogItem(outbuf, "s");
         return extractReturnCode(outbuf);
     }
-
-    cleanup();
-    return pTimeoutCode;
+    return -1;
 }

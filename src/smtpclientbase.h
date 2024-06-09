@@ -157,6 +157,8 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int initializeSession();
     #ifdef _WIN32
     int initializeSessionWinSock();
+    int setSocketToNonBlockingWinSock();
+    int setSocketToBlockingWinSock();
     bool isWSAStarted();
     void setWSAStopped();
     void addWSAMessageToCommunicationLog(const int errorCode);
@@ -166,6 +168,8 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int setSocketToNonBlockingPOSIX();
     int setSocketToBlockingPOSIX();
     #endif
+    int setSocketToNonBlocking();
+    int setSocketToBlocking();
     int sendServerIdentification();
     virtual int establishConnectionWithServer() = 0;
     virtual int checkServerGreetings();
@@ -173,9 +177,12 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     void setLastServerResponse(const char *pResponse);
     int sendRawCommand(const char *pCommand, int pErrorCode);
     int sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode);
+    int getRawCommandReply();
     virtual int sendCommand(const char *pCommand, int pErrorCode) = 0;
     virtual int sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) = 0;
+    virtual int getServerReply() = 0;
     int sendQuitCommand();
+    void crossPlatformSleep(unsigned int seconds);
     // Methods used for authentication
     int authenticateClient();
     int authenticateWithMethodPlain();
@@ -192,6 +199,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     static std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments);
     static int extractReturnCode(const char *pOutput);
     static ServerAuthOptions *extractAuthenticationOptions(const char *pEhloOutput);
+    static std::string generateHeaderAddressValues(const std::vector<jed_utils::MessageAddress *> &pList);
 
  private:
     char *mServerName;

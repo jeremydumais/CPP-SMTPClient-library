@@ -7,13 +7,14 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <tuple>
 #include <utility>
+#include <vector>
 #include "base64.h"
 #include "errorresolver.h"
 #include "message.h"
 #include "messageaddress.h"
 #include "serverauthoptions.h"
+#include "serveroptionsanalyzer.h"
 #include "smtpclienterrors.h"
 #include "smtpserverstatuscodes.h"
 #include "socketerrors.h"
@@ -434,6 +435,28 @@ int SMTPClientBase::initializeSessionWinSock() {
     return 0;
 }
 
+int SMTPClientBase::setSocketToNonBlockingWinSock() {
+    u_long mode = 1;  // 1 to enable non-blocking mode
+    if (ioctlsocket(mSock, FIONBIO, &mode) != NO_ERROR) {
+        int err = WSAGetLastError();
+        setLastSocketErrNo(err);
+        addCommunicationLogItem(strerror(err));
+        return SOCKET_INIT_SESSION_FCNTL_SET_ERROR;
+    }
+    return 0;
+}
+
+int SMTPClientBase::setSocketToBlockingWinSock() {
+    u_long mode = 0;  // 0 to enable blocking mode
+    if (ioctlsocket(mSock, FIONBIO, &mode) != NO_ERROR) {
+        int err = WSAGetLastError();
+        setLastSocketErrNo(err);
+        addCommunicationLogItem(strerror(err));
+        return SOCKET_INIT_SESSION_FCNTL_GET_ERROR;
+    }
+    return 0;
+}
+
 bool SMTPClientBase::isWSAStarted() {
     return mWSAStarted;
 }
@@ -577,6 +600,23 @@ int SMTPClientBase::setSocketToBlockingPOSIX() {
 }
 #endif
 
+int SMTPClientBase::setSocketToNonBlocking() {
+#ifdef _WIN32
+    return setSocketToNonBlockingWinSock();
+#else
+    return setSocketToNonBlockingPOSIX();
+#endif
+}
+
+int SMTPClientBase::setSocketToBlocking() {
+#ifdef _WIN32
+    return setSocketToBlockingWinSock();
+#else
+    return setSocketToBlockingPOSIX();
+#endif
+}
+
+
 int SMTPClientBase::sendServerIdentification() {
     const int EHLO_SUCCESS_CODE = 250;
     std::string ehlo { "ehlo localhost\r\n" };
@@ -587,8 +627,20 @@ int SMTPClientBase::sendServerIdentification() {
     if (command_return_code != EHLO_SUCCESS_CODE) {
         return command_return_code;
     }
+    std::string returnedOptions = getLastServerResponse();
+    // Check that the last returned option has no hyphen otherwise options are
+    // still missing from the server.
+    while (!ServerOptionsAnalyzer::containsAllOptions(returnedOptions)) {
+        int replyCode = getServerReply();
+        if (replyCode == -1) {
+            return SOCKET_INIT_CLIENT_SEND_EHLO_TIMEOUT;
+        } else if (replyCode != EHLO_SUCCESS_CODE) {
+            return replyCode;
+        }
+        returnedOptions += "\n" + std::string(getLastServerResponse());
+    }
     // Inspect the returned values for authentication options
-    setAuthenticationOptions(extractAuthenticationOptions(getLastServerResponse()));
+    setAuthenticationOptions(extractAuthenticationOptions(returnedOptions.c_str()));
     return EHLO_SUCCESS_CODE;
 }
 
@@ -598,7 +650,7 @@ int SMTPClientBase::checkServerGreetings() {
     ssize_t bytes_received = 0;
     while ((bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0)) <= 0
             && waitTime < mCommandTimeOut) {
-        sleep(1);
+        crossPlatformSleep(1);
         waitTime += 1;
     }
     if (waitTime < mCommandTimeOut) {
@@ -631,24 +683,48 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode) {
     return 0;
 }
 
-int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode) {
+int SMTPClientBase::getRawCommandReply() {
+    std::string fullResponse;
+    bool receivedAtLeastOnce = false;
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
     unsigned int waitTime {0};
-    ssize_t bytes_received {0};
+    setSocketToNonBlocking();
+
+    do {
+        ssize_t bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0);
+        if (bytes_received > 0) {
+            receivedAtLeastOnce = true;
+            outbuf[bytes_received] = '\0';  // Null-terminate the received data
+            fullResponse += outbuf;
+        } else {
+            if (bytes_received == -1 && receivedAtLeastOnce) {
+                break;
+            }
+            crossPlatformSleep(1);
+            waitTime += 1;
+        }
+    } while (waitTime < mCommandTimeOut);
+    setSocketToBlocking();
+    if (waitTime < mCommandTimeOut || receivedAtLeastOnce) {
+        setLastServerResponse(fullResponse.c_str());
+        addCommunicationLogItem(fullResponse.c_str(), "s");
+        return extractReturnCode(fullResponse.c_str());
+    }
+    return -1;
+}
+
+int SMTPClientBase::getServerReply() {
+    return getRawCommandReply();
+}
+
+int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode, int pTimeoutCode) {
     if (sendRawCommand(pCommand, pErrorCode) != 0) {
         return pErrorCode;
     }
 
-    while ((bytes_received = recv(mSock, outbuf, SERVERRESPONSE_BUFFER_LENGTH, 0)) <= 0
-            && waitTime < mCommandTimeOut) {
-        sleep(1);
-        waitTime += 1;
-    }
-    if (waitTime < mCommandTimeOut) {
-        outbuf[bytes_received-1] = '\0';
-        setLastServerResponse(outbuf);
-        addCommunicationLogItem(outbuf, "s");
-        return extractReturnCode(outbuf);
+    int serverReplyCode = getRawCommandReply();
+    if (serverReplyCode != -1) {
+        return serverReplyCode;
     }
 
     cleanup();
@@ -663,6 +739,14 @@ int SMTPClientBase::sendQuitCommand() {
         return quit_ret_code;
     }
     return 0;
+}
+
+void SMTPClientBase::crossPlatformSleep(unsigned int seconds) {
+    #ifdef _WIN32
+        sleep(seconds * 1000);
+    #else
+        sleep(seconds);
+    #endif
 }
 
 void SMTPClientBase::setLastServerResponse(const char *pResponse) {
@@ -833,21 +917,16 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg) {
         return header_from_ret_code;
     }
 
-    // To and Cc.
-    // Note : Bcc are not included in the header
-    std::vector<std::tuple<MessageAddress **, size_t, const char *>> recipients {
-        std::tuple<MessageAddress **, size_t, const char *>(pMsg.getTo(), pMsg.getToCount(), "To"),
-            std::tuple<MessageAddress **, size_t, const char *>(pMsg.getCc(), pMsg.getCcCount(), "Cc")
-    };
-    for (const auto &item : recipients) {
-        MessageAddress **list = std::get<0>(item);
-        size_t count = std::get<1>(item);
-        const char *field = std::get<2>(item);
-        if (list != nullptr) {
-            std::for_each(list, list + count, [this, &field](MessageAddress *address) {
-                    return addMailHeader(field, address->getEmailAddress(), CLIENT_SENDMAIL_HEADERTOANDCC_ERROR);
-                    });
-        }
+    // To
+    if (pMsg.getToCount() > 0) {
+        std::vector<MessageAddress*> toAddrs(pMsg.getTo(), pMsg.getTo() + pMsg.getToCount());
+        addMailHeader("To", generateHeaderAddressValues(toAddrs).c_str(), CLIENT_SENDMAIL_HEADERTOANDCC_ERROR);
+    }
+
+    // Cc
+    if (pMsg.getCcCount() > 0) {
+        std::vector<MessageAddress*> toCcs(pMsg.getCc(), pMsg.getCc() + pMsg.getCcCount());
+        addMailHeader("Cc", generateHeaderAddressValues(toCcs).c_str(), CLIENT_SENDMAIL_HEADERTOANDCC_ERROR);
     }
 
     // Subject
@@ -1059,4 +1138,17 @@ ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhl
         }
     }
     return retVal;
+}
+
+std::string SMTPClientBase::generateHeaderAddressValues(const std::vector<jed_utils::MessageAddress *> &pList) {
+    std::stringstream retval;
+    size_t index = 0;
+    for (auto addr : pList) {
+        if (index > 0) {
+            retval << ", ";
+        }
+        retval << std::string(*addr);
+        index++;
+    }
+    return retval.str();
 }
