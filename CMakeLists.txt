@@ -9,6 +9,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 project(SMTPClient C CXX)
 
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
+
 # Set project name
 set(PROJECT_NAME    "smtpclient")
 set(PROJECT_UNITTEST_NAME   "smtpclient_unittests")
@@ -119,7 +122,7 @@ if (WIN32)
         ICON "${PATH_TO_APPLICATION_ICON}"
         VERSION_MAJOR 1
         VERSION_MINOR 1
-        VERSION_PATCH 7
+        VERSION_PATCH 8
         VERSION_REVISION ${BUILD_REVISION}
         )
 endif()
@@ -146,8 +149,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     message(STATUS "Will use OpenSSL lib directory ${OPENSSL_LIBRARY_DIRECTORY}")
     link_directories(${OPENSSL_LIBRARY_DIRECTORY})
     message(STATUS "Will use OpenSSL libraries files ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY}")
-    add_library(${PROJECT_NAME} SHARED
+    add_library(${PROJECT_NAME} 
         ${PROJECT_SOURCE_FILES} ${VersionFilesOutputVariable})
+    set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_compile_options(/EHsc)
     target_compile_options(${PROJECT_NAME} PRIVATE /W3 /WX)
