@@ -8,7 +8,9 @@
 #include "../messageaddress.h"
 
 #ifdef _WIN32
-    #ifdef SMTPCLIENT_EXPORTS
+    #ifdef SMTPCLIENT_STATIC
+        #define CPP_MESSAGEADDRESS_API
+    #elif defined(SMTPCLIENT_EXPORTS)
         #define CPP_MESSAGEADDRESS_API __declspec(dllexport)
     #else
         #define CPP_MESSAGEADDRESS_API __declspec(dllimport)

@@ -5,7 +5,9 @@
 #include "../opportunisticsecuresmtpclient.h"
 
 #ifdef _WIN32
-    #ifdef SMTPCLIENT_EXPORTS
+    #ifdef SMTPCLIENT_STATIC
+        #define CPP_OPPORTUNISTICSECURESMTPCLIENT_API
+    #elif defined(SMTPCLIENT_EXPORTS)
         #define CPP_OPPORTUNISTICSECURESMTPCLIENT_API __declspec(dllexport)
     #else
         #define CPP_OPPORTUNISTICSECURESMTPCLIENT_API __declspec(dllimport)

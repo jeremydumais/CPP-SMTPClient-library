@@ -149,16 +149,23 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     message(STATUS "Will use OpenSSL lib directory ${OPENSSL_LIBRARY_DIRECTORY}")
     link_directories(${OPENSSL_LIBRARY_DIRECTORY})
     message(STATUS "Will use OpenSSL libraries files ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY}")
-    add_library(${PROJECT_NAME} 
+    add_library(${PROJECT_NAME}
         ${PROJECT_SOURCE_FILES} ${VersionFilesOutputVariable})
     set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_compile_options(/EHsc)
     target_compile_options(${PROJECT_NAME} PRIVATE /W3 /WX)
-    target_compile_definitions(${PROJECT_NAME}
-        PRIVATE SMTPCLIENT_EXPORTS
-        INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
-        INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
+    if(${BUILD_SHARED_LIBS})
+        target_compile_definitions(${PROJECT_NAME}
+            PRIVATE SMTPCLIENT_EXPORTS
+            INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
+            INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
+    else()
+        target_compile_definitions(${PROJECT_NAME}
+            PRIVATE SMTPCLIENT_STATIC
+            INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
+            INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning  
+    endif()
     target_link_libraries(${PROJECT_NAME} Ws2_32 ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} crypt32 cryptui)
 else()
     #For other compiler create the library as a static library
@@ -259,6 +266,24 @@ if (BUILD_TESTING)
         ${TEST_SRC_PATH}/serveroptionsanalyzer_unittest.cpp
         ${TEST_SRC_PATH}/errorresolver_unittest.cpp)
 
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" AND ${BUILD_SHARED_LIBS})
+        # Tell CMake where to find the DLLs
+        set(GTEST_DLL_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin")
+        set(GTEST_DLLS
+            "${GTEST_DLL_DIR}/gtest.dll"
+            "${GTEST_DLL_DIR}/gtest_main.dll"
+        )
+
+        # Copy the DLLs into the current binary dir (or another target dir)
+        add_custom_command(TARGET ${PROJECT_UNITTEST_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${GTEST_DLLS}
+                ${CMAKE_CURRENT_BINARY_DIR}
+        )
+    endif()
+    if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
+        target_compile_definitions(${PROJECT_UNITTEST_NAME} PRIVATE SMTPCLIENT_STATIC)
+    endif()
     target_link_libraries(${PROJECT_UNITTEST_NAME} ${PROJECT_NAME} gtest gtest_main ${PTHREAD})
     gtest_discover_tests(${PROJECT_UNITTEST_NAME})
 endif()
@@ -276,6 +301,7 @@ ADD_CUSTOM_TARGET(uninstall
     "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/CMakeUninstall.cmake")
 
 if(EXISTS ${PROJECT_PATH}/simpleclient AND IS_DIRECTORY ${PROJECT_PATH}/simpleclient)
+    set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS} CACHE BOOL "Build shared libs" FORCE)
     add_subdirectory(${PROJECT_PATH}/simpleclient)
 endif()
 

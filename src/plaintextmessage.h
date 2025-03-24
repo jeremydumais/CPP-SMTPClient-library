@@ -5,7 +5,9 @@
 #include "message.h"
 
 #ifdef _WIN32
-    #ifdef SMTPCLIENT_EXPORTS
+    #ifdef SMTPCLIENT_STATIC
+        #define PLAINTEXTMESSAGE_API
+    #elif defined(SMTPCLIENT_EXPORTS)
         #define PLAINTEXTMESSAGE_API __declspec(dllexport)
     #else
         #define PLAINTEXTMESSAGE_API __declspec(dllimport)

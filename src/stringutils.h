@@ -4,7 +4,9 @@
 #include <string>
 
 #ifdef _WIN32
-    #ifdef SMTPCLIENT_EXPORTS
+    #ifdef SMTPCLIENT_STATIC
+        #define STRINGUTILS_API
+    #elif defined(SMTPCLIENT_EXPORTS)
         #define STRINGUTILS_API __declspec(dllexport)
     #else
         #define STRINGUTILS_API __declspec(dllimport)

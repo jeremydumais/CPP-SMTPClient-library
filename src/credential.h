@@ -2,7 +2,9 @@
 #define CREDENTIAL_H
 
 #ifdef _WIN32
-    #ifdef SMTPCLIENT_EXPORTS
+    #ifdef SMTPCLIENT_STATIC
+        #define CREDENTIAL_API
+    #elif defined(SMTPCLIENT_EXPORTS)
         #define CREDENTIAL_API __declspec(dllexport)
     #else
         #define CREDENTIAL_API __declspec(dllimport)
