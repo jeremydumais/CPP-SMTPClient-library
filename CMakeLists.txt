@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(CMAKE_PDB_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# For multi-config generators like Visual Studio, set per-config output dir
+foreach(OUTPUTCONFIG IN LISTS CMAKE_CONFIGURATION_TYPES)
+    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG_UPPER)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG_UPPER} ${CMAKE_BINARY_DIR}/bin/${OUTPUTCONFIG})
+endforeach()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 project(SMTPClient C CXX)
@@ -122,7 +124,7 @@ if (WIN32)
         ICON "${PATH_TO_APPLICATION_ICON}"
         VERSION_MAJOR 1
         VERSION_MINOR 1
-        VERSION_PATCH 8
+        VERSION_PATCH 9
         VERSION_REVISION ${BUILD_REVISION}
         )
 endif()
@@ -265,22 +267,6 @@ if (BUILD_TESTING)
         ${TEST_SRC_PATH}/smtpclient_unittest.cpp
         ${TEST_SRC_PATH}/serveroptionsanalyzer_unittest.cpp
         ${TEST_SRC_PATH}/errorresolver_unittest.cpp)
-
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" AND ${BUILD_SHARED_LIBS})
-        # Tell CMake where to find the DLLs
-        set(GTEST_DLL_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin")
-        set(GTEST_DLLS
-            "${GTEST_DLL_DIR}/gtest.dll"
-            "${GTEST_DLL_DIR}/gtest_main.dll"
-        )
-
-        # Copy the DLLs into the current binary dir (or another target dir)
-        add_custom_command(TARGET ${PROJECT_UNITTEST_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${GTEST_DLLS}
-                ${CMAKE_CURRENT_BINARY_DIR}
-        )
-    endif()
     if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
         target_compile_definitions(${PROJECT_UNITTEST_NAME} PRIVATE SMTPCLIENT_STATIC)
     endif()
