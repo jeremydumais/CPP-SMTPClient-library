@@ -9,7 +9,9 @@
 
 #ifdef _WIN32
     #pragma warning(disable: 4251)
-    #ifdef SMTPCLIENT_EXPORTS
+    #ifdef SMTPCLIENT_STATIC
+        #define CPP_MESSAGE_API
+    #elif defined(SMTPCLIENT_EXPORTS)
         #define CPP_MESSAGE_API __declspec(dllexport)
     #else
         #define CPP_MESSAGE_API __declspec(dllimport)

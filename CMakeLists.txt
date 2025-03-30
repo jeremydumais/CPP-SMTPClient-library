@@ -1,13 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(CMAKE_PDB_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# For multi-config generators like Visual Studio, set per-config output dir
+foreach(OUTPUTCONFIG IN LISTS CMAKE_CONFIGURATION_TYPES)
+    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG_UPPER)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG_UPPER} ${CMAKE_BINARY_DIR}/bin/${OUTPUTCONFIG})
+endforeach()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 project(SMTPClient C CXX)
+
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
 
 # Set project name
 set(PROJECT_NAME    "smtpclient")
@@ -119,7 +124,7 @@ if (WIN32)
         ICON "${PATH_TO_APPLICATION_ICON}"
         VERSION_MAJOR 1
         VERSION_MINOR 1
-        VERSION_PATCH 7
+        VERSION_PATCH 9
         VERSION_REVISION ${BUILD_REVISION}
         )
 endif()
@@ -146,15 +151,23 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     message(STATUS "Will use OpenSSL lib directory ${OPENSSL_LIBRARY_DIRECTORY}")
     link_directories(${OPENSSL_LIBRARY_DIRECTORY})
     message(STATUS "Will use OpenSSL libraries files ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY}")
-    add_library(${PROJECT_NAME} SHARED
+    add_library(${PROJECT_NAME}
         ${PROJECT_SOURCE_FILES} ${VersionFilesOutputVariable})
+    set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_compile_options(/EHsc)
     target_compile_options(${PROJECT_NAME} PRIVATE /W3 /WX)
-    target_compile_definitions(${PROJECT_NAME}
-        PRIVATE SMTPCLIENT_EXPORTS
-        INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
-        INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
+    if(${BUILD_SHARED_LIBS})
+        target_compile_definitions(${PROJECT_NAME}
+            PRIVATE SMTPCLIENT_EXPORTS
+            INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
+            INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
+    else()
+        target_compile_definitions(${PROJECT_NAME}
+            PRIVATE SMTPCLIENT_STATIC
+            INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
+            INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning  
+    endif()
     target_link_libraries(${PROJECT_NAME} Ws2_32 ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} crypt32 cryptui)
 else()
     #For other compiler create the library as a static library
@@ -254,7 +267,9 @@ if (BUILD_TESTING)
         ${TEST_SRC_PATH}/smtpclient_unittest.cpp
         ${TEST_SRC_PATH}/serveroptionsanalyzer_unittest.cpp
         ${TEST_SRC_PATH}/errorresolver_unittest.cpp)
-
+    if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
+        target_compile_definitions(${PROJECT_UNITTEST_NAME} PRIVATE SMTPCLIENT_STATIC)
+    endif()
     target_link_libraries(${PROJECT_UNITTEST_NAME} ${PROJECT_NAME} gtest gtest_main ${PTHREAD})
     gtest_discover_tests(${PROJECT_UNITTEST_NAME})
 endif()
@@ -272,6 +287,7 @@ ADD_CUSTOM_TARGET(uninstall
     "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/CMakeUninstall.cmake")
 
 if(EXISTS ${PROJECT_PATH}/simpleclient AND IS_DIRECTORY ${PROJECT_PATH}/simpleclient)
+    set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS} CACHE BOOL "Build shared libs" FORCE)
     add_subdirectory(${PROJECT_PATH}/simpleclient)
 endif()
 

@@ -142,10 +142,9 @@ BIO* SecureSMTPClientBase::getBIO() const {
 }
 
 void SecureSMTPClientBase::initializeSSLContext() {
-    SSL_library_init();
+    OPENSSL_init_ssl(0, nullptr);
 
-    OpenSSL_add_all_algorithms();
-    SSL_load_error_strings();
+    OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_CIPHERS | OPENSSL_INIT_ADD_ALL_DIGESTS, NULL);
     const SSL_METHOD *method = TLS_client_method();
     mCTX = SSL_CTX_new(method);
 

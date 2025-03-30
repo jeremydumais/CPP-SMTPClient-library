@@ -10,7 +10,9 @@
 #include "serverauthoptions.h"
 
 #ifdef _WIN32
-    #ifdef SMTPCLIENT_EXPORTS
+    #ifdef SMTPCLIENT_STATIC
+        #define SMTPCLIENTBASE_API
+    #elif defined(SMTPCLIENT_EXPORTS)
         #define SMTPCLIENTBASE_API __declspec(dllexport)
     #else
         #define SMTPCLIENTBASE_API __declspec(dllimport)

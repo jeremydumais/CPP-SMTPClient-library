@@ -2,7 +2,9 @@
 #define ERRORRESOLVER_H
 
 #ifdef _WIN32
-    #ifdef SMTPCLIENT_EXPORTS
+    #ifdef SMTPCLIENT_STATIC
+    #define ERRORRESOLVER_API
+    #elif defined(SMTPCLIENT_EXPORTS)
         #define ERRORRESOLVER_API __declspec(dllexport)
     #else
         #define ERRORRESOLVER_API __declspec(dllimport)

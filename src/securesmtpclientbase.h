@@ -5,7 +5,9 @@
 #include "smtpclientbase.h"
 
 #ifdef _WIN32
-    #ifdef SMTPCLIENT_EXPORTS
+    #ifdef SMTPCLIENT_STATIC
+        #define SECURESMTPCLIENTBASE_API
+    #elif defined(SMTPCLIENT_EXPORTS)
         #define SECURESMTPCLIENTBASE_API __declspec(dllexport)
     #else
         #define SECURESMTPCLIENTBASE_API __declspec(dllimport)

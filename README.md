@@ -1,7 +1,7 @@
 # Jed# C++ SMTP Client Library
 
 [![Build status](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml/badge.svg)](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
-![Latest version](https://img.shields.io/badge/latest_version-1.1.8-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.9-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 
 ## A simple SMTP client library built in C++ that support authentication and secure connections (Opportunistic SSL/TLS and Forced SSL encryption).
@@ -109,6 +109,19 @@ for previous versions.
 
 ## 📰 What's new
 
+
+- Version 1.1.9:
+    - Rework the build system to support static build and to generate correct
+    release version.
+    - The build configuration now works with multi-config generators like Visual
+    Studio
+    - The default build configurations in Visual Studio has been changed to :
+        - x64-Debug
+        - x64-Debug-Static
+        - x64-Debug-WithUnitTests
+        - x64-Release
+        - x64-Release-Static
+        - x64-Release-WithUnitTests
 - Version 1.1.8:
     - Some SMTP server send their list of supported extensions in multiple
 buffers like Zoho Mail. The EHLO command when in uncrypted mode, now supports
