@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file
 
+## [1.1.9]
+
+## Enhancement / Bug fixes
+- Rework the build system to support static build and to generate correct
+release version.
+- The build configuration now works with multi-config generators like Visual
+Studio
+- The default build configurations in Visual Studio has been changed to :
+    - x64-Debug
+    - x64-Debug-Static
+    - x64-Debug-WithUnitTests
+    - x64-Release
+    - x64-Release-Static
+    - x64-Release-WithUnitTests
+
 ## [1.1.8]
 
 ## Enhancement / Bug fixes
