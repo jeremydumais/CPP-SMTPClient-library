@@ -26,6 +26,31 @@ and [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-th
 <th> Release </th>
 <th> MD5 hash of smtpclient.dll </th>
 </tr>
+	
+<tr>
+<td>
+
+[v1.1.9 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.9/CPP-SMTPClient-Library.1.1.9.x64.zip)
+
+</td>
+<td>
+
+469dae64a844b8b193249bbbc280793e
+
+</td>
+</tr>
+<tr>
+<td>
+
+[v1.1.8 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.9/CPP-SMTPClient-Library.1.1.9.x86.zip)
+
+</td>
+<td>
+
+940a0661eb0834b8966b1e92783ad181
+
+</td>
+</tr>
 
 <tr>
 <td>
