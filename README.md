@@ -8,7 +8,7 @@
 
 ##### For TLS 1.3 support you must build the library against OpenSSL 1.1.1
 
-##### The library is cross-platform and has been tested on Linux and Windows.
+##### The library is cross-platform and has been tested on Linux, Windows and macOS.
 
 ### How to build the SMTP client or integrate it in your application
 
@@ -138,6 +138,8 @@ for previous versions.
 - Version 1.1.10:
     - Solve the issue where STARTTLS is not recognized if it is returned as the
     last response from the mail server.
+    - Add support for macOS.
+    - Fix the install/uninstall process of the library.
 - Version 1.1.9:
     - Rework the build system to support static build and to generate correct
     release version.
