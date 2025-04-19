@@ -15,8 +15,8 @@
 👉 Refer to this [guide](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-build-the-SMTP-client-library) for instructions on building the library.<br/>
 👉 Refer to this [guide](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-consume-the-SMTP-client-library-in-your-application) for instructions on consuming the library in your own applications.<br/>
 
-Follow these guides for platform-specific instructions: [Windows](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-Windows)
-, [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-Linux) and [macOS](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-macOS).
+Follow these guides for platform-specific instructions: [Windows](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/%5BWindows%5D-Build-the-CPP-SMTPClient-library)
+, [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/%5BLinux%5D-Build-the-CPP-SMTPClient-library) and [macOS](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/%5BmacOS%5D-Build-the-CPP-SMTPClient-library).
 
 ## 📥 Download latest binaries
 
