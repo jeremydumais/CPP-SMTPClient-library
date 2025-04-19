@@ -109,6 +109,10 @@ bool OpportunisticSecureSMTPClient::isStartTLSSupported(const char *pServerRespo
         return false;
     }
 
-    const std::string STARTTLS_LINE_PREFIX { "250-STARTTLS" };
-    return serverResponse.find(STARTTLS_LINE_PREFIX) != std::string::npos;
+    const std::string STARTTLS_LINE { "250-STARTTLS" };
+    // See RFC 5321 - Last line has a space instead of an hyphen
+    const std::string STARTTLS_LAST_LINE { "250 STARTTLS" };
+    return serverResponse.find(STARTTLS_LINE) != std::string::npos ||
+        serverResponse.find(STARTTLS_LAST_LINE) != std::string::npos;
 }
+

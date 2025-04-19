@@ -124,7 +124,7 @@ if (WIN32)
         ICON "${PATH_TO_APPLICATION_ICON}"
         VERSION_MAJOR 1
         VERSION_MINOR 1
-        VERSION_PATCH 9
+        VERSION_PATCH 10
         VERSION_REVISION ${BUILD_REVISION}
         )
 endif()
@@ -166,7 +166,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         target_compile_definitions(${PROJECT_NAME}
             PRIVATE SMTPCLIENT_STATIC
             INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
-            INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning  
+            INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
     endif()
     target_link_libraries(${PROJECT_NAME} Ws2_32 ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} crypt32 cryptui)
 else()
