@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file
 
+## [1.1.10]
+
+## Enhancement / Bug fixes
+- Add support for macOS.
+- Fix the install/uninstall process of the library.
+- Solve the issue #38 where STARTTLS is not recognized if it is returned as the
+last response from the mail server.
+
 ## [1.1.9]
 
 ## Enhancement / Bug fixes

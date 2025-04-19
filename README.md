@@ -1,23 +1,24 @@
 # Jed# C++ SMTP Client Library
 
 [![Build status](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml/badge.svg)](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
-![Latest version](https://img.shields.io/badge/latest_version-1.1.9-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.10-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 
 ## A simple SMTP client library built in C++ that support authentication and secure connections (Opportunistic SSL/TLS and Forced SSL encryption).
 
 ##### For TLS 1.3 support you must build the library against OpenSSL 1.1.1
 
-##### The library is cross-platform and has been tested on Linux and Windows.
+##### The library is cross-platform and has been tested on Linux, Windows and macOS.
 
-### How to build the SMTP client or integrate it in your application
+## 🛠️ How to build the SMTP client library
 
-Follow this [link](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-build-the-SMTP-client-or-integrate-it-in-your-application) for a quick guide on how to build the SMTP client and integrate it in your application.
+👉 Refer to this [guide](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-build-the-SMTP-client-library) for instructions on building the library.<br/>
+👉 Refer to this [guide](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/How-to-consume-the-SMTP-client-library-in-your-application) for instructions on consuming the library in your own applications.<br/>
 
-Follow these guides to build the library on [Windows](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-Windows)
-and [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-Linux).
+Follow these guides for platform-specific instructions: [Windows](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-Windows)
+, [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-Linux) and [macOS](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-the-CPP-SMTPClient-library-on-macOS).
 
-## ⬇ Download latest binaries
+## 📥 Download latest binaries
 
 ### Windows
 
@@ -26,7 +27,7 @@ and [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-th
 <th> Release </th>
 <th> MD5 hash of smtpclient.dll </th>
 </tr>
-	
+
 <tr>
 <td>
 
@@ -76,55 +77,6 @@ and [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-th
 
 </td>
 </tr>
-<tr>
-<td>
-
-[v1.1.7 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.7/CPP-SMTPClient-Library.1.1.7.x64.zip)
-
-</td>
-<td>
-
-fb041c2e377d6e399853b1fd4f0f2396
-
-</td>
-</tr>
-<tr>
-<td>
-
-[v1.1.7 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.7/CPP-SMTPClient-Library.1.1.7.x86.zip)
-
-</td>
-<td>
-
-bb98d97a03451ff579226b0361c2a7ce
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-[v1.1.6 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.6/CPP-SMTPClient-Library.1.1.6.x64.zip)
-
-</td>
-<td>
-
-fc417d787a4533d3b6c99c1b5e852b5b
-
-</td>
-</tr>
-<tr>
-<td>
-
-[v1.1.6 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.6/CPP-SMTPClient-Library.1.1.6.x86.zip)
-
-</td>
-<td>
-
-ffdd7f2adbf92b9a3dfd8bbf97c83008
-
-</td>
-</tr>
 
 </table>
 
@@ -135,6 +87,11 @@ for previous versions.
 ## 📰 What's new
 
 
+- Version 1.1.10:
+    - Solve the issue where STARTTLS is not recognized if it is returned as the
+    last response from the mail server.
+    - Add support for macOS.
+    - Fix the install/uninstall process of the library.
 - Version 1.1.9:
     - Rework the build system to support static build and to generate correct
     release version.
@@ -157,25 +114,6 @@ delay is added for the EHLO command. This doesn't affect the other commands.
     - Now when we send an email to multiple recipients (to or cc), the recipients
 appears as a single mail header instead of multiple headers. The old method was
 not RFC 5322 compliant.
-- Version 1.1.7:
-    - Added support for the XOAUTH2 authentication method.
-This change has been made by rcosnita (https://github.com/rcosnita).
-Many thanks!
-    - Added a new flag in the different SMTP client classes to indicate whether we
-want to send emails in batch (getBatchMode/setBatchMode). In this mode the connection to an
-SMTP server will only be made once when the first email is sent and will
-remain open until the client instance is destroy.
-    - Added the authentication feature on the SMTPClient class.
-    - Added a new flag on the ForcedSecureSMTPClient and OpportunisticSecureSMTPClient
-to indicate whether we accept self signed certificate
-(getAcceptSelfSignedCert/setAcceptSelfSignedCert).
-    - Many more enhancements provided by ino-josh (https://github.com/ino-josh).
-Many thanks!
-- Version 1.1.6: Added support in the attachment class for Content-ID. It will
-be really useful to uniquely identify and reference resources to embed in the
-message.
-This change has been made by hesa2020 (https://github.com/hesa2020).
-Many thanks!
 
 ## ⚡️ Quickstart - The 3 client classes
 
@@ -401,7 +339,7 @@ You can follow this procedure for more details: [Obtaining an access token for y
 ## 🧪 Unit tests
 [How to run the unit tests](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Run-the-unit-tests)
 
-## ❓ Documentation
+## 📚 Documentation
 
 See the classes documentation [here](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Classes-Documentation)
 

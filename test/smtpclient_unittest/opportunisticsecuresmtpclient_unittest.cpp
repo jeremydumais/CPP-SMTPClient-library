@@ -133,6 +133,30 @@ TEST_F(FakeOpportunisticSecureSMTPClient, isStartTLSSupported_WithServerReponseC
                 "250 SMTPUTF8"));
 }
 
+TEST_F(FakeOpportunisticSecureSMTPClient, isStartTLSSupported_WithServerReponseContainingSTARTTLSFirstLine_ReturnTrue) {
+    ASSERT_TRUE(isStartTLSSupported("250-STARTTLS\r\n"
+                "250-SIZE 35882577\r\n"
+                "250-8BITMIME\r\n"
+                "250-ENHANCEDSTATUSCODES\r\n"
+                "250-PIPELINING\r\n"
+                "250-CHUNKING\r\n"
+                "250 SMTPUTF8"));
+}
+
+TEST_F(FakeOpportunisticSecureSMTPClient, isStartTLSSupported_WithServerReponseContainingSTARTTLSLastLine_ReturnTrue) {
+    ASSERT_TRUE(isStartTLSSupported("250-SIZE 35882577\r\n"
+                "250-8BITMIME\r\n"
+                "250-ENHANCEDSTATUSCODES\r\n"
+                "250-PIPELINING\r\n"
+                "250-CHUNKING\r\n"
+                "250-SMTPUTF8\r\n"
+                "250 STARTTLS"));
+}
+
+TEST_F(FakeOpportunisticSecureSMTPClient, isStartTLSSupported_WithServerReponseContainingSTARTTLSAsOnlyLine_ReturnTrue) {
+    ASSERT_TRUE(isStartTLSSupported("250 STARTTLS"));
+}
+
 TEST_F(FakeOpportunisticSecureSMTPClient, isStartTLSSupported_WithoutServerReponseContainingSTARTTLS_ReturnFalse) {
     ASSERT_FALSE(isStartTLSSupported("250-SIZE 35882577\r\n"
                 "250-8BITMIME\r\n"

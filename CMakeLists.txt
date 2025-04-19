@@ -11,6 +11,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 project(SMTPClient C CXX)
 
+# Define project version
+set(PROJECT_VERSION_MAJOR 1)
+set(PROJECT_VERSION_MINOR 1)
+set(PROJECT_VERSION_PATCH 10)
+set(PROJECT_VERSION_TWEAK 0)
+
+set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+set(PROJECT_VERSION_FULL "${PROJECT_VERSION}.${PROJECT_VERSION_TWEAK}")
+
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 
@@ -122,10 +131,10 @@ if (WIN32)
         VersionFilesOutputVariable
         NAME "CPP-SMTPClient-library"
         ICON "${PATH_TO_APPLICATION_ICON}"
-        VERSION_MAJOR 1
-        VERSION_MINOR 1
-        VERSION_PATCH 9
-        VERSION_REVISION ${BUILD_REVISION}
+        VERSION_MAJOR ${PROJECT_VERSION_MAJOR}
+        VERSION_MINOR ${PROJECT_VERSION_MINOR}
+        VERSION_PATCH ${PROJECT_VERSION_PATCH}
+        VERSION_REVISION ${PROJECT_VERSION_TWEAK}
         )
 endif()
 
@@ -166,13 +175,14 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         target_compile_definitions(${PROJECT_NAME}
             PRIVATE SMTPCLIENT_STATIC
             INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
-            INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning  
+            INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
     endif()
     target_link_libraries(${PROJECT_NAME} Ws2_32 ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} crypt32 cryptui)
 else()
     #For other compiler create the library as a static library
     add_library(${PROJECT_NAME}
         ${PROJECT_SOURCE_FILES})
+    set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
     target_include_directories(${PROJECT_NAME} PUBLIC ${OPENSSL_INCLUDE_DIR})
     get_filename_component(ssl_libdir ${OPENSSL_SSL_LIBRARY} DIRECTORY)
     target_link_directories(${PROJECT_NAME} PUBLIC ${ssl_libdir})
@@ -274,17 +284,55 @@ if (BUILD_TESTING)
     gtest_discover_tests(${PROJECT_UNITTEST_NAME})
 endif()
 
-install (TARGETS ${PROJECT_NAME} DESTINATION lib)
-install(DIRECTORY src/ DESTINATION include/smtpclient
-    FILES_MATCHING PATTERN "*.h")
+# Install rules
+install(TARGETS smtpclient
+    EXPORT smtpclientTargets
+    LIBRARY DESTINATION lib/smtpclient
+    ARCHIVE DESTINATION lib/smtpclient
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+)
+
+install(DIRECTORY ${SRC_PATH}/
+    DESTINATION include/smtpclient
+    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+)
+
+install(EXPORT smtpclientTargets
+    FILE smtpclientTargets.cmake
+    NAMESPACE smtpclient::
+    DESTINATION lib/cmake/smtpclient
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/smtpclientConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/smtpclientConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/smtpclientConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/smtpclient
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/smtpclientConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/smtpclientConfigVersion.cmake"
+    DESTINATION lib/cmake/smtpclient
+)
 
 # Uninstall target
-CONFIGURE_FILE(
+configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeUninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/CMakeUninstall.cmake"
-    IMMEDIATE @ONLY)
-ADD_CUSTOM_TARGET(uninstall
-    "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/CMakeUninstall.cmake")
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY
+)
+
+add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+)
 
 if(EXISTS ${PROJECT_PATH}/simpleclient AND IS_DIRECTORY ${PROJECT_PATH}/simpleclient)
     set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS} CACHE BOOL "Build shared libs" FORCE)
