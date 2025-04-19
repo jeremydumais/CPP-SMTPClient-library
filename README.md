@@ -31,6 +31,19 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 <tr>
 <td>
 
+[v1.1.10 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.10/CPP-SMTPClient-Library.1.1.10.x64.zip)
+
+</td>
+<td>
+
+1a82a5e48b959dfd359860a86df0df66
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 [v1.1.9 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.9/CPP-SMTPClient-Library.1.1.9.x64.zip)
 
 </td>
@@ -40,6 +53,7 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 
 </td>
 </tr>
+
 <tr>
 <td>
 
