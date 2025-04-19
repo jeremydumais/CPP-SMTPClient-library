@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file
 
+## [1.1.10]
+
+## Bug fixes
+- Solve the issue #38 where STARTTLS is not recognized if it is returned as the
+last response from the mail server.
+
+
 ## [1.1.9]
 
 ## Enhancement / Bug fixes

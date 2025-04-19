@@ -1,7 +1,7 @@
 # Jed# C++ SMTP Client Library
 
 [![Build status](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml/badge.svg)](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
-![Latest version](https://img.shields.io/badge/latest_version-1.1.9-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.10-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 
 ## A simple SMTP client library built in C++ that support authentication and secure connections (Opportunistic SSL/TLS and Forced SSL encryption).
@@ -26,7 +26,7 @@ and [Linux](https://github.com/jeremydumais/CPP-SMTPClient-library/wiki/Build-th
 <th> Release </th>
 <th> MD5 hash of smtpclient.dll </th>
 </tr>
-	
+
 <tr>
 <td>
 
@@ -135,6 +135,9 @@ for previous versions.
 ## 📰 What's new
 
 
+- Version 1.1.10:
+    - Solve the issue where STARTTLS is not recognized if it is returned as the
+    last response from the mail server.
 - Version 1.1.9:
     - Rework the build system to support static build and to generate correct
     release version.
