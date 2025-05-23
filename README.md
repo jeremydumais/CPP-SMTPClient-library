@@ -3,6 +3,7 @@
 [![Build status](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml/badge.svg)](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
 ![Latest version](https://img.shields.io/badge/latest_version-1.1.10-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
+[![Conan Center](https://img.shields.io/conan/v/cpp-smtpclient-library)](https://conan.io/center/recipes/cpp-smtpclient-library)
 
 ## A simple SMTP client library built in C++ that support authentication and secure connections (Opportunistic SSL/TLS and Forced SSL encryption).
 
