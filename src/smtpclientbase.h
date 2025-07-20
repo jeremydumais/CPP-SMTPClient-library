@@ -28,6 +28,15 @@
 #define SERVERRESPONSE_BUFFER_LENGTH 1024
 
 namespace jed_utils {
+/**
+ * @brief The LogLevel contains all possible logging level of the communication
+ * between the client and the server.
+ */
+enum LogLevel {
+  None = 0,
+  ExcludeAttachmentsBytes,
+  Full
+};
 /** @brief The SMTPClientBase represents the base class for all SMTP clients
  *  that will or will not use encryption for communication.
  */
@@ -74,6 +83,9 @@ class SMTPCLIENTBASE_API SMTPClientBase {
 
     /** Return the credentials configured. */
     const Credential *getCredentials() const;
+
+    /** Return the communication log level */
+    LogLevel getLogLevel() const;
 
     /**
      *  @brief  Set the server name.
@@ -145,6 +157,13 @@ class SMTPCLIENTBASE_API SMTPClientBase {
             char *errorMessagePtr,
             const size_t maxLength);
 
+    /**
+     *  @brief  Set the log level of the communication log.
+     *  @param level Indicate if the logging level.
+     *  Example: None, ExcludeAttachmentsBytes, Full
+     */
+    void setLogLevel(LogLevel level);
+
     int sendMail(const Message &pMsg);
 
  protected:
@@ -198,7 +217,8 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int setMailBody(const Message &pMsg);
 
     void addCommunicationLogItem(const char *pItem, const char *pPrefix = "c");
-    static std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments);
+    static std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments,
+                                             bool includeBytes = true);
     static int extractReturnCode(const char *pOutput);
     static ServerAuthOptions *extractAuthenticationOptions(const char *pEhloOutput);
     static std::string generateHeaderAddressValues(const std::vector<jed_utils::MessageAddress *> &pList);
@@ -215,6 +235,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     ServerAuthOptions *mAuthOptions;
     Credential *mCredential;
     int mSock = 0;
+    LogLevel mLogLevel;
     #ifdef _WIN32
     bool mWSAStarted = false;
     #endif
@@ -227,6 +248,8 @@ class SMTPCLIENTBASE_API SMTPClientBase {
 
     int (SMTPClientBase::*sendCommandPtr)(const char *pCommand, int pErrorCode);
     int (SMTPClientBase::*sendCommandWithFeedbackPtr)(const char *pCommand, int pErrorCode, int pTimeoutCode);
+    void addCommunicationLogBodyItem(const char *logWithoutAttachmentsBytes,
+                                     const char *logWithAttachmentsBytes);
 };
 }  // namespace jed_utils
 

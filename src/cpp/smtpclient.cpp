@@ -31,6 +31,10 @@ const Credential *SmtpClient::getCredentials() const {
     return mCredential;
 }
 
+jed_utils::LogLevel SmtpClient::getLogLevel() const {
+    return jed_utils::SmtpClient::getLogLevel();
+}
+
 void SmtpClient::setServerName(const std::string &pServerName) {
     jed_utils::SmtpClient::setServerName(pServerName.c_str());
 }
@@ -69,6 +73,10 @@ int SmtpClient::getErrorMessage_r(int errorCode,
     int result = jed_utils::SMTPClientBase::getErrorMessage_r(errorCode, errorMsg, MAXSIZE);
     errorMessage = errorMsg;
     return result;
+}
+
+void SmtpClient::setLogLevel(LogLevel level) {
+    jed_utils::SMTPClientBase::setLogLevel(level);
 }
 
 int SmtpClient::extractReturnCode(const std::string &pOutput) {

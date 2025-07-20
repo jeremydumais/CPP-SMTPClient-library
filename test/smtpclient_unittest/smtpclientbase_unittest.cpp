@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <string>
+#include <utility>
 #include <vector>
 #include "../../src/messageaddress.h"
 #include "../../src/smtpclientbase.h"
@@ -142,6 +143,7 @@ TYPED_TEST(MultiSmtpClientBaseFixture, Constructor_WithValidArgs_ReturnSuccess) 
     ASSERT_EQ("test", std::string(client1.getServerName()));
     ASSERT_EQ(587, client1.getServerPort());
     ASSERT_FALSE(client1.getBatchMode());
+    ASSERT_EQ(LogLevel::ExcludeAttachmentsBytes, client1.getLogLevel());
 }
 
 TYPED_TEST(MultiSmtpClientBaseFixture, CopyConstructorValid) {
@@ -149,6 +151,7 @@ TYPED_TEST(MultiSmtpClientBaseFixture, CopyConstructorValid) {
     TypeParam client2(client1);
     ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
+    ASSERT_EQ(LogLevel::ExcludeAttachmentsBytes, client2.getLogLevel());
 }
 
 TYPED_TEST(MultiSmtpClientBaseFixture, CopyAssignmentValid) {
@@ -157,6 +160,7 @@ TYPED_TEST(MultiSmtpClientBaseFixture, CopyAssignmentValid) {
     client2 = client1;
     ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
+    ASSERT_EQ(LogLevel::ExcludeAttachmentsBytes, client2.getLogLevel());
 }
 
 TYPED_TEST(MultiSmtpClientBaseFixture, MoveConstructorValid) {
@@ -164,6 +168,7 @@ TYPED_TEST(MultiSmtpClientBaseFixture, MoveConstructorValid) {
     TypeParam client2(std::move(client1));
     ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
+    ASSERT_EQ(LogLevel::ExcludeAttachmentsBytes, client2.getLogLevel());
 }
 
 TYPED_TEST(MultiSmtpClientBaseFixture, MoveAssignmentValid) {
@@ -172,6 +177,7 @@ TYPED_TEST(MultiSmtpClientBaseFixture, MoveAssignmentValid) {
     client2 = std::move(client1);
     ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
+    ASSERT_EQ(LogLevel::ExcludeAttachmentsBytes, client2.getLogLevel());
 }
 
 TYPED_TEST(MultiSmtpClientBaseFixture, setServerName_ValidName_ReturnSuccess) {
@@ -241,6 +247,20 @@ TYPED_TEST(MultiSmtpClientBaseFixture, getCommunicationLog_WithNewClient_ReturnE
 
 TYPED_TEST(MultiSmtpClientBaseFixture, getCredentials_WithNewClient_ReturnNullPtr) {
     ASSERT_EQ(nullptr, this->client.getCredentials());
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, getLogLevel_WithNewClient_ReturnExcludeAttachmentsBytes) {
+    ASSERT_EQ(LogLevel::ExcludeAttachmentsBytes, this->client.getLogLevel());
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, setLogLevel_WithNone_ReturnNone) {
+    this->client.setLogLevel(LogLevel::None);
+    ASSERT_EQ(LogLevel::None, this->client.getLogLevel());
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, setLogLevel_WithFull_ReturnFull) {
+    this->client.setLogLevel(LogLevel::Full);
+    ASSERT_EQ(LogLevel::Full, this->client.getLogLevel());
 }
 
 TEST(Credential, setCredentials_WithABCAnd123_ReturnSuccess) {
