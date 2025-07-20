@@ -961,7 +961,6 @@ int SMTPClientBase::setMailBody(const Message &pMsg) {
     std::ostringstream body_ss;
     body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
     std::string body_real = body_ss.str();
-    addCommunicationLogItem(body_real.c_str());
 
     // If there's attachments, prepare the attachments text content
     Attachment** arr_attachment = pMsg.getAttachments();
@@ -982,18 +981,21 @@ int SMTPClientBase::setMailBody(const Message &pMsg) {
             }
             int body_part_ret_code = (*this.*sendCommandPtr)(body_real.substr(index_start, length).c_str(), CLIENT_SENDMAIL_BODYPART_ERROR);
             if (body_part_ret_code != 0) {
+                addCommunicationLogItem(body_real.c_str());
                 return body_part_ret_code;
             }
         }
     } else {
         int body_ret_code = (*this.*sendCommandPtr)(body_real.c_str(), CLIENT_SENDMAIL_BODY_ERROR);
         if (body_ret_code != 0) {
+            addCommunicationLogItem(body_real.c_str());
             return body_ret_code;
         }
     }
+    addCommunicationLogItem(body_real.c_str());
 
     // End of data
-    std::string end_data_command { "\r\n.\r\n" };
+    std::string end_data_command { "\r\n--sep--\r\n.\r\n" };
     addCommunicationLogItem(end_data_command.c_str());
     int end_data_ret_code = (*this.*sendCommandWithFeedbackPtr)(end_data_command.c_str(), CLIENT_SENDMAIL_END_DATA_ERROR, CLIENT_SENDMAIL_END_DATA_TIMEOUT);
     if (end_data_ret_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
@@ -1061,7 +1063,7 @@ std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*>
             delete[] b64;
         }
     }
-    retval += "\r\n--sep--";
+    retval += "\r\n";
     return retval;
 }
 
