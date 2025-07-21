@@ -117,7 +117,7 @@ const char *MessageAddress::getDisplayName() const {
 }
 
 bool MessageAddress::isEmailAddressValid(const std::string &pEmailAddress) const {
-    std::regex emailPattern("^[_a-z0-9-]+(.[_a-z0-9-]+)*@[a-z0-9-]+(.[a-z0-9-]+)*(.[a-z]{2,4})$");
+    std::regex emailPattern("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*$");
     return regex_match(StringUtils::toLower(pEmailAddress), emailPattern);
 }
 
