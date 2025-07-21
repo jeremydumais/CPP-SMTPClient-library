@@ -129,6 +129,9 @@ ErrorResolver::ErrorResolver(int pErrorCode)
         case CLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR:
             errorMessage = "The Content type header command return an error";
             break;
+        case CLIENT_SENDMAIL_HEADERDATE_ERROR:
+            errorMessage = "The Date header command return an error";
+            break;
         case CLIENT_SENDMAIL_BODYPART_ERROR:
             errorMessage = "The Body part return an error";
             break;

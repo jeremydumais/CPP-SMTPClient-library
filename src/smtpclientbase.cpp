@@ -2,8 +2,14 @@
 #include <algorithm>
 #include <cerrno>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
+#include <ctime>
+#include <iomanip>
+#include <iostream>
 #include <limits>
+#include <optional>
+#include <ostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -919,6 +925,12 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg) {
     }
 
     // Mail headers
+    // Date
+    int header_date_ret_code = addMailHeader("Date", generateHeaderDateValue().c_str(), CLIENT_SENDMAIL_HEADERDATE_ERROR);
+    if (header_date_ret_code != 0) {
+        return header_date_ret_code;
+    }
+
     // From
     std::stringstream from_header_ss;
     const MessageAddress &from_addr = pMsg.getFrom();
@@ -1191,3 +1203,29 @@ std::string SMTPClientBase::generateHeaderAddressValues(const std::vector<jed_ut
     }
     return retval.str();
 }
+
+std::string SMTPClientBase::generateHeaderDateValue(std::optional<std::time_t> pDatetime,
+                                                    std::optional<int64_t> pTimezone_offset_sec) {
+    // Get current time
+    std::time_t now = pDatetime.value_or(std::time(nullptr));
+    std::tm local_tm = pDatetime.has_value() ? *std::gmtime(&now) : *std::localtime(&now);   // local time
+    std::tm gmt_tm   = *std::gmtime(&now);      // UTC time
+    // Calculate timezone offset in seconds
+    int64_t timezone_offset_sec = pTimezone_offset_sec.has_value() ?
+        pTimezone_offset_sec.value() :
+        static_cast<int64_t>(std::difftime(std::mktime(&local_tm), std::mktime(&gmt_tm)));
+
+    // Convert to ±hhmm
+    char tz_sign = (timezone_offset_sec >= 0) ? '+' : '-';
+    timezone_offset_sec = std::abs(timezone_offset_sec);
+    int64_t tz_hours = timezone_offset_sec / 3600;
+    int64_t tz_minutes = (timezone_offset_sec % 3600) / 60;
+
+    // Format output
+    std::ostringstream oss;
+    oss << std::put_time(&local_tm, "%a, %d %b %Y %H:%M:%S ")
+        << tz_sign
+        << std::setw(2) << std::setfill('0') << tz_hours
+        << std::setw(2) << std::setfill('0') << tz_minutes;
+
+    return oss.str();}

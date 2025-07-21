@@ -1,4 +1,7 @@
+#include <cstdint>
 #include <gtest/gtest.h>
+#include <ctime>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -48,6 +51,11 @@ class FakeSMTPClientBase : public SMTPClientBase {
 
     static std::string generateHeaderAddressValues(const std::vector<MessageAddress *> &pList) {
         return SMTPClientBase::generateHeaderAddressValues(pList);
+    }
+
+    static std::string generateHeaderDateValue(std::optional<std::time_t> pDatetime,
+                                               std::optional<int64_t> pTimezone_offset_sec) {
+        return SMTPClientBase::generateHeaderDateValue(pDatetime, pTimezone_offset_sec);
     }
 };
 
@@ -107,6 +115,24 @@ using MyTypes = ::testing::Types<FakeSMTPClientBase,
                                  FakeCPPSMTPClientBase<jed_utils::cpp::OpportunisticSecureSMTPClient>,
                                  FakeCPPSMTPClientBase<jed_utils::cpp::ForcedSecureSMTPClient>>;
 TYPED_TEST_SUITE(MultiSmtpClientBaseFixture, MyTypes);
+
+// Returns time_t interpreted as UTC (no DST or local time involved)
+std::time_t makeTimeUTC(int year, int month, int day, int hour, int min, int sec) {
+    std::tm t = {};
+    t.tm_year = year - 1900;
+    t.tm_mon  = month - 1;
+    t.tm_mday = day;
+    t.tm_hour = hour;
+    t.tm_min  = min;
+    t.tm_sec  = sec;
+    t.tm_isdst = 0;  // Not in DST (ignored by _mkgmtime anyway)
+
+#ifdef _WIN32
+    return _mkgmtime(&t);  // Windows-specific: interprets tm as UTC
+#else
+    return timegm(&t);     // POSIX: same behavior
+#endif
+}
 
 TYPED_TEST(MultiSmtpClientBaseFixture, Constructor_NullServerName_ThrowInvalidArgument) {
     try {
@@ -481,5 +507,50 @@ TEST(SMTPClientBase, generateHeaderAddressValues_WithToAndTwoAddressesWithoutDis
     MessageAddress addr2("test2@test.com", "test2");
     ASSERT_EQ("test@test.com, test2 <test2@test.com>", FakeSMTPClientBase::generateHeaderAddressValues({
                 &addr1, &addr2 }));
+}
+
+TEST(SMTPClientBase, generateHeaderDateValue_With20250721_123900_0400_ReturnValidHeader) {
+    std::time_t timestamp = makeTimeUTC(2025, 7, 21, 12, 39, 0);
+    ASSERT_EQ("Mon, 21 Jul 2025 12:39:00 -0400", FakeSMTPClientBase::generateHeaderDateValue(timestamp, -14400));
+}
+
+TEST(SMTPClientBase, generateHeaderDateValue_With19971121_095506_0600_ReturnValidHeader) {
+    std::time_t timestamp = makeTimeUTC(1997, 11, 21, 9, 55, 6);
+    ASSERT_EQ("Fri, 21 Nov 1997 09:55:06 -0600", FakeSMTPClientBase::generateHeaderDateValue(timestamp, -21600));
+}
+
+TEST(SMTPClientBase, generateHeaderDateValue_With20030701_105237_Plus0200_ReturnValidHeader) {
+    std::time_t timestamp = makeTimeUTC(2003, 7, 1, 10, 52, 37);
+    ASSERT_EQ("Tue, 01 Jul 2003 10:52:37 +0200", FakeSMTPClientBase::generateHeaderDateValue(timestamp, 7200));
+}
+
+TEST(SMTPClientBase, generateHeaderDateValue_With19690213_233254_Minus0330_ReturnValidHeader) {
+    std::time_t timestamp = makeTimeUTC(1969, 2, 13, 23, 32, 54);
+    ASSERT_EQ("Thu, 13 Feb 1969 23:32:54 -0330", FakeSMTPClientBase::generateHeaderDateValue(timestamp, -12600));
+}
+
+TEST(SMTPClientBase, generateHeaderDateValue_WithLeapYear_ReturnValidHeader) {
+    std::time_t timestamp = makeTimeUTC(2024, 2, 29, 0, 0, 0);
+    ASSERT_EQ("Thu, 29 Feb 2024 00:00:00 +0000", FakeSMTPClientBase::generateHeaderDateValue(timestamp, 0));
+}
+
+TEST(SMTPClientBase, generateHeaderDateValue_WithEndOfYear_ReturnValidHeader) {
+    std::time_t timestamp = makeTimeUTC(2023, 12, 31, 23, 59, 59);
+    ASSERT_EQ("Sun, 31 Dec 2023 23:59:59 +0000", FakeSMTPClientBase::generateHeaderDateValue(timestamp, 0));
+}
+
+TEST(SMTPClientBase, generateHeaderDateValue_WithMinimalDate_ReturnValidHeader) {
+    std::time_t timestamp = makeTimeUTC(1970, 1, 1, 0, 0, 0);
+    ASSERT_EQ("Thu, 01 Jan 1970 00:00:00 +0000", FakeSMTPClientBase::generateHeaderDateValue(timestamp, 0));
+}
+
+TEST(SMTPClientBase, generateHeaderDateValue_WithPositiveHalfHourOffset_ReturnValidHeader) {
+    std::time_t timestamp = makeTimeUTC(2025, 8, 5, 15, 0, 0);
+    ASSERT_EQ("Tue, 05 Aug 2025 15:00:00 +0530", FakeSMTPClientBase::generateHeaderDateValue(timestamp, 19800));
+}
+
+TEST(SMTPClientBase, generateHeaderDateValue_WithNegativeHalfHourOffset_ReturnValidHeader) {
+    std::time_t timestamp = makeTimeUTC(2025, 8, 5, 15, 0, 0);
+    ASSERT_EQ("Tue, 05 Aug 2025 15:00:00 -0330", FakeSMTPClientBase::generateHeaderDateValue(timestamp, -12600));
 }
 

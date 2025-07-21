@@ -1,6 +1,8 @@
 #ifndef SMTPCLIENTBASE_H
 #define SMTPCLIENTBASE_H
 
+#include <ctime>
+#include <optional>
 #include <string>
 #include <vector>
 #include "attachment.h"
@@ -222,6 +224,8 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     static int extractReturnCode(const char *pOutput);
     static ServerAuthOptions *extractAuthenticationOptions(const char *pEhloOutput);
     static std::string generateHeaderAddressValues(const std::vector<jed_utils::MessageAddress *> &pList);
+    static std::string generateHeaderDateValue(std::optional<std::time_t> pDatetime = std::nullopt,
+                                               std::optional<int64_t> pTimezone_offset_sec = std::nullopt);
 
  private:
     char *mServerName;

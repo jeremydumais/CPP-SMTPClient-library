@@ -247,6 +247,11 @@ TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR_
     ASSERT_EQ("The Content type header command return an error"s, errorResolver.getErrorMessage());
 }
 
+TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_HEADERDATE_ERROR_ReturnValidMessage) {
+    ErrorResolver errorResolver(CLIENT_SENDMAIL_HEADERDATE_ERROR);
+    ASSERT_EQ("The Date header command return an error"s, errorResolver.getErrorMessage());
+}
+
 TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_BODYPART_ERROR_ReturnValidMessage) {
     ErrorResolver errorResolver(CLIENT_SENDMAIL_BODYPART_ERROR);
     ASSERT_EQ("The Body part return an error"s, errorResolver.getErrorMessage());
