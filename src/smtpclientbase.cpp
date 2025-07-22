@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <optional>
+#include <memory>
 #include <ostream>
 #include <sstream>
 #include <stdexcept>
@@ -1204,15 +1204,15 @@ std::string SMTPClientBase::generateHeaderAddressValues(const std::vector<jed_ut
     return retval.str();
 }
 
-std::string SMTPClientBase::generateHeaderDateValue(std::optional<std::time_t> pDatetime,
-                                                    std::optional<int64_t> pTimezone_offset_sec) {
+std::string SMTPClientBase::generateHeaderDateValue(std::shared_ptr<std::time_t> pDatetime,
+                                                    std::shared_ptr<int64_t> pTimezone_offset_sec) {
     // Get current time
-    std::time_t now = pDatetime.value_or(std::time(nullptr));
-    std::tm local_tm = pDatetime.has_value() ? *std::gmtime(&now) : *std::localtime(&now);   // local time
+    std::time_t now = pDatetime != nullptr ? *pDatetime.get() : std::time(nullptr);
+    std::tm local_tm = pDatetime != nullptr ? *std::gmtime(&now) : *std::localtime(&now);   // local time
     std::tm gmt_tm   = *std::gmtime(&now);      // UTC time
     // Calculate timezone offset in seconds
-    int64_t timezone_offset_sec = pTimezone_offset_sec.has_value() ?
-        pTimezone_offset_sec.value() :
+    int64_t timezone_offset_sec = pTimezone_offset_sec != nullptr ?
+        *pTimezone_offset_sec.get() :
         static_cast<int64_t>(std::difftime(std::mktime(&local_tm), std::mktime(&gmt_tm)));
 
     // Convert to ±hhmm
