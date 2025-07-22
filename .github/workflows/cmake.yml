@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-15-large]
 
 
     steps:
@@ -57,6 +57,19 @@ jobs:
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=ON -DOPENSSL_INCLUDE_DIRECTORY="C:/Program Files/OpenSSL/include" -DOPENSSL_LIBRARY_DIRECTORY="C:/Program Files/OpenSSL/lib/VC" -DOPENSSL_LIBRARIES_BY_MACHINE_TYPE="libssl64MD;libcrypto64MD"
+
+    - name: Configure CMake (macOS)
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+      shell: bash
+      if: matrix.os == 'macos-15-large'
+      working-directory: ${{runner.workspace}}/build
+      # Note the current convention is to use the -S and -B options here to specify source
+      # and build directories, but this is only available with CMake 3.13 and higher.
+      # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+      run:  |
+        source ~/.profile
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=ON
 
     - name: Build
       working-directory: ${{runner.workspace}}/build

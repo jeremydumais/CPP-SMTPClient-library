@@ -524,9 +524,9 @@ TEST(SMTPClientBase, generateHeaderDateValue_With20030701_105237_Plus0200_Return
     ASSERT_EQ("Tue, 01 Jul 2003 10:52:37 +0200", FakeSMTPClientBase::generateHeaderDateValue(timestamp, std::make_shared<int64_t>(7200)));
 }
 
-TEST(SMTPClientBase, generateHeaderDateValue_With19690213_233254_Minus0330_ReturnValidHeader) {
-    auto timestamp = makeTimeUTC(1969, 2, 13, 23, 32, 54);
-    ASSERT_EQ("Thu, 13 Feb 1969 23:32:54 -0330", FakeSMTPClientBase::generateHeaderDateValue(timestamp, std::make_shared<int64_t>(-12600)));
+TEST(SMTPClientBase, generateHeaderDateValue_With19700213_233254_Minus0330_ReturnValidHeader) {
+    auto timestamp = makeTimeUTC(1970, 2, 13, 23, 32, 54);
+    ASSERT_EQ("Fri, 13 Feb 1970 23:32:54 -0330", FakeSMTPClientBase::generateHeaderDateValue(timestamp, std::make_shared<int64_t>(-12600)));
 }
 
 TEST(SMTPClientBase, generateHeaderDateValue_WithLeapYear_ReturnValidHeader) {
