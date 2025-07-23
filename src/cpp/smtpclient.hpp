@@ -69,6 +69,9 @@ class CPP_SMTPCLIENT_API SmtpClient : private jed_utils::SmtpClient {
     /** Return the credentials configured. */
     const Credential *getCredentials() const;
 
+    /** Return the communication log level */
+    LogLevel getLogLevel() const;
+
     /**
      *  @brief  Set the server name.
      *  @param pServerName A std::string of the server name.
@@ -135,6 +138,8 @@ class CPP_SMTPCLIENT_API SmtpClient : private jed_utils::SmtpClient {
      */
     static int getErrorMessage_r(int errorCode,
                                  std::string &errorMessage);
+
+    void setLogLevel(LogLevel level);
 
     int sendMail(const jed_utils::Message &pMsg);
 

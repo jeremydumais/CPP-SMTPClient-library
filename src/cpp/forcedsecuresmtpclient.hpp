@@ -66,6 +66,9 @@ class CPP_FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : private jed_utils:
     /** Return the credentials configured. */
     const Credential *getCredentials() const;
 
+    /** Return the communication log level */
+    LogLevel getLogLevel() const;
+
     /** Return the accept self certificate flag. */
     bool getAcceptSelfSignedCert() const;
 
@@ -142,6 +145,8 @@ class CPP_FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : private jed_utils:
      */
     static int getErrorMessage_r(int errorCode,
                                  std::string &errorMessage);
+
+    void setLogLevel(LogLevel level);
 
     int sendMail(const jed_utils::Message &pMsg);
 

@@ -2,8 +2,7 @@
 #define ATTACHMENT_H
 
 #include <cstring>
-#include <fstream>
-#include "base64.h"
+#include <string>
 
 #ifdef _WIN32
     #ifdef SMTPCLIENT_STATIC
@@ -71,6 +70,8 @@ class ATTACHMENT_API Attachment {
     char *mName;
     char *mFilename;
     char *mContentId;
+    std::string wrap_rfc5322(const std::string& input,
+                             size_t max_line_length = 76) const;
 };
 }  // namespace jed_utils
 

@@ -1,9 +1,13 @@
 #include "attachment.h"
+#include <algorithm>
 #include <cstdint>
+#include <fstream>
 #include <ios>
 #include <iostream>
 #include <limits>
+#include <sstream>
 #include <string>
+#include "base64.h"
 #include "stringutils.h"
 
 using namespace jed_utils;
@@ -141,8 +145,10 @@ const char *Attachment::getBase64EncodedFile() const {
             in.read(&contents[0], static_cast<std::streamsize>(contents.size()));
             in.close();
             std::string base64_result = Base64::Encode(reinterpret_cast<const unsigned char*>(contents.c_str()), contents.length());
-            auto *base64_file = new char[base64_result.length() + 1];
-            strncpy(base64_file, base64_result.c_str(), base64_result.length() + 1);
+            // Make sure that the line length are limited to 76 chars (RFC5322)
+            std::string base64Wrapped = wrap_rfc5322(base64_result);
+            auto *base64_file = new char[base64Wrapped.length() + 1];
+            strncpy(base64_file, base64Wrapped.c_str(), base64Wrapped.length() + 1);
             return base64_file;
         }
         in.close();
@@ -327,4 +333,19 @@ const char *Attachment::getMimeType() const {
     }
 
     return "";
+}
+
+std::string Attachment::wrap_rfc5322(const std::string& input,
+                                     size_t max_line_length) const {
+    std::ostringstream wrapped;
+    size_t pos = 0;
+
+    while (pos < input.size()) {
+        size_t len = std::min(max_line_length, input.size() - pos);
+    wrapped.write(&input[pos], static_cast<int64_t>(len));
+        wrapped << "\r\n";
+        pos += len;
+    }
+
+    return wrapped.str();
 }

@@ -2,8 +2,14 @@
 #include <algorithm>
 #include <cerrno>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
+#include <ctime>
+#include <iomanip>
+#include <iostream>
 #include <limits>
+#include <memory>
+#include <ostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -50,6 +56,7 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
       mLastSocketErrNo(0),
       mAuthOptions(nullptr),
       mCredential(nullptr),
+      mLogLevel(LogLevel::ExcludeAttachmentsBytes),
       mKeepUsingBaseSendCommands(false),
       sendCommandPtr(&SMTPClientBase::sendCommand),
       sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback) {
@@ -90,6 +97,7 @@ SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
       mAuthOptions(other.mAuthOptions != nullptr ? new ServerAuthOptions(*other.mAuthOptions) : nullptr),
       mCredential(other.mCredential != nullptr ? new Credential(*other.mCredential) : nullptr),
       mSock(0),
+      mLogLevel(other.mLogLevel),
       mKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands),
       sendCommandPtr(&SMTPClientBase::sendCommand),
       sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback) {
@@ -147,6 +155,7 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
         mCredential = other.mCredential != nullptr ? new Credential(*other.mCredential) : nullptr;
         mIsConnected = false;
         mSock = 0;
+        mLogLevel = other.mLogLevel;
         setKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands);
     }
     return *this;
@@ -166,6 +175,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
       mAuthOptions(other.mAuthOptions),
       mCredential(other.mCredential),
       mSock(other.mSock),
+      mLogLevel(other.mLogLevel),
       mKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands),
       sendCommandPtr(&SMTPClientBase::sendCommand),
       sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback) {
@@ -181,6 +191,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     other.mCredential = nullptr;
     other.mIsConnected = false;
     other.mSock = 0;
+    other.mLogLevel = LogLevel::ExcludeAttachmentsBytes;
     other.mKeepUsingBaseSendCommands = false;
     setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
 }
@@ -206,6 +217,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         mCredential = other.mCredential;
         mIsConnected = other.mIsConnected;
         mSock = other.mSock;
+        mLogLevel = other.mLogLevel;
         mKeepUsingBaseSendCommands = other.mKeepUsingBaseSendCommands;
         setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
         // Release the data pointer from the source object so that
@@ -222,6 +234,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         other.mCredential = nullptr;
         other.mIsConnected = false;
         other.mSock = 0;
+        other.mLogLevel = LogLevel::ExcludeAttachmentsBytes;
         other.mKeepUsingBaseSendCommands = false;
     }
     return *this;
@@ -249,6 +262,10 @@ const char *SMTPClientBase::getCommunicationLog() const {
 
 const Credential *SMTPClientBase::getCredentials() const {
     return mCredential;
+}
+
+LogLevel SMTPClientBase::getLogLevel() const {
+    return mLogLevel;
 }
 
 void SMTPClientBase::setServerPort(unsigned int pPort) {
@@ -339,6 +356,10 @@ int SMTPClientBase::getErrorMessage_r(int errorCode,
     strncpy(errorMessagePtr, errorMessageStr, error_message_len);
     errorMessagePtr[error_message_len] = '\0';
     return 0;
+}
+
+void SMTPClientBase::setLogLevel(LogLevel level) {
+    mLogLevel = level;
 }
 
 int SMTPClientBase::sendMail(const Message &pMsg) {
@@ -904,6 +925,12 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg) {
     }
 
     // Mail headers
+    // Date
+    int header_date_ret_code = addMailHeader("Date", generateHeaderDateValue().c_str(), CLIENT_SENDMAIL_HEADERDATE_ERROR);
+    if (header_date_ret_code != 0) {
+        return header_date_ret_code;
+    }
+
     // From
     std::stringstream from_header_ss;
     const MessageAddress &from_addr = pMsg.getFrom();
@@ -961,12 +988,16 @@ int SMTPClientBase::setMailBody(const Message &pMsg) {
     std::ostringstream body_ss;
     body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
     std::string body_real = body_ss.str();
-    addCommunicationLogItem(body_real.c_str());
+    LogLevel logLevel = getLogLevel();
 
     // If there's attachments, prepare the attachments text content
     Attachment** arr_attachment = pMsg.getAttachments();
 
     std::vector<Attachment*> vect_attachment(arr_attachment, arr_attachment + pMsg.getAttachmentsCount());
+    std::string attachmentsLogWithoutBytes = body_ss.str();
+    if (logLevel == LogLevel::ExcludeAttachmentsBytes) {
+        attachmentsLogWithoutBytes += createAttachmentsText(vect_attachment, false);
+    }
     if (pMsg.getAttachmentsCount() > 0) {
         std::string attachments_text = createAttachmentsText(vect_attachment);
         body_real += attachments_text;
@@ -982,18 +1013,21 @@ int SMTPClientBase::setMailBody(const Message &pMsg) {
             }
             int body_part_ret_code = (*this.*sendCommandPtr)(body_real.substr(index_start, length).c_str(), CLIENT_SENDMAIL_BODYPART_ERROR);
             if (body_part_ret_code != 0) {
+                addCommunicationLogBodyItem(attachmentsLogWithoutBytes.c_str(), body_real.c_str());
                 return body_part_ret_code;
             }
         }
     } else {
         int body_ret_code = (*this.*sendCommandPtr)(body_real.c_str(), CLIENT_SENDMAIL_BODY_ERROR);
         if (body_ret_code != 0) {
+            addCommunicationLogBodyItem(attachmentsLogWithoutBytes.c_str(), body_real.c_str());
             return body_ret_code;
         }
     }
+    addCommunicationLogBodyItem(attachmentsLogWithoutBytes.c_str(), body_real.c_str());
 
     // End of data
-    std::string end_data_command { "\r\n.\r\n" };
+    std::string end_data_command { "\r\n--sep--\r\n.\r\n" };
     addCommunicationLogItem(end_data_command.c_str());
     int end_data_ret_code = (*this.*sendCommandWithFeedbackPtr)(end_data_command.c_str(), CLIENT_SENDMAIL_END_DATA_ERROR, CLIENT_SENDMAIL_END_DATA_TIMEOUT);
     if (end_data_ret_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
@@ -1009,40 +1043,53 @@ int SMTPClientBase::setMailBody(const Message &pMsg) {
     return 0;
 }
 
-void SMTPClientBase::addCommunicationLogItem(const char *pItem, const char *pPrefix) {
-    std::string item { pItem };
-    if (strcmp(pPrefix, "c") == 0) {
-        /* Replace the \ by \\ */
-        const std::string FROM { "\r\n" };
-        const std::string TO { "\\r\\n" };
-        size_t start_pos = 0;
-        while ((start_pos = item.find(FROM, start_pos)) != std::string::npos) {
-            item.replace(start_pos, FROM.length(), TO);
-            start_pos += TO.length();  // Handles case where 'to' is a substring of 'from'
-        }
+void SMTPClientBase::addCommunicationLogBodyItem(const char *logWithoutAttachmentsBytes,
+                                     const char *logWithAttachmentsBytes) {
+    LogLevel logLevel = getLogLevel();
+    if (logLevel == LogLevel::Full) {
+        addCommunicationLogItem(logWithAttachmentsBytes);
+    } else if (logLevel == LogLevel::ExcludeAttachmentsBytes) {
+        addCommunicationLogItem(logWithoutAttachmentsBytes);
     }
-    const std::string ENDOFLINE { "\n" };
-    const std::string SEPARATOR { ": " };
-    size_t currentLogSize = strlen(mCommunicationLog);
-    size_t appendSize = ENDOFLINE.length() + strlen(pPrefix) + SEPARATOR.length() + item.length() + 1;
-    if (mCommunicationLogSize - currentLogSize <= appendSize) {
-        size_t newSize = currentLogSize + appendSize + INITIAL_COMM_LOG_LENGTH;
-        char *newBuffer = new char[newSize];
-        std::strncpy(newBuffer, mCommunicationLog, currentLogSize);
-        newBuffer[currentLogSize] = '\0';
-        mCommunicationLogSize = newSize;
-        char *tmpBuffer = mCommunicationLog;
-        mCommunicationLog = newBuffer;
-        delete [] tmpBuffer;
-    }
-    strncat(mCommunicationLog, ENDOFLINE.c_str(), mCommunicationLogSize-1);
-    strncat(mCommunicationLog, pPrefix, mCommunicationLogSize-1);
-    strncat(mCommunicationLog, SEPARATOR.c_str(), mCommunicationLogSize-1);
-    strncat(mCommunicationLog, item.c_str(), mCommunicationLogSize-1);
-    mCommunicationLog[mCommunicationLogSize-1] = '\0';
 }
 
-std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*> &pAttachments) {
+void SMTPClientBase::addCommunicationLogItem(const char *pItem, const char *pPrefix) {
+    if (getLogLevel() != LogLevel::None) {
+        std::string item { pItem };
+        if (strcmp(pPrefix, "c") == 0) {
+            /* Replace the \ by \\ */
+            const std::string FROM { "\r\n" };
+            const std::string TO { "\\r\\n" };
+            size_t start_pos = 0;
+            while ((start_pos = item.find(FROM, start_pos)) != std::string::npos) {
+                item.replace(start_pos, FROM.length(), TO);
+                start_pos += TO.length();  // Handles case where 'to' is a substring of 'from'
+            }
+        }
+        const std::string ENDOFLINE { "\n" };
+        const std::string SEPARATOR { ": " };
+        size_t currentLogSize = strlen(mCommunicationLog);
+        size_t appendSize = ENDOFLINE.length() + strlen(pPrefix) + SEPARATOR.length() + item.length() + 1;
+        if (mCommunicationLogSize - currentLogSize <= appendSize) {
+            size_t newSize = currentLogSize + appendSize + INITIAL_COMM_LOG_LENGTH;
+            char *newBuffer = new char[newSize];
+            std::strncpy(newBuffer, mCommunicationLog, currentLogSize);
+            newBuffer[currentLogSize] = '\0';
+            mCommunicationLogSize = newSize;
+            char *tmpBuffer = mCommunicationLog;
+            mCommunicationLog = newBuffer;
+            delete [] tmpBuffer;
+        }
+        strncat(mCommunicationLog, ENDOFLINE.c_str(), mCommunicationLogSize-1);
+        strncat(mCommunicationLog, pPrefix, mCommunicationLogSize-1);
+        strncat(mCommunicationLog, SEPARATOR.c_str(), mCommunicationLogSize-1);
+        strncat(mCommunicationLog, item.c_str(), mCommunicationLogSize-1);
+        mCommunicationLog[mCommunicationLogSize-1] = '\0';
+    }
+}
+
+std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*> &pAttachments,
+                                                  bool includeBytes) {
     std::string retval;
     for (const auto &item : pAttachments) {
         retval += "\r\n--sep\r\n";
@@ -1055,13 +1102,17 @@ std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*>
             retval += "Content-Disposition: Inline; filename=\"" + std::string(item->getName()) + "\"\r\n";
         }
         retval += "Content-Transfer-Encoding: base64\r\n\r\n";
-        const char* b64 = item->getBase64EncodedFile();
-        if (b64 != nullptr) {
-            retval += std::string(b64);
-            delete[] b64;
+        if (includeBytes) {
+            const char* b64 = item->getBase64EncodedFile();
+            if (b64 != nullptr) {
+                retval += std::string(b64);
+                delete[] b64;
+            }
+        } else {
+            retval += "...\r\n";
         }
     }
-    retval += "\r\n--sep--";
+    retval += "\r\n";
     return retval;
 }
 
@@ -1152,3 +1203,29 @@ std::string SMTPClientBase::generateHeaderAddressValues(const std::vector<jed_ut
     }
     return retval.str();
 }
+
+std::string SMTPClientBase::generateHeaderDateValue(std::shared_ptr<std::time_t> pDatetime,
+                                                    std::shared_ptr<int64_t> pTimezone_offset_sec) {
+    // Get current time
+    std::time_t now = pDatetime != nullptr ? *pDatetime.get() : std::time(nullptr);
+    std::tm local_tm = pDatetime != nullptr ? *std::gmtime(&now) : *std::localtime(&now);   // local time
+    std::tm gmt_tm   = *std::gmtime(&now);      // UTC time
+    // Calculate timezone offset in seconds
+    int64_t timezone_offset_sec = pTimezone_offset_sec != nullptr ?
+        *pTimezone_offset_sec.get() :
+        static_cast<int64_t>(std::difftime(std::mktime(&local_tm), std::mktime(&gmt_tm)));
+
+    // Convert to ±hhmm
+    char tz_sign = (timezone_offset_sec >= 0) ? '+' : '-';
+    timezone_offset_sec = std::abs(timezone_offset_sec);
+    int64_t tz_hours = timezone_offset_sec / 3600;
+    int64_t tz_minutes = (timezone_offset_sec % 3600) / 60;
+
+    // Format output
+    std::ostringstream oss;
+    oss << std::put_time(&local_tm, "%a, %d %b %Y %H:%M:%S ")
+        << tz_sign
+        << std::setw(2) << std::setfill('0') << tz_hours
+        << std::setw(2) << std::setfill('0') << tz_minutes;
+
+    return oss.str();}

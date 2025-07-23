@@ -2,6 +2,8 @@
 #include "../../src/cpp/messageaddress.hpp"
 #include <gtest/gtest.h>
 #include <stdexcept>
+#include <string>
+#include <utility>
 
 using namespace jed_utils;
 
@@ -93,6 +95,43 @@ TYPED_TEST(MultiMessageAddressFixture, constructor_ValidParamWithUpperCaseCharEm
     ASSERT_EQ("myaddress@gmail.com", std::string(msg_add.getEmailAddress()));
     ASSERT_EQ("Test Address", std::string(msg_add.getDisplayName()));
 }
+
+TYPED_TEST(MultiMessageAddressFixture, constructor_ValidComplex1EmailAddress) {
+    TypeParam msg_add("MS_Kk.altr@test-naa7.gydde.mlsender.net", "Test Address");
+    ASSERT_EQ("MS_Kk.altr@test-naa7.gydde.mlsender.net", std::string(msg_add.getEmailAddress()));
+    ASSERT_EQ("Test Address", std::string(msg_add.getDisplayName()));
+}
+
+TYPED_TEST(MultiMessageAddressFixture, constructor_ValidDotAndPlus) {
+    TypeParam msg_add("john.doe+test@gmail.com", "John Doe");
+    ASSERT_EQ("john.doe+test@gmail.com", std::string(msg_add.getEmailAddress()));
+    ASSERT_EQ("John Doe", std::string(msg_add.getDisplayName()));
+}
+
+TYPED_TEST(MultiMessageAddressFixture, constructor_ValidSubdomainEmail) {
+    TypeParam msg_add("user@mail.sub.example.com", "Sub User");
+    ASSERT_EQ("user@mail.sub.example.com", std::string(msg_add.getEmailAddress()));
+    ASSERT_EQ("Sub User", std::string(msg_add.getDisplayName()));
+}
+
+TYPED_TEST(MultiMessageAddressFixture, constructor_ValidEmailWithUnderscore) {
+    TypeParam msg_add("john_doe@example.org", "Underscore User");
+    ASSERT_EQ("john_doe@example.org", std::string(msg_add.getEmailAddress()));
+    ASSERT_EQ("Underscore User", std::string(msg_add.getDisplayName()));
+}
+
+TYPED_TEST(MultiMessageAddressFixture, constructor_ValidUpperCaseEmail) {
+    TypeParam msg_add("JOHN.DOE@EXAMPLE.COM", "Upper User");
+    ASSERT_EQ("JOHN.DOE@EXAMPLE.COM", std::string(msg_add.getEmailAddress()));
+    ASSERT_EQ("Upper User", std::string(msg_add.getDisplayName()));
+}
+
+TYPED_TEST(MultiMessageAddressFixture, constructor_ValidHyphenatedDomain) {
+    TypeParam msg_add("user@sub-domain.example", "Hyphen User");
+    ASSERT_EQ("user@sub-domain.example", std::string(msg_add.getEmailAddress()));
+    ASSERT_EQ("Hyphen User", std::string(msg_add.getDisplayName()));
+}
+
 
 TYPED_TEST(MultiMessageAddressFixture, CopyConstructor_MessageAddressCopyConstructorValid) {
     TypeParam msg_add1("myaddress@gmail.com", "Test Address");

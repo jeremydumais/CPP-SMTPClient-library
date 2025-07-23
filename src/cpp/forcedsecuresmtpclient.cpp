@@ -31,6 +31,10 @@ const Credential *ForcedSecureSMTPClient::getCredentials() const {
     return mCredential;
 }
 
+jed_utils::LogLevel ForcedSecureSMTPClient::getLogLevel() const {
+    return jed_utils::ForcedSecureSMTPClient::getLogLevel();
+}
+
 bool ForcedSecureSMTPClient::getAcceptSelfSignedCert() const {
     return jed_utils::SecureSMTPClientBase::getAcceptSelfSignedCert();
 }
@@ -78,6 +82,10 @@ int ForcedSecureSMTPClient::getErrorMessage_r(int errorCode,
     int result = jed_utils::SMTPClientBase::getErrorMessage_r(errorCode, errorMsg, MAXSIZE);
     errorMessage = errorMsg;
     return result;
+}
+
+void ForcedSecureSMTPClient::setLogLevel(LogLevel level) {
+    jed_utils::ForcedSecureSMTPClient::setLogLevel(level);
 }
 
 int ForcedSecureSMTPClient::extractReturnCode(const std::string &pOutput) {

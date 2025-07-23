@@ -31,6 +31,10 @@ const Credential *OpportunisticSecureSMTPClient::getCredentials() const {
     return mCredential;
 }
 
+jed_utils::LogLevel OpportunisticSecureSMTPClient::getLogLevel() const {
+    return jed_utils::OpportunisticSecureSMTPClient::getLogLevel();
+}
+
 bool OpportunisticSecureSMTPClient::getAcceptSelfSignedCert() const {
     return jed_utils::SecureSMTPClientBase::getAcceptSelfSignedCert();
 }
@@ -78,6 +82,10 @@ int OpportunisticSecureSMTPClient::getErrorMessage_r(int errorCode,
     int result = jed_utils::SMTPClientBase::getErrorMessage_r(errorCode, errorMsg, MAXSIZE);
     errorMessage = errorMsg;
     return result;
+}
+
+void OpportunisticSecureSMTPClient::setLogLevel(LogLevel level) {
+    jed_utils::OpportunisticSecureSMTPClient::setLogLevel(level);
 }
 
 int OpportunisticSecureSMTPClient::extractReturnCode(const std::string &pOutput) {
