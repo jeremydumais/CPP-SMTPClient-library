@@ -40,7 +40,7 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 </td>
 <td>
 
-86ec16a84949cdd0d9b6bb807fa2d7a0
+908ec5889757fb4a5874d99d9f6311ee
 
 </td>
 </tr>
