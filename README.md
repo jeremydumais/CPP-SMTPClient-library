@@ -1,7 +1,7 @@
 # Jed# C++ SMTP Client Library
 
 [![Build status](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml/badge.svg)](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
-![Latest version](https://img.shields.io/badge/latest_version-1.1.10-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.11-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 [![Conan Center](https://img.shields.io/conan/v/cpp-smtpclient-library)](https://conan.io/center/recipes/cpp-smtpclient-library)
 [![language](https://img.shields.io/badge/language-c++-0078D4)](#)
@@ -106,6 +106,22 @@ for previous versions.
 ## 📰 What's new
 
 
+- Version 1.1.11:
+    - Fix the error 554 5.0.0 ("failed to create parser: unexpected EOF") when
+    sending multipart messages via ProtonMail Bridge due to missing closing MIME
+    boundary (--sep--).
+    - Prevented catastrophic backtracking in isEmailAddressValid() regex that
+    caused crashes when validating complex email addresses (e.g., from
+    mailersend.com). Updated regex to avoid unescaped dots and added a more robust
+    pattern.
+    - Adjust the line length of the MIME attachments to 76 (excluding CRLF) to
+    comply with RFC 2045.
+    - Add a log level to the multiple clients. The log level is for the level of
+    details of the communication log between the client and the server. Choices
+    are : None, ExcludeAttachmentsBytes and Full. Default is
+    ExcludeAttachmentsBytes.
+    - Add the Date header field in outgoing emails to comply with RFC 2822.
+    This is a required field and it was missing in the previous versions.
 - Version 1.1.10:
     - Solve the issue where STARTTLS is not recognized if it is returned as the
     last response from the mail server.
@@ -123,16 +139,6 @@ for previous versions.
         - x64-Release
         - x64-Release-Static
         - x64-Release-WithUnitTests
-- Version 1.1.8:
-    - Some SMTP server send their list of supported extensions in multiple
-buffers like Zoho Mail. The EHLO command when in uncrypted mode, now supports
-receiving multiple buffers. In return, a delay of one second must be added for
-each segment sent by the SMTP server. For SMTP servers that send the list of
-supported extensions in a single segment like Gmail and Live, no additional
-delay is added for the EHLO command. This doesn't affect the other commands.
-    - Now when we send an email to multiple recipients (to or cc), the recipients
-appears as a single mail header instead of multiple headers. The old method was
-not RFC 5322 compliant.
 
 ## ⚡️ Quickstart - The 3 client classes
 
@@ -334,6 +340,7 @@ c: RCPT TO: <youremailaddress@localhost>\r\n
 s: 250 2.1.5 OK v2-20020a05620a440200b006fed2788751sm17411101qkp.76 - gsmtp
 c: DATA\r\n
 s: 354  Go ahead v2-20020a05620a440200b006fed2788751sm17411101qkp.76 - gsmtp
+c: Date: Wed, 23 Jul 2025 06:46:47 -0500\r\n
 c: From: yourgmailaddress@gmail.com\r\n
 c: To: youremailaddress@localhost\r\n
 c: Subject: This is a test (Subject)\r\n

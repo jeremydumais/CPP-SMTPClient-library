@@ -2,9 +2,30 @@
 
 All notable changes to this project will be documented in this file
 
+## [1.1.11]
+
+### Bug fixes
+- Fix the error 554 5.0.0 ("failed to create parser: unexpected EOF") when
+sending multipart messages via ProtonMail Bridge due to missing closing MIME
+boundary (--sep--).
+- Prevented catastrophic backtracking in isEmailAddressValid() regex that
+caused crashes when validating complex email addresses (e.g., from
+mailersend.com). Updated regex to avoid unescaped dots and added a more robust
+pattern.
+
+### Enhancement
+- Adjust the line length of the MIME attachments to 76 (excluding CRLF) to
+comply with RFC 2045.
+- Add a log level to the multiple clients. The log level is for the level of
+details of the communication log between the client and the server. Choices
+are : None, ExcludeAttachmentsBytes and Full. Default is
+ExcludeAttachmentsBytes.
+- Add the Date header field in outgoing emails to comply with RFC 2822.
+This is a required field and it was missing in the previous versions.
+
 ## [1.1.10]
 
-## Enhancement / Bug fixes
+### Enhancement / Bug fixes
 - Add support for macOS.
 - Fix the install/uninstall process of the library.
 - Solve the issue #38 where STARTTLS is not recognized if it is returned as the
@@ -12,7 +33,7 @@ last response from the mail server.
 
 ## [1.1.9]
 
-## Enhancement / Bug fixes
+### Enhancement / Bug fixes
 - Rework the build system to support static build and to generate correct
 release version.
 - The build configuration now works with multi-config generators like Visual
@@ -27,7 +48,7 @@ Studio
 
 ## [1.1.8]
 
-## Enhancement / Bug fixes
+### Enhancement / Bug fixes
 - Some SMTP server send their list of supported extensions in multiple
 buffers like Zoho Mail. The EHLO command when in uncrypted mode, now supports
 receiving multiple buffers. In return, a delay of one second must be added for
