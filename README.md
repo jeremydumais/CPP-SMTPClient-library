@@ -1,6 +1,6 @@
 # Jed# C++ SMTP Client Library
 
-[![Build status](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml/badge.svg)](https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
+(https://github.com/jeremydumais/CPP-SMTPClient-library/actions/workflows/cmake.yml)
 ![Latest version](https://img.shields.io/badge/latest_version-1.1.11-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 [![Conan Center](https://img.shields.io/conan/v/cpp-smtpclient-library)](https://conan.io/center/recipes/cpp-smtpclient-library)
@@ -31,6 +31,19 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 <tr>
 <th> Release </th>
 <th> MD5 hash of smtpclient.dll </th>
+</tr>
+	
+<tr>
+<td>
+
+[v1.1.11 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.11/CPP-SMTPClient-Library.1.1.11.x64.zip)
+
+</td>
+<td>
+
+86ec16a84949cdd0d9b6bb807fa2d7a0
+
+</td>
 </tr>
 
 <tr>
