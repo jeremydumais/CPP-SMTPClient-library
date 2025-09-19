@@ -183,9 +183,16 @@ else()
     add_library(${PROJECT_NAME}
         ${PROJECT_SOURCE_FILES})
     set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
-    target_include_directories(${PROJECT_NAME} PUBLIC ${OPENSSL_INCLUDE_DIR})
+    # Use install interface for include and lib dirs to avoid build path leakage
+    target_include_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
     get_filename_component(ssl_libdir ${OPENSSL_SSL_LIBRARY} DIRECTORY)
-    target_link_directories(${PROJECT_NAME} PUBLIC ${ssl_libdir})
+    target_link_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${ssl_libdir}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_LIBDIR}>
+    )
     target_link_libraries(${PROJECT_NAME} ssl crypto)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") #gcc
         # https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
@@ -287,21 +294,21 @@ endif()
 # Install rules
 install(TARGETS smtpclient
     EXPORT smtpclientTargets
-    LIBRARY DESTINATION lib/smtpclient
-    ARCHIVE DESTINATION lib/smtpclient
-    RUNTIME DESTINATION bin
-    INCLUDES DESTINATION include
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/smtpclient
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/smtpclient
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(DIRECTORY ${SRC_PATH}/
-    DESTINATION include/smtpclient
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/smtpclient
     FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
 
 install(EXPORT smtpclientTargets
     FILE smtpclientTargets.cmake
     NAMESPACE smtpclient::
-    DESTINATION lib/cmake/smtpclient
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/smtpclient
 )
 
 include(CMakePackageConfigHelpers)
@@ -314,13 +321,13 @@ write_basic_package_version_file(
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/smtpclientConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/smtpclientConfig.cmake"
-    INSTALL_DESTINATION lib/cmake/smtpclient
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/smtpclient
 )
 
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/smtpclientConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/smtpclientConfigVersion.cmake"
-    DESTINATION lib/cmake/smtpclient
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/smtpclient
 )
 
 # Uninstall target
