@@ -219,7 +219,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int setMailBody(const Message &pMsg);
 
     void addCommunicationLogItem(const char *pItem, const char *pPrefix = "c");
-    static std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments,
+    std::string createAttachmentsText(const std::vector<Attachment*> &pAttachments,
                                              bool includeBytes = true);
     static int extractReturnCode(const char *pOutput);
     static ServerAuthOptions *extractAuthenticationOptions(const char *pEhloOutput);
@@ -240,6 +240,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     Credential *mCredential;
     int mSock = 0;
     LogLevel mLogLevel;
+    char mSeparator[24];
     #ifdef _WIN32
     bool mWSAStarted = false;
     #endif

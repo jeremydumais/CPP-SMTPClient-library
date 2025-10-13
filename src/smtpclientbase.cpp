@@ -3,6 +3,7 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <iomanip>
@@ -68,6 +69,13 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     mServerName = new char[server_name_len + 1];
     strncpy(mServerName, pServerName, server_name_len);
     mServerName[server_name_len] = '\0';
+    // Create a random string to use as the boundary separator
+    // See RFC 1341 (MIME) section 7.2.1
+    static const char boundary_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'()+_,-./:=?";
+    for (int i = 0; i < sizeof(mSeparator) - 1; i++) {
+        mSeparator[i] = boundary_chars[std::rand() % (sizeof(boundary_chars) - 1)];
+    }
+    mSeparator[sizeof(mSeparator) - 1] = '\0';
 }
 
 SMTPClientBase::~SMTPClientBase() {
@@ -116,6 +124,8 @@ SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
         mLastServerResponse[last_server_response_len] = '\0';
     }
     setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
+    strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
+    mSeparator[sizeof(mSeparator) - 1] = '\0';
 }
 
 // Assignment operator
@@ -157,6 +167,9 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
         mSock = 0;
         mLogLevel = other.mLogLevel;
         setKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands);
+        // mSeperator
+        strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
+        mSeparator[sizeof(mSeparator) - 1] = '\0';
     }
     return *this;
 }
@@ -194,6 +207,8 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     other.mLogLevel = LogLevel::ExcludeAttachmentsBytes;
     other.mKeepUsingBaseSendCommands = false;
     setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
+    strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
+    mSeparator[sizeof(mSeparator) - 1] = '\0';
 }
 
 // Move assignement operator
@@ -236,6 +251,8 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         other.mSock = 0;
         other.mLogLevel = LogLevel::ExcludeAttachmentsBytes;
         other.mKeepUsingBaseSendCommands = false;
+        strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
+        mSeparator[sizeof(mSeparator) - 1] = '\0';
     }
     return *this;
 }
@@ -966,7 +983,8 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg) {
     }
 
     // Content-Type
-    std::string content_type { "Content-Type: multipart/related; boundary=sep\r\n\r\n" };
+    std::string content_type { "Content-Type: multipart/related; boundary="};
+    content_type += std::string(mSeparator) + "\r\n\r\n";
     addCommunicationLogItem(content_type.c_str());
     int header_content_type_ret_code = (*this.*sendCommandPtr)(content_type.c_str(), CLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR);
     if (header_content_type_ret_code != 0) {
@@ -986,7 +1004,7 @@ int SMTPClientBase::addMailHeader(const char *field, const char *value, int pErr
 int SMTPClientBase::setMailBody(const Message &pMsg) {
     // Body part
     std::ostringstream body_ss;
-    body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
+    body_ss << "--" << mSeparator << "\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
     std::string body_real = body_ss.str();
     LogLevel logLevel = getLogLevel();
 
@@ -1027,7 +1045,7 @@ int SMTPClientBase::setMailBody(const Message &pMsg) {
     addCommunicationLogBodyItem(attachmentsLogWithoutBytes.c_str(), body_real.c_str());
 
     // End of data
-    std::string end_data_command { "\r\n--sep--\r\n.\r\n" };
+    std::string end_data_command { "\r\n--" + std::string(mSeparator) + "--\r\n.\r\n" };
     addCommunicationLogItem(end_data_command.c_str());
     int end_data_ret_code = (*this.*sendCommandWithFeedbackPtr)(end_data_command.c_str(), CLIENT_SENDMAIL_END_DATA_ERROR, CLIENT_SENDMAIL_END_DATA_TIMEOUT);
     if (end_data_ret_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
@@ -1092,7 +1110,7 @@ std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*>
                                                   bool includeBytes) {
     std::string retval;
     for (const auto &item : pAttachments) {
-        retval += "\r\n--sep\r\n";
+        retval += "\r\n--" + std::string(mSeparator) + "\r\n";
         retval += "Content-Type: " + std::string(item->getMimeType()) + "; file=\"" + std::string(item->getName()) + "\"\r\n";
         if (item->getContentId() != nullptr && std::string(item->getContentId()).size() > 0) {
             retval += "X-Attachment-Id: " + std::string(item->getContentId()) + "\r\n";
