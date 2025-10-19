@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file
 
+## [1.1.12]
+
+### Enhancement
+- The default --sep Multipart encapsulation boundary is now a randomly generated
+string to ensure that it doesn't conflict if the --sep string appears in the
+email body.
+See [RFC 1341 section 7.2.1](https://datatracker.ietf.org/doc/html/rfc1341#page-30).
+This change has been made by [ino-josh](https://github.com/ino-josh).
+Many thanks!
+- Fix CMake install paths to prevent build path leakage in generated config
+files. If using default build values, the library out file will not appears in
+a smtpclient folder, but one level above.
+This change has been made by [ino-josh](https://github.com/ino-josh).
+Many thanks!
+
 ## [1.1.11]
 
 ### Bug fixes

@@ -1,6 +1,6 @@
 # Jed# C++ SMTP Client Library
 
-![Latest version](https://img.shields.io/badge/latest_version-1.1.11-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.12-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 [![Conan Center](https://img.shields.io/conan/v/cpp-smtpclient-library)](https://conan.io/center/recipes/cpp-smtpclient-library)
 [![language](https://img.shields.io/badge/language-c++-0078D4)](#)
@@ -31,7 +31,7 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 <th> Release </th>
 <th> MD5 hash of smtpclient.dll </th>
 </tr>
-	
+
 <tr>
 <td>
 
@@ -118,6 +118,18 @@ for previous versions.
 ## 📰 What's new
 
 
+- Version 1.1.12:
+    - The default --sep Multipart encapsulation boundary is now a randomly generated
+    string to ensure that it doesn't conflict if the --sep string appears in the
+    email body.
+    See [RFC 1341 section 7.2.1](https://datatracker.ietf.org/doc/html/rfc1341#page-30).
+    This change has been made by [ino-josh](https://github.com/ino-josh).
+    Many thanks!
+    - Fix CMake install paths to prevent build path leakage in generated config
+    files. If using default build values, the library out file will not appears in
+    a smtpclient folder, but one level above.
+    This change has been made by [ino-josh](https://github.com/ino-josh).
+    Many thanks!
 - Version 1.1.11:
     - Fix the error 554 5.0.0 ("failed to create parser: unexpected EOF") when
     sending multipart messages via ProtonMail Bridge due to missing closing MIME
