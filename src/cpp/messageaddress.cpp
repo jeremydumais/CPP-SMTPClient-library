@@ -20,6 +20,10 @@ std::string MessageAddress::getDisplayName() const {
     return jed_utils::MessageAddress::getDisplayName();
 }
 
+std::string MessageAddress::getDomainName() const {
+    return jed_utils::MessageAddress::getDomainName();
+}
+
 jed_utils::MessageAddress MessageAddress::toStdMessageAddress() const {
     return jed_utils::MessageAddress(jed_utils::MessageAddress::getEmailAddress(),
                                      jed_utils::MessageAddress::getDisplayName());

@@ -23,6 +23,7 @@
 #include "errorresolver.h"
 #include "message.h"
 #include "messageaddress.h"
+#include "messageidutils.h"
 #include "serverauthoptions.h"
 #include "serveroptionsanalyzer.h"
 #include "smtpclienterrors.h"
@@ -945,6 +946,14 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg) {
     int header_date_ret_code = addMailHeader("Date", generateHeaderDateValue().c_str(), CLIENT_SENDMAIL_HEADERDATE_ERROR);
     if (header_date_ret_code != 0) {
         return header_date_ret_code;
+    }
+
+    // Message-ID
+    try {
+        std::string msg_id = MessageIDUtils::generate(pMsg.getFrom().getDomainName());
+        addMailHeader("Message-ID", msg_id.c_str(), CLIENT_SENDMAIL_HEADERMSGID_ERROR);
+    } catch (const std::invalid_argument &err) {
+        return CLIENT_SENDMAIL_HEADERMSGID_ERROR;
     }
 
     // From
