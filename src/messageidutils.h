@@ -5,9 +5,21 @@
 #include <cstdint>
 #include <string>
 
+#ifdef _WIN32
+    #ifdef SMTPCLIENT_STATIC
+        #define MESSAGEIDUTILS_API
+    #elif defined(SMTPCLIENT_EXPORTS)
+        #define MESSAGEIDUTILS_API __declspec(dllexport)
+    #else
+        #define MESSAGEIDUTILS_API __declspec(dllimport)
+    #endif
+#else
+    #define MESSAGEIDUTILS_API
+#endif
+
 namespace jed_utils {
 
-class MessageIDUtils {
+class MESSAGEIDUTILS_API MessageIDUtils {
  public:
     // Generate a complete Message-ID string, e.g. "<abc.def.ghi.jkl@domain>"
     static std::string generate(const std::string& rhs,

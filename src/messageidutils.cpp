@@ -76,11 +76,13 @@ std::string MessageIDUtils::toBase36(uint64_t v) {
 }
 
 uint64_t MessageIDUtils::rand64() {
-    static thread_local std::mt19937_64 rng(
-            (static_cast<uint64_t>(std::random_device {}()) << 1) ^
-            reinterpret_cast<uintptr_t>(&rng) ^
+    static thread_local std::mt19937_64 rng([] {
+        uint64_t seed = (static_cast<uint64_t>(std::random_device{}()) << 1) ^
             static_cast<uint64_t>(
-                std::chrono::high_resolution_clock::now().time_since_epoch().count()));
+                std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        seed ^= reinterpret_cast<uintptr_t>(&seed);
+        return std::mt19937_64(seed);
+        }());
     return rng();
 }
 

@@ -5,6 +5,12 @@
 #include <unordered_set>
 #include "../../src/messageidutils.h"
 
+#if defined(_WIN32)
+    #include <windows.h>
+#else
+    #include <unistd.h>
+#endif
+
 using namespace jed_utils;
 
 // ---------- small helpers ----------
@@ -27,24 +33,30 @@ static uint32_t getPidPortable() {
 #endif
 }
 
+
 // LHS regex: four dot-separated base36 segments
-static const std::regex kLhsRegex("^([a-z0-9]+\\.){3}[a-z0-9]+$");
+static const std::regex kLhsRegex() {
+   return std::regex("^([a-z0-9]+\\.){3}[a-z0-9]+$");
+}
 
 // Full Message-ID regex with brackets and RHS hotmail.com
-static const std::regex kFullHotmailRegex("^<([a-z0-9]+\\.){3}[a-z0-9]+@hotmail\\.com>$");
+static const std::regex kFullHotmailRegex() {
+    return std::regex("^<([a-z0-9]+\\.){3}[a-z0-9]+@hotmail\\.com>$");
+}
 
 // Full Message-ID regex without brackets (hotmail.com)
-static const std::regex kNoBracketsHotmailRegex("^([a-z0-9]+\\.){3}[a-z0-9]+@hotmail\\.com$");
-
+static const std::regex kNoBracketsHotmailRegex() {
+    return std::regex("^([a-z0-9]+\\.){3}[a-z0-9]+@hotmail\\.com$");
+}
 
 TEST(MessageIDUtils_Generate, WithHotmailAndBrackets_StrictOK_FormatMatches) {
     const std::string id = MessageIDUtils::generate("hotmail.com", /*includeAngleBrackets=*/true, /*strictRhsCheck=*/true);
-    ASSERT_TRUE(std::regex_match(id, kFullHotmailRegex)) << id;
+    ASSERT_TRUE(std::regex_match(id, kFullHotmailRegex())) << id;
 }
 
 TEST(MessageIDUtils_Generate, WithHotmail_NoBrackets_StrictOK_FormatMatches) {
     const std::string id = MessageIDUtils::generate("hotmail.com", /*includeAngleBrackets=*/false, /*strictRhsCheck=*/true);
-    ASSERT_TRUE(std::regex_match(id, kNoBracketsHotmailRegex)) << id;
+    ASSERT_TRUE(std::regex_match(id, kNoBracketsHotmailRegex())) << id;
     ASSERT_EQ(id.find('<'), std::string::npos);
     ASSERT_EQ(id.find('>'), std::string::npos);
 }
@@ -86,7 +98,7 @@ TEST(MessageIDUtils_Generate, ManySequential_AreUnique) {
 
 TEST(MessageIDUtils_GenerateLhs, Shape_IsFourBase36Segments) {
     const std::string lhs = MessageIDUtils::generateLhs();
-    ASSERT_TRUE(std::regex_match(lhs, kLhsRegex)) << lhs;
+    ASSERT_TRUE(std::regex_match(lhs, kLhsRegex())) << lhs;
 
     // Split and inspect the second segment equals PID in base36
     size_t p1 = lhs.find('.');

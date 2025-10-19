@@ -952,7 +952,7 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg) {
     try {
         std::string msg_id = MessageIDUtils::generate(pMsg.getFrom().getDomainName());
         addMailHeader("Message-ID", msg_id.c_str(), CLIENT_SENDMAIL_HEADERMSGID_ERROR);
-    } catch (const std::invalid_argument &err) {
+    } catch (const std::invalid_argument &) {
         return CLIENT_SENDMAIL_HEADERMSGID_ERROR;
     }
 
