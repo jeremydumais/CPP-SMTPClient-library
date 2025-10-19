@@ -255,6 +255,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int (SMTPClientBase::*sendCommandWithFeedbackPtr)(const char *pCommand, int pErrorCode, int pTimeoutCode);
     void addCommunicationLogBodyItem(const char *logWithoutAttachmentsBytes,
                                      const char *logWithAttachmentsBytes);
+    void generate_separator(char (&out)[24]);
 };
 }  // namespace jed_utils
 

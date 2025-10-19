@@ -1,6 +1,7 @@
 #include "smtpclientbase.h"
 #include <algorithm>
 #include <cerrno>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -11,9 +12,11 @@
 #include <limits>
 #include <memory>
 #include <ostream>
+#include <random>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 #include "base64.h"
@@ -69,13 +72,7 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     mServerName = new char[server_name_len + 1];
     strncpy(mServerName, pServerName, server_name_len);
     mServerName[server_name_len] = '\0';
-    // Create a random string to use as the boundary separator
-    // See RFC 1341 (MIME) section 7.2.1
-    static const char boundary_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'()+_,-./:=?";
-    for (int i = 0; i < sizeof(mSeparator) - 1; i++) {
-        mSeparator[i] = boundary_chars[std::rand() % (sizeof(boundary_chars) - 1)];
-    }
-    mSeparator[sizeof(mSeparator) - 1] = '\0';
+    generate_separator(mSeparator);
 }
 
 SMTPClientBase::~SMTPClientBase() {
@@ -167,7 +164,7 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
         mSock = 0;
         mLogLevel = other.mLogLevel;
         setKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands);
-        // mSeperator
+        // mSeparator
         strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
         mSeparator[sizeof(mSeparator) - 1] = '\0';
     }
@@ -209,6 +206,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
     strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
     mSeparator[sizeof(mSeparator) - 1] = '\0';
+    other.mSeparator[0] = '\0';
 }
 
 // Move assignement operator
@@ -235,6 +233,8 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         mLogLevel = other.mLogLevel;
         mKeepUsingBaseSendCommands = other.mKeepUsingBaseSendCommands;
         setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
+        strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
+        mSeparator[sizeof(mSeparator) - 1] = '\0';
         // Release the data pointer from the source object so that
         // the destructor does not free the memory multiple times.
         other.mServerName = nullptr;
@@ -251,8 +251,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         other.mSock = 0;
         other.mLogLevel = LogLevel::ExcludeAttachmentsBytes;
         other.mKeepUsingBaseSendCommands = false;
-        strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
-        mSeparator[sizeof(mSeparator) - 1] = '\0';
+        other.mSeparator[0] = '\0';
     }
     return *this;
 }
@@ -1247,3 +1246,33 @@ std::string SMTPClientBase::generateHeaderDateValue(std::shared_ptr<std::time_t>
         << std::setw(2) << std::setfill('0') << tz_minutes;
 
     return oss.str();}
+
+void SMTPClientBase::generate_separator(char (&out)[24]) {
+    // 23 random chars + trailing NUL
+    static constexpr char kAlphabet[] =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz"
+        "0123456789";
+    static constexpr std::size_t kAlphabetSize = sizeof(kAlphabet) - 1;  // exclude '\0'
+
+    // One PRNG per thread, seeded once with mixed sources.
+    thread_local std::mt19937 eng = [] {
+        std::random_device rd;  // may be deterministic on some platforms; that's OK
+        const unsigned now  = static_cast<unsigned>(
+                std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        const unsigned tid  = static_cast<unsigned>(
+                std::hash<std::thread::id>{}(std::this_thread::get_id()));
+
+        // Use seed_seq to spread entropy across the MT state.
+        std::seed_seq seq{ rd(), rd(), rd(), rd(), now, tid };
+        return std::mt19937(seq);
+    }();
+
+    // Inclusive bounds: use [0, kAlphabetSize-1]
+    std::uniform_int_distribution<std::size_t> pick(0, kAlphabetSize - 1);
+
+    for (std::size_t i = 0; i < 23; ++i)
+        out[i] = kAlphabet[pick(eng)];
+    out[23] = '\0';
+}
+
