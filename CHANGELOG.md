@@ -16,7 +16,9 @@ files. If using default build values, the library out file will not appears in
 a smtpclient folder, but one level above.
 This change has been made by [ino-josh](https://github.com/ino-josh).
 Many thanks!
-- Add a Message-ID generated header when sending a message. See [RFC 5322 section 3.6.4](https://datatracker.ietf.org/doc/html/rfc5322)
+- Add a Message-ID generated header when sending a message.
+See [RFC 5322 section 3.6.4](https://datatracker.ietf.org/doc/html/rfc5322).
+Thanks to [PowerTAMX](https://github.com/PowerTAMX) for reporthing this.
 
 ## [1.1.11]
 

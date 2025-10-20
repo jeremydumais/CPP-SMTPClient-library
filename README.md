@@ -130,7 +130,9 @@ for previous versions.
     a smtpclient folder, but one level above.
     This change has been made by [ino-josh](https://github.com/ino-josh).
     Many thanks!
-    - Add a Message-ID generated header when sending a message. See [RFC 5322 section 3.6.4](https://datatracker.ietf.org/doc/html/rfc5322)
+    - Add a Message-ID generated header when sending a message.
+    See [RFC 5322 section 3.6.4](https://datatracker.ietf.org/doc/html/rfc5322).
+    Thanks to [PowerTAMX](https://github.com/PowerTAMX) for reporthing this.
 - Version 1.1.11:
     - Fix the error 554 5.0.0 ("failed to create parser: unexpected EOF") when
     sending multipart messages via ProtonMail Bridge due to missing closing MIME
