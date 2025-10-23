@@ -1,6 +1,6 @@
 # Jed# C++ SMTP Client Library
 
-![Latest version](https://img.shields.io/badge/latest_version-1.1.11-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.12-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 [![Conan Center](https://img.shields.io/conan/v/cpp-smtpclient-library)](https://conan.io/center/recipes/cpp-smtpclient-library)
 [![language](https://img.shields.io/badge/language-c++-0078D4)](#)
@@ -31,7 +31,20 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 <th> Release </th>
 <th> MD5 hash of smtpclient.dll </th>
 </tr>
-	
+
+<tr>
+<td>
+
+[v1.1.12 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.12/CPP-SMTPClient-Library.1.1.12.x64.zip)
+
+</td>
+<td>
+
+fc7613b5d30ff094bd8649dd9707cc02
+
+</td>
+</tr>
+
 <tr>
 <td>
 
@@ -58,57 +71,6 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 </td>
 </tr>
 
-<tr>
-<td>
-
-[v1.1.9 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.9/CPP-SMTPClient-Library.1.1.9.x64.zip)
-
-</td>
-<td>
-
-469dae64a844b8b193249bbbc280793e
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-[v1.1.8 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.9/CPP-SMTPClient-Library.1.1.9.x86.zip)
-
-</td>
-<td>
-
-940a0661eb0834b8966b1e92783ad181
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-[v1.1.8 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.8/CPP-SMTPClient-Library.1.1.8.x64.zip)
-
-</td>
-<td>
-
-813e656a811af15891d4c1160a21dec9
-
-</td>
-</tr>
-<tr>
-<td>
-
-[v1.1.8 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.8/CPP-SMTPClient-Library.1.1.8.x86.zip)
-
-</td>
-<td>
-
-277b9c257decc619a6358de58b213928
-
-</td>
-</tr>
-
 </table>
 
 See the section
@@ -118,6 +80,21 @@ for previous versions.
 ## 📰 What's new
 
 
+- Version 1.1.12:
+    - The default --sep Multipart encapsulation boundary is now a randomly generated
+    string to ensure that it doesn't conflict if the --sep string appears in the
+    email body.
+    See [RFC 1341 section 7.2.1](https://datatracker.ietf.org/doc/html/rfc1341#page-30).
+    This change has been made by [ino-josh](https://github.com/ino-josh).
+    Many thanks!
+    - Fix CMake install paths to prevent build path leakage in generated config
+    files. If using default build values, the library out file will not appears in
+    a smtpclient folder, but one level above.
+    This change has been made by [ino-josh](https://github.com/ino-josh).
+    Many thanks!
+    - Add a Message-ID generated header when sending a message.
+    See [RFC 5322 section 3.6.4](https://datatracker.ietf.org/doc/html/rfc5322).
+    Thanks to [PowerTAMX](https://github.com/PowerTAMX) for reporthing this.
 - Version 1.1.11:
     - Fix the error 554 5.0.0 ("failed to create parser: unexpected EOF") when
     sending multipart messages via ProtonMail Bridge due to missing closing MIME
@@ -139,18 +116,6 @@ for previous versions.
     last response from the mail server.
     - Add support for macOS.
     - Fix the install/uninstall process of the library.
-- Version 1.1.9:
-    - Rework the build system to support static build and to generate correct
-    release version.
-    - The build configuration now works with multi-config generators like Visual
-    Studio
-    - The default build configurations in Visual Studio has been changed to :
-        - x64-Debug
-        - x64-Debug-Static
-        - x64-Debug-WithUnitTests
-        - x64-Release
-        - x64-Release-Static
-        - x64-Release-WithUnitTests
 
 ## ⚡️ Quickstart - The 3 client classes
 
@@ -353,6 +318,7 @@ s: 250 2.1.5 OK v2-20020a05620a440200b006fed2788751sm17411101qkp.76 - gsmtp
 c: DATA\r\n
 s: 354  Go ahead v2-20020a05620a440200b006fed2788751sm17411101qkp.76 - gsmtp
 c: Date: Wed, 23 Jul 2025 06:46:47 -0500\r\n
+c: Message-ID: <hcas2ayc50.agn.ddpnfjpgatdk.1afqiav2va2nu32cgll3zw453p@gmail.com>\r\n
 c: From: yourgmailaddress@gmail.com\r\n
 c: To: youremailaddress@localhost\r\n
 c: Subject: This is a test (Subject)\r\n

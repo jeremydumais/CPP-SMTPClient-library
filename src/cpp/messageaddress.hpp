@@ -64,6 +64,9 @@ class CPP_MESSAGEADDRESS_API MessageAddress : private jed_utils::MessageAddress 
     /** Return the display name. */
     std::string getDisplayName() const;
 
+    /** Return the domain name. */
+    std::string getDomainName() const;
+
     jed_utils::MessageAddress toStdMessageAddress() const;
 
     friend class Message;

@@ -60,11 +60,15 @@ class MESSAGEADDRESS_API MessageAddress {
     /** Return the display name. */
     const char *getDisplayName() const;
 
+    /** Return the domain name. */
+    const char *getDomainName() const;
+
     friend class message;
 
  private:
     char *mEmailAddress = nullptr;
     char *mDisplayName = nullptr;
+    char *mDomainName = nullptr;
     bool isEmailAddressValid(const std::string &pEmailAddress) const;
 };
 }  // namespace jed_utils

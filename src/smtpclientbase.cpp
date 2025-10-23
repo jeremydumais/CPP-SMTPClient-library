@@ -1,8 +1,10 @@
 #include "smtpclientbase.h"
 #include <algorithm>
 #include <cerrno>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <iomanip>
@@ -10,15 +12,18 @@
 #include <limits>
 #include <memory>
 #include <ostream>
+#include <random>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 #include "base64.h"
 #include "errorresolver.h"
 #include "message.h"
 #include "messageaddress.h"
+#include "messageidutils.h"
 #include "serverauthoptions.h"
 #include "serveroptionsanalyzer.h"
 #include "smtpclienterrors.h"
@@ -68,6 +73,7 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     mServerName = new char[server_name_len + 1];
     strncpy(mServerName, pServerName, server_name_len);
     mServerName[server_name_len] = '\0';
+    generate_separator(mSeparator);
 }
 
 SMTPClientBase::~SMTPClientBase() {
@@ -116,6 +122,8 @@ SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
         mLastServerResponse[last_server_response_len] = '\0';
     }
     setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
+    strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
+    mSeparator[sizeof(mSeparator) - 1] = '\0';
 }
 
 // Assignment operator
@@ -157,6 +165,9 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
         mSock = 0;
         mLogLevel = other.mLogLevel;
         setKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands);
+        // mSeparator
+        strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
+        mSeparator[sizeof(mSeparator) - 1] = '\0';
     }
     return *this;
 }
@@ -194,6 +205,9 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     other.mLogLevel = LogLevel::ExcludeAttachmentsBytes;
     other.mKeepUsingBaseSendCommands = false;
     setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
+    strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
+    mSeparator[sizeof(mSeparator) - 1] = '\0';
+    other.mSeparator[0] = '\0';
 }
 
 // Move assignement operator
@@ -220,6 +234,8 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         mLogLevel = other.mLogLevel;
         mKeepUsingBaseSendCommands = other.mKeepUsingBaseSendCommands;
         setKeepUsingBaseSendCommands(mKeepUsingBaseSendCommands);
+        strncpy(mSeparator, other.mSeparator, sizeof(mSeparator));
+        mSeparator[sizeof(mSeparator) - 1] = '\0';
         // Release the data pointer from the source object so that
         // the destructor does not free the memory multiple times.
         other.mServerName = nullptr;
@@ -236,6 +252,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         other.mSock = 0;
         other.mLogLevel = LogLevel::ExcludeAttachmentsBytes;
         other.mKeepUsingBaseSendCommands = false;
+        other.mSeparator[0] = '\0';
     }
     return *this;
 }
@@ -931,6 +948,14 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg) {
         return header_date_ret_code;
     }
 
+    // Message-ID
+    try {
+        std::string msg_id = MessageIDUtils::generate(pMsg.getFrom().getDomainName());
+        addMailHeader("Message-ID", msg_id.c_str(), CLIENT_SENDMAIL_HEADERMSGID_ERROR);
+    } catch (const std::invalid_argument &) {
+        return CLIENT_SENDMAIL_HEADERMSGID_ERROR;
+    }
+
     // From
     std::stringstream from_header_ss;
     const MessageAddress &from_addr = pMsg.getFrom();
@@ -966,7 +991,8 @@ int SMTPClientBase::setMailHeaders(const Message &pMsg) {
     }
 
     // Content-Type
-    std::string content_type { "Content-Type: multipart/related; boundary=sep\r\n\r\n" };
+    std::string content_type { "Content-Type: multipart/related; boundary="};
+    content_type += std::string(mSeparator) + "\r\n\r\n";
     addCommunicationLogItem(content_type.c_str());
     int header_content_type_ret_code = (*this.*sendCommandPtr)(content_type.c_str(), CLIENT_SENDMAIL_HEADERCONTENTTYPE_ERROR);
     if (header_content_type_ret_code != 0) {
@@ -986,7 +1012,7 @@ int SMTPClientBase::addMailHeader(const char *field, const char *value, int pErr
 int SMTPClientBase::setMailBody(const Message &pMsg) {
     // Body part
     std::ostringstream body_ss;
-    body_ss << "--sep\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
+    body_ss << "--" << mSeparator << "\r\nContent-Type: " << pMsg.getMimeType() << "; charset=UTF-8\r\n\r\n" << pMsg.getBody() << "\r\n";
     std::string body_real = body_ss.str();
     LogLevel logLevel = getLogLevel();
 
@@ -1027,7 +1053,7 @@ int SMTPClientBase::setMailBody(const Message &pMsg) {
     addCommunicationLogBodyItem(attachmentsLogWithoutBytes.c_str(), body_real.c_str());
 
     // End of data
-    std::string end_data_command { "\r\n--sep--\r\n.\r\n" };
+    std::string end_data_command { "\r\n--" + std::string(mSeparator) + "--\r\n.\r\n" };
     addCommunicationLogItem(end_data_command.c_str());
     int end_data_ret_code = (*this.*sendCommandWithFeedbackPtr)(end_data_command.c_str(), CLIENT_SENDMAIL_END_DATA_ERROR, CLIENT_SENDMAIL_END_DATA_TIMEOUT);
     if (end_data_ret_code != STATUS_CODE_REQUESTED_MAIL_ACTION_OK_OR_COMPLETED) {
@@ -1092,7 +1118,7 @@ std::string SMTPClientBase::createAttachmentsText(const std::vector<Attachment*>
                                                   bool includeBytes) {
     std::string retval;
     for (const auto &item : pAttachments) {
-        retval += "\r\n--sep\r\n";
+        retval += "\r\n--" + std::string(mSeparator) + "\r\n";
         retval += "Content-Type: " + std::string(item->getMimeType()) + "; file=\"" + std::string(item->getName()) + "\"\r\n";
         if (item->getContentId() != nullptr && std::string(item->getContentId()).size() > 0) {
             retval += "X-Attachment-Id: " + std::string(item->getContentId()) + "\r\n";
@@ -1229,3 +1255,33 @@ std::string SMTPClientBase::generateHeaderDateValue(std::shared_ptr<std::time_t>
         << std::setw(2) << std::setfill('0') << tz_minutes;
 
     return oss.str();}
+
+void SMTPClientBase::generate_separator(char (&out)[24]) {
+    // 23 random chars + trailing NUL
+    static constexpr char kAlphabet[] =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz"
+        "0123456789";
+    static constexpr std::size_t kAlphabetSize = sizeof(kAlphabet) - 1;  // exclude '\0'
+
+    // One PRNG per thread, seeded once with mixed sources.
+    thread_local std::mt19937 eng = [] {
+        std::random_device rd;  // may be deterministic on some platforms; that's OK
+        const unsigned now  = static_cast<unsigned>(
+                std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        const unsigned tid  = static_cast<unsigned>(
+                std::hash<std::thread::id>{}(std::this_thread::get_id()));
+
+        // Use seed_seq to spread entropy across the MT state.
+        std::seed_seq seq{ rd(), rd(), rd(), rd(), now, tid };
+        return std::mt19937(seq);
+    }();
+
+    // Inclusive bounds: use [0, kAlphabetSize-1]
+    std::uniform_int_distribution<std::size_t> pick(0, kAlphabetSize - 1);
+
+    for (std::size_t i = 0; i < 23; ++i)
+        out[i] = kAlphabet[pick(eng)];
+    out[23] = '\0';
+}
+
