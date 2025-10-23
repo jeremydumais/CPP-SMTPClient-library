@@ -35,6 +35,19 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 <tr>
 <td>
 
+[v1.1.12 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.12/CPP-SMTPClient-Library.1.1.12.x64.zip)
+
+</td>
+<td>
+
+fc7613b5d30ff094bd8649dd9707cc02
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 [v1.1.11 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.11/CPP-SMTPClient-Library.1.1.11.x64.zip)
 
 </td>
@@ -54,57 +67,6 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 <td>
 
 1a82a5e48b959dfd359860a86df0df66
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-[v1.1.9 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.9/CPP-SMTPClient-Library.1.1.9.x64.zip)
-
-</td>
-<td>
-
-469dae64a844b8b193249bbbc280793e
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-[v1.1.8 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.9/CPP-SMTPClient-Library.1.1.9.x86.zip)
-
-</td>
-<td>
-
-940a0661eb0834b8966b1e92783ad181
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-[v1.1.8 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.8/CPP-SMTPClient-Library.1.1.8.x64.zip)
-
-</td>
-<td>
-
-813e656a811af15891d4c1160a21dec9
-
-</td>
-</tr>
-<tr>
-<td>
-
-[v1.1.8 (x86)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.8/CPP-SMTPClient-Library.1.1.8.x86.zip)
-
-</td>
-<td>
-
-277b9c257decc619a6358de58b213928
 
 </td>
 </tr>
@@ -154,18 +116,6 @@ for previous versions.
     last response from the mail server.
     - Add support for macOS.
     - Fix the install/uninstall process of the library.
-- Version 1.1.9:
-    - Rework the build system to support static build and to generate correct
-    release version.
-    - The build configuration now works with multi-config generators like Visual
-    Studio
-    - The default build configurations in Visual Studio has been changed to :
-        - x64-Debug
-        - x64-Debug-Static
-        - x64-Debug-WithUnitTests
-        - x64-Release
-        - x64-Release-Static
-        - x64-Release-WithUnitTests
 
 ## ⚡️ Quickstart - The 3 client classes
 
@@ -368,6 +318,7 @@ s: 250 2.1.5 OK v2-20020a05620a440200b006fed2788751sm17411101qkp.76 - gsmtp
 c: DATA\r\n
 s: 354  Go ahead v2-20020a05620a440200b006fed2788751sm17411101qkp.76 - gsmtp
 c: Date: Wed, 23 Jul 2025 06:46:47 -0500\r\n
+c: Message-ID: <hcas2ayc50.agn.ddpnfjpgatdk.1afqiav2va2nu32cgll3zw453p@gmail.com>\r\n
 c: From: yourgmailaddress@gmail.com\r\n
 c: To: youremailaddress@localhost\r\n
 c: Subject: This is a test (Subject)\r\n
