@@ -150,11 +150,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         endif()
         set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
     endif()
-    if (NOT DEFINED OPENSSL_INCLUDE_DIRECTORY)
-        set(OPENSSL_INCLUDE_DIRECTORY ${OPENSSL_ROOT_DIR}/include)
-    endif()
-    message(STATUS "Will use OpenSSL include directory ${OPENSSL_INCLUDE_DIRECTORY}")
-    include_directories(${OPENSSL_INCLUDE_DIRECTORY})
+    # Use install interface for include and lib dirs to avoid build path leakage
+    target_include_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
     if (NOT DEFINED OPENSSL_LIBRARY_DIRECTORY)
         set(OPENSSL_LIBRARY_DIRECTORY ${OPENSSL_ROOT_DIR}/lib)
     endif()
