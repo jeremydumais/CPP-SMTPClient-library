@@ -178,7 +178,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
             INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
             INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
     endif()
-    target_link_libraries(${PROJECT_NAME} Ws2_32 ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} crypt32 cryptui)
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} PRIVATE Ws2_32 crypt32 cryptui)
 else()
     #For other compiler create the library as a static library
     add_library(${PROJECT_NAME}
