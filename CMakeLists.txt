@@ -14,7 +14,7 @@ project(SMTPClient C CXX)
 # Define project version
 set(PROJECT_VERSION_MAJOR 1)
 set(PROJECT_VERSION_MINOR 1)
-set(PROJECT_VERSION_PATCH 10)
+set(PROJECT_VERSION_PATCH 13)
 set(PROJECT_VERSION_TWEAK 0)
 
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
@@ -150,11 +150,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         endif()
         set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
     endif()
-    if (NOT DEFINED OPENSSL_INCLUDE_DIRECTORY)
-        set(OPENSSL_INCLUDE_DIRECTORY ${OPENSSL_ROOT_DIR}/include)
-    endif()
-    message(STATUS "Will use OpenSSL include directory ${OPENSSL_INCLUDE_DIRECTORY}")
-    include_directories(${OPENSSL_INCLUDE_DIRECTORY})
     if (NOT DEFINED OPENSSL_LIBRARY_DIRECTORY)
         set(OPENSSL_LIBRARY_DIRECTORY ${OPENSSL_ROOT_DIR}/lib)
     endif()
@@ -163,6 +158,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     message(STATUS "Will use OpenSSL libraries files ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY}")
     add_library(${PROJECT_NAME}
         ${PROJECT_SOURCE_FILES} ${VersionFilesOutputVariable})
+    # Use install interface for include and lib dirs to avoid build path leakage
+    target_include_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
     set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_compile_options(/EHsc)
@@ -178,7 +178,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
             INTERFACE NOMINMAX # avoid Win macro definition of min/max, use std one
             INTERFACE _SCL_SECURE_NO_WARNINGS) # disable security-paranoia warning
     endif()
-    target_link_libraries(${PROJECT_NAME} Ws2_32 ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} crypt32 cryptui)
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} PRIVATE Ws2_32 crypt32 cryptui)
 else()
     #For other compiler create the library as a static library
     add_library(${PROJECT_NAME}
