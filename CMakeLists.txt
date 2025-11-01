@@ -150,11 +150,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         endif()
         set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
     endif()
-    # Use install interface for include and lib dirs to avoid build path leakage
-    target_include_directories(${PROJECT_NAME} PUBLIC
-        $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    )
     if (NOT DEFINED OPENSSL_LIBRARY_DIRECTORY)
         set(OPENSSL_LIBRARY_DIRECTORY ${OPENSSL_ROOT_DIR}/lib)
     endif()
@@ -163,6 +158,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     message(STATUS "Will use OpenSSL libraries files ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY}")
     add_library(${PROJECT_NAME}
         ${PROJECT_SOURCE_FILES} ${VersionFilesOutputVariable})
+    # Use install interface for include and lib dirs to avoid build path leakage
+    target_include_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
     set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_compile_options(/EHsc)
