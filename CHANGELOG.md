@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file
 
+## [1.1.13]
+
+### Fixed
+- Fixed non-transitive include paths for the OpenSSL dependency when building in
+  Windows.
+  The library now uses `target_include_directories()` instead of
+  `include_directories()` to properly expose dependency include paths to
+  consumers during build.
+
 ## [1.1.12]
 
 ### Enhancement

@@ -1,6 +1,6 @@
 # Jed# C++ SMTP Client Library
 
-![Latest version](https://img.shields.io/badge/latest_version-1.1.12-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.13-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 [![Conan Center](https://img.shields.io/conan/v/cpp-smtpclient-library)](https://conan.io/center/recipes/cpp-smtpclient-library)
 [![language](https://img.shields.io/badge/language-c++-0078D4)](#)
@@ -30,6 +30,19 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 <tr>
 <th> Release </th>
 <th> MD5 hash of smtpclient.dll </th>
+</tr>
+
+<tr>
+<td>
+
+[v1.1.13 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.13/CPP-SMTPClient-Library.1.1.13.x64.zip)
+
+</td>
+<td>
+
+tbd
+
+</td>
 </tr>
 
 <tr>
@@ -79,7 +92,12 @@ for previous versions.
 
 ## 📰 What's new
 
-
+- Version 1.1.13:
+    - Fixed non-transitive include paths for the OpenSSL dependency when building in
+    Windows.
+    The library now uses `target_include_directories()` instead of
+    `include_directories()` to properly expose dependency include paths to
+    consumers during build.
 - Version 1.1.12:
     - The default --sep Multipart encapsulation boundary is now a randomly generated
     string to ensure that it doesn't conflict if the --sep string appears in the
