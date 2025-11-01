@@ -26,65 +26,87 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 
 ### Windows
 
+#### v1.1.13 (x64)
+[Download v1.1.13 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.13/CPP-SMTPClient-Library.1.1.13.x64.zip)
+
 <table>
 <tr>
-<th> Release </th>
-<th> MD5 hash of smtpclient.dll </th>
+<th> File </th>
+<th> SHA256 hash </th>
 </tr>
 
 <tr>
+<td>smtpclient.dll</td>
 <td>
-
-[v1.1.13 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.13/CPP-SMTPClient-Library.1.1.13.x64.zip)
-
-</td>
-<td>
-
-tbd
-
+0d7bced61c984d799c123ecb90d396b89d95fbbda2a0be9862f6dddb2d59da43
 </td>
 </tr>
-
 <tr>
+<td>smtpclient.lib</td>
 <td>
-
-[v1.1.12 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.12/CPP-SMTPClient-Library.1.1.12.x64.zip)
-
-</td>
-<td>
-
-fc7613b5d30ff094bd8649dd9707cc02
-
+6b38394043bb6627f906d9fe356451a53f026194567552e496fd280a3152c037
 </td>
 </tr>
-
 <tr>
+<td>libcrypto-3-x64.dll</td>
 <td>
-
-[v1.1.11 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.11/CPP-SMTPClient-Library.1.1.11.x64.zip)
-
-</td>
-<td>
-
-908ec5889757fb4a5874d99d9f6311ee
-
+0732e9fcdd20658e56fc187e04b529f552b5bfb1d2b3355c13d9dfd600b329de
 </td>
 </tr>
-
 <tr>
+<td>libssl-3-x64.dll</td>
 <td>
-
-[v1.1.10 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.10/CPP-SMTPClient-Library.1.1.10.x64.zip)
-
-</td>
-<td>
-
-1a82a5e48b959dfd359860a86df0df66
-
+a4d55966729fdcd162132e8b3cba965fcc315615ad7f65cd0dd7ddc49c7fba7c
 </td>
 </tr>
-
 </table>
+
+#### v1.1.12 (x64)
+[Download v1.1.12 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.12/CPP-SMTPClient-Library.1.1.12.x64.zip)
+
+<table>
+<tr>
+<th> File </th>
+<th> SHA256 hash </th>
+</tr>
+
+<tr>
+<td>smtpclient.dll</td>
+<td>
+1c805617cc90dd61cdce46a397f04a3fe61f3c1455418a0f4f502272eb343178
+</td>
+</tr>
+<tr>
+<td>smtpclient.lib</td>
+<td>
+e399fb88efcfa00c6993437a1ba5fe9a1d8e78de4d09408d7aa0e8f637b2089a
+</td>
+</tr>
+</table>
+
+#### v1.1.11 (x64)
+[Download v1.1.11 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.11/CPP-SMTPClient-Library.1.1.11.x64.zip)
+
+<table>
+<tr>
+<th> File </th>
+<th> SHA256 hash </th>
+</tr>
+
+<tr>
+<td>smtpclient.dll</td>
+<td>
+0b67df89c36a6462f0204db2f5aeb0e05c38aedd6bb85c002da3b6534e2b5d53
+</td>
+</tr>
+<tr>
+<td>smtpclient.lib</td>
+<td>
+5f4758223bfb11cd61625e66fddd5c49b0b9a4b00afe0561959e5beaa74920d3
+</td>
+</tr>
+</table>
+
 
 See the section
 [Releases](https://github.com/jeremydumais/CPP-SMTPClient-library/releases)
@@ -129,11 +151,7 @@ for previous versions.
     ExcludeAttachmentsBytes.
     - Add the Date header field in outgoing emails to comply with RFC 2822.
     This is a required field and it was missing in the previous versions.
-- Version 1.1.10:
-    - Solve the issue where STARTTLS is not recognized if it is returned as the
-    last response from the mail server.
-    - Add support for macOS.
-    - Fix the install/uninstall process of the library.
+
 
 ## ⚡️ Quickstart - The 3 client classes
 
