@@ -1,6 +1,7 @@
+#include <gtest/gtest.h>
+#include <utility>
 #include "../../src/opportunisticsecuresmtpclient.h"
 #include "../../src/cpp/opportunisticsecuresmtpclient.hpp"
-#include <gtest/gtest.h>
 
 using namespace jed_utils;
 

@@ -36,7 +36,7 @@ static uint32_t getPidPortable() {
 
 // LHS regex: four dot-separated base36 segments
 static const std::regex kLhsRegex() {
-   return std::regex("^([a-z0-9]+\\.){3}[a-z0-9]+$");
+    return std::regex("^([a-z0-9]+\\.){3}[a-z0-9]+$");
 }
 
 // Full Message-ID regex with brackets and RHS hotmail.com

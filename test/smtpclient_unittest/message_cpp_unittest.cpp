@@ -1,5 +1,8 @@
-#include "../../src/cpp/message.hpp"
 #include <gtest/gtest.h>
+#include <string>
+#include <utility>
+#include <vector>
+#include "../../src/cpp/message.hpp"
 
 using namespace jed_utils::cpp;
 

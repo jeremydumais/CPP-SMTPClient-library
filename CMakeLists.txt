@@ -36,7 +36,7 @@ if(ENABLE_CLANG_TIDY)
         DOC "Path to clang-tidy executable"
         )
 
-    if(CLANG_TIDY_EXE AND ${})
+    if(CLANG_TIDY_EXE)
       set(CLANG_TIDY_ARGS
         "${CLANG_TIDY_EXE}"
         "-header-filter=."

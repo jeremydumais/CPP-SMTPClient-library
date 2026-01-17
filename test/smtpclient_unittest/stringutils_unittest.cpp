@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <string>
 #include "../../src/stringutils.h"
 
 using namespace jed_utils;

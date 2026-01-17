@@ -1,6 +1,7 @@
+#include <gtest/gtest.h>
+#include <utility>
 #include "../../src/smtpclient.h"
 #include "../../src/cpp/smtpclient.hpp"
-#include <gtest/gtest.h>
 
 using namespace jed_utils;
 

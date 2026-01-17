@@ -1,5 +1,6 @@
-#include "../../src/message.h"
 #include <gtest/gtest.h>
+#include <utility>
+#include "../../src/message.h"
 
 using namespace jed_utils;
 

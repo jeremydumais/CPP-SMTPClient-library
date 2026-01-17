@@ -4,6 +4,7 @@
 using namespace jed_utils::cpp;
 
 namespace jed_utils_unittest {
+
 namespace cpp_plaintextmessage {
 
 TEST(PlaintextMessage_Constructor, WithValidArgs_ReturnSuccess) {
@@ -59,5 +60,6 @@ TEST(PlaintextMessage_ConversionToStdPlaintextMessage, WithExtendedArgs_ReturnSu
     ASSERT_EQ(2, stdMsg.getAttachmentsCount());
 }
 
-}  // namespace cpp_plainmessage
+}  // namespace cpp_plaintextmessage
+
 }  // namespace jed_utils_unittest
