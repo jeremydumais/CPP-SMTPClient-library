@@ -15,7 +15,7 @@ project(SMTPClient C CXX)
 set(PROJECT_VERSION_MAJOR 1)
 set(PROJECT_VERSION_MINOR 1)
 set(PROJECT_VERSION_PATCH 13)
-set(PROJECT_VERSION_TWEAK 0)
+set(PROJECT_VERSION_TWEAK 1)
 
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 set(PROJECT_VERSION_FULL "${PROJECT_VERSION}.${PROJECT_VERSION_TWEAK}")
@@ -29,27 +29,41 @@ set(PROJECT_UNITTEST_NAME   "smtpclient_unittests")
 
 find_package(OpenSSL REQUIRED)
 
-find_program(
-    CLANG_TIDY_EXE
-    NAMES "clang-tidy"
-    DOC "Path to clang-tidy executable"
-    )
-if(NOT CLANG_TIDY_EXE)
-    message(STATUS "clang-tidy not found.")
-else()
-    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-    set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-header-filter=.;
-    -line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}];
-    -checks=*,
-    -llvm-header-guard,
-    -google-build-using-namespace,
-    -fuchsia-default-arguments,
-    -modernize-pass-by-value,
-    -fuchsia-overloaded-operator,
-    -cppcoreguidelines-pro-bounds-pointer-arithmetic,
-    -cppcoreguidelines-owning-memory,
-    -modernize-use-trailing-return-type,
-    -fuchsia-default-arguments-calls")
+if(ENABLE_CLANG_TIDY)
+    find_program(
+        CLANG_TIDY_EXE
+        NAMES "clang-tidy"
+        DOC "Path to clang-tidy executable"
+        )
+
+    if(CLANG_TIDY_EXE AND ${})
+      set(CLANG_TIDY_ARGS
+        "${CLANG_TIDY_EXE}"
+        "-header-filter=."
+        "-checks=*,\
+    -llvm-header-guard,\
+    -google-build-using-namespace,\
+    -fuchsia-default-arguments,\
+    -modernize-pass-by-value,\
+    -fuchsia-overloaded-operator,\
+    -cppcoreguidelines-pro-bounds-pointer-arithmetic,\
+    -cppcoreguidelines-owning-memory,\
+    -modernize-use-trailing-return-type,\
+    -fuchsia-default-arguments-calls"
+      )
+
+      # IMPORTANT: line-filter must be ONE token, no newlines
+      set(CLANG_TIDY_LINE_FILTER
+        "-line-filter=[{\"name\":\"src/base64.cpp\",\"lines\":[[1000,1000]]},{\"name\":\".h\"},{\"name\":\".cpp\"}]"
+      )
+
+      set(CMAKE_CXX_CLANG_TIDY
+        ${CLANG_TIDY_ARGS}
+        ${CLANG_TIDY_LINE_FILTER}
+      )
+    else()
+        message(STATUS "clang-tidy not found.")
+    endif()
 endif()
 
 # Set directories
@@ -221,7 +235,7 @@ else()
             "-Wformat=2" # warn on security issues around functions that format output (ie printf)
             "-fPIC"
             )
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" )
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         if(NOT ${CMAKE_HOST_WIN32})
             target_compile_options(${PROJECT_NAME}
                 PRIVATE "-Wfatal-errors" # stops on first error
@@ -233,17 +247,17 @@ else()
                 "-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
                 "-fPIC"
                 )
-            else()
-                target_compile_options(${PROJECT_NAME}
-                    PRIVATE "-Wfatal-errors" # stops on first error
-                    "-Wall" # enables all the warnings about constructions
-                    "-Wextra" # Print extra warning messages"
-                    "-Werror" # Make all warnings into errors.
-                    "-Wno-unused-lambda-capture" # FIX: It is necessary when building on MSVC
-                    "-pedantic" # Issue all the warnings demanded by strict ISO C and ISO C++
-                    "-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
-                    )
-            endif()
+        else()
+            target_compile_options(${PROJECT_NAME}
+                PRIVATE "-Wfatal-errors" # stops on first error
+                "-Wall" # enables all the warnings about constructions
+                "-Wextra" # Print extra warning messages"
+                "-Werror" # Make all warnings into errors.
+                "-Wno-unused-lambda-capture" # FIX: It is necessary when building on MSVC
+                "-pedantic" # Issue all the warnings demanded by strict ISO C and ISO C++
+                "-pedantic-errors" # Like -pedantic, except that errors are produced rather than warnings http://stackoverflow.com/questions/30255294/how-to-hide-extra-output-from-pragma-message
+                )
+        endif()
     endif()
 endif()
 
