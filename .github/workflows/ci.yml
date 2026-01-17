@@ -88,7 +88,8 @@ jobs:
             cmake ninja g++ clang \
             openssl-dev \
             linux-headers \
-            bash
+            bash \
+            git
       - name: Configure
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=ON
