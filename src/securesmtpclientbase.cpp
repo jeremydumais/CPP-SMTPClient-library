@@ -260,7 +260,7 @@ int SecureSMTPClientBase::startTLSNegotiation() {
 int SecureSMTPClientBase::getServerSecureIdentification() {
     const int EHLO_SUCCESS_CODE = 250;
     addCommunicationLogItem("Contacting the server again but via the secure channel...");
-    std::string ehlo { "ehlo localhost\r\n"s };
+    std::string ehlo { "ehlo " + getServerName() + "\r\n" };
     addCommunicationLogItem(ehlo.c_str());
     int tls_command_return_code = sendCommandWithFeedback(ehlo.c_str(),
             SSL_CLIENT_INITSECURECLIENT_ERROR,

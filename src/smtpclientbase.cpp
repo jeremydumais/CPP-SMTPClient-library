@@ -657,7 +657,7 @@ int SMTPClientBase::setSocketToBlocking() {
 
 int SMTPClientBase::sendServerIdentification() {
     const int EHLO_SUCCESS_CODE = 250;
-    std::string ehlo { "ehlo localhost\r\n" };
+    std::string ehlo { "ehlo " + getServerName() + "\r\n" };
     addCommunicationLogItem(ehlo.c_str());
     int command_return_code = sendCommandWithFeedback(ehlo.c_str(),
             SOCKET_INIT_CLIENT_SEND_EHLO_ERROR,
