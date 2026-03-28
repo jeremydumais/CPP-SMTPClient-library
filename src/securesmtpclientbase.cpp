@@ -102,6 +102,7 @@ void SecureSMTPClientBase::setAcceptSelfSignedCert(bool pValue) {
 }
 
 void SecureSMTPClientBase::cleanup() {
+    mIsInCleanupMode = true;
     if (getBatchMode() && mIsConnected) {
         sendQuitCommand();
     }
@@ -111,6 +112,11 @@ void SecureSMTPClientBase::cleanup() {
     }
     mCTX = nullptr;
     if (mBIO != nullptr) {
+        SSL *ssl;
+        BIO_get_ssl(mBIO, &ssl);
+        if (ssl) {
+            SSL_set_quiet_shutdown(ssl, 1); // prevents close_notify write
+        }
         BIO_free_all(mBIO);
     }
     mBIO = nullptr;
@@ -135,6 +141,7 @@ void SecureSMTPClientBase::cleanup() {
     }
     setWSAStopped();
 #endif
+    mIsInCleanupMode = false;
 }
 
 BIO* SecureSMTPClientBase::getBIO() const {
@@ -288,7 +295,9 @@ int SecureSMTPClientBase::getServerSecureIdentification() {
 int SecureSMTPClientBase::sendCommand(const char *pCommand, int pErrorCode) {
     if (BIO_puts(mBIO, pCommand) < 0) {
         setLastSocketErrNo(static_cast<int>(ERR_get_error()));
-        cleanup();
+        if (!mIsInCleanupMode) {
+            cleanup();
+        }
         return pErrorCode;
     }
     return 0;
@@ -301,7 +310,9 @@ int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErr
     }
     if (BIO_puts(mBIO, pCommand) < 0) {
         setLastSocketErrNo(static_cast<int>(ERR_get_error()));
-        cleanup();
+        if (!mIsInCleanupMode) {
+            cleanup();
+        }
         return pErrorCode;
     }
 
@@ -310,7 +321,9 @@ int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErr
         return serverReplyCode;
     }
 
-    cleanup();
+    if (!mIsInCleanupMode) {
+        cleanup();
+    }
     return pTimeoutCode;
 }
 
@@ -318,6 +331,7 @@ int SecureSMTPClientBase::getServerReply() {
     unsigned int waitTime {0};
     int bytes_received {0};
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
+    
     while ((bytes_received = BIO_read(mBIO, outbuf, SERVERRESPONSE_BUFFER_LENGTH)) <= 0 && waitTime < getCommandTimeout()) {
         crossPlatformSleep(1);
         waitTime += 1;

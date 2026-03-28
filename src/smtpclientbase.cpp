@@ -52,6 +52,7 @@ using namespace jed_utils;
 
 SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     : mIsConnected(false),
+      mIsInCleanupMode(false),
       mServerName(nullptr),
       mPort(pPort),
       mBatchMode(false),
@@ -715,7 +716,9 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode) {
 #endif
     if (send(mSock, pCommand, commandSize, 0) == -1) {
         setLastSocketErrNo(errno);
-        cleanup();
+        if (!mIsInCleanupMode) {
+            cleanup();
+        }
         return pErrorCode;
     }
     return 0;

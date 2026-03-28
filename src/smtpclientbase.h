@@ -170,6 +170,8 @@ class SMTPCLIENTBASE_API SMTPClientBase {
 
  protected:
     bool mIsConnected;
+    // The cleanup mode is use to ensure that if the Quit command fail, we don't call cleanup again.
+    bool mIsInCleanupMode;
     virtual void cleanup() = 0;
     int getSocketFileDescriptor() const;
     void clearSocketFileDescriptor();
