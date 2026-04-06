@@ -74,6 +74,9 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     /** Return the server port number. */
     unsigned int getServerPort() const;
 
+    /** Return the ehlo domain name. */
+    const char* getEhloDomain() const;
+
     /** Return the batch mode enable flag. */
     bool getBatchMode() const;
 
@@ -102,6 +105,33 @@ class SMTPCLIENTBASE_API SMTPClientBase {
      *  Example: 25, 465, 587
      */
     void setServerPort(unsigned int pPort);
+
+    /**
+     * @brief Sets the domain name used in the EHLO command during SMTP handshake.
+     *
+     * This value represents the identity of the client as presented to the SMTP
+     * server (i.e., the argument sent with the EHLO command). It should typically
+     * be a fully qualified domain name (FQDN) that resolves to the client host.
+     *
+     * If no value is explicitly set, a default value of "localhost" is used.
+     * Note that using "localhost" or a non-qualified hostname may be rejected
+     * by strict SMTP servers or negatively impact deliverability.
+     *
+     * According to RFC 5321, the EHLO parameter should be either:
+     *  - A fully qualified domain name (e.g., "client.example.com"), or
+     *  - An address literal (e.g., "[192.168.1.10]") if no domain is available.
+     *
+     * @param pEhloDomain Null-terminated string representing the EHLO domain.
+     *
+     * @throws std::invalid_argument If pEhloDomain is null or empty.
+     *
+     * @note This value is independent from the SMTP server address used for the connection.
+     *
+     * @example
+     *   setEhloDomain("client.example.com");
+     *   setEhloDomain("[192.168.1.10]");
+     */
+    void setEhloDomain(const char* pEhloDomain);
 
     /**
      *  @brief  Set the batch mode flag.
@@ -168,16 +198,6 @@ class SMTPCLIENTBASE_API SMTPClientBase {
 
     int sendMail(const Message &pMsg);
 
-    /** Return the hostname name. */
-    const char* getHostName() const;
-
-    /**
-     *  @brief  Set the host name.
-     *  @param pHostName A char array pointer of the host name.
-     *  Example: smtp.domainexample.com
-     */
-    void setHostName(const char* pHostName);
-
  protected:
     bool mIsConnected;
     // The cleanup mode is use to ensure that if the Quit command fail, we don't call cleanup again.
@@ -241,8 +261,8 @@ class SMTPCLIENTBASE_API SMTPClientBase {
 
  private:
     char *mServerName;
-    char *mHostName;
     unsigned int mPort;
+    char *mEhloDomain;
     bool mBatchMode;
     char *mCommunicationLog;
     size_t mCommunicationLogSize = 0;

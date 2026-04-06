@@ -15,6 +15,10 @@ unsigned int SmtpClient::getServerPort() const {
     return jed_utils::SmtpClient::getServerPort();
 }
 
+std::string SmtpClient::getEhloDomain() const {
+    return jed_utils::SmtpClient::getEhloDomain();
+}
+
 bool SmtpClient::getBatchMode() const {
     return jed_utils::SmtpClient::getBatchMode();
 }
@@ -41,6 +45,10 @@ void SmtpClient::setServerName(const std::string &pServerName) {
 
 void SmtpClient::setServerPort(unsigned int pPort) {
     jed_utils::SmtpClient::setServerPort(pPort);
+}
+
+void SmtpClient::setEhloDomain(const std::string &pEhloDomain) {
+    jed_utils::SmtpClient::setEhloDomain(pEhloDomain.c_str());
 }
 
 void SmtpClient::setBatchMode(bool pEnabled) {

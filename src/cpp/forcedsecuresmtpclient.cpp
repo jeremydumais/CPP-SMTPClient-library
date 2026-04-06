@@ -15,6 +15,10 @@ unsigned int ForcedSecureSMTPClient::getServerPort() const {
     return jed_utils::ForcedSecureSMTPClient::getServerPort();
 }
 
+std::string ForcedSecureSMTPClient::getEhloDomain() const {
+    return jed_utils::ForcedSecureSMTPClient::getEhloDomain();
+}
+
 bool ForcedSecureSMTPClient::getBatchMode() const {
     return jed_utils::ForcedSecureSMTPClient::getBatchMode();
 }
@@ -49,6 +53,10 @@ void ForcedSecureSMTPClient::setServerPort(unsigned int pPort) {
 
 void ForcedSecureSMTPClient::setBatchMode(bool pEnabled) {
     jed_utils::ForcedSecureSMTPClient::setBatchMode(pEnabled);
+}
+
+void ForcedSecureSMTPClient::setEhloDomain(const std::string &pEhloDomain) {
+    jed_utils::ForcedSecureSMTPClient::setEhloDomain(pEhloDomain.c_str());
 }
 
 void ForcedSecureSMTPClient::setCommandTimeout(unsigned int pTimeOutInSeconds) {

@@ -267,8 +267,8 @@ int SecureSMTPClientBase::startTLSNegotiation() {
 int SecureSMTPClientBase::getServerSecureIdentification() {
     const int EHLO_SUCCESS_CODE = 250;
     addCommunicationLogItem("Contacting the server again but via the secure channel...");
-    std::string hostname{ getHostName() };
-    std::string ehlo { "ehlo " + hostname + "\r\n"s };
+    std::string ehloDomain { getEhloDomain() };
+    std::string ehlo { "ehlo " + ehloDomain + "\r\n"s };
     addCommunicationLogItem(ehlo.c_str());
     int tls_command_return_code = sendCommandWithFeedback(ehlo.c_str(),
             SSL_CLIENT_INITSECURECLIENT_ERROR,
@@ -332,7 +332,7 @@ int SecureSMTPClientBase::getServerReply() {
     unsigned int waitTime {0};
     int bytes_received {0};
     char outbuf[SERVERRESPONSE_BUFFER_LENGTH];
-    
+
     while ((bytes_received = BIO_read(mBIO, outbuf, SERVERRESPONSE_BUFFER_LENGTH)) <= 0 && waitTime < getCommandTimeout()) {
         crossPlatformSleep(1);
         waitTime += 1;
