@@ -801,6 +801,9 @@ void SMTPClientBase::setLastServerResponse(const char *pResponse) {
 int SMTPClientBase::authenticateClient() {
     if (mCredential != nullptr) {
         auto recommenedAuthOption = mCredential->getRecommendedAuthOption();
+        if (mAuthOptions == nullptr) {
+            return CLIENT_AUTHENTICATION_METHOD_NOTSUPPORTED;
+        }
         if (mAuthOptions->Plain
             && (recommenedAuthOption == RecommendedAuthenticationMethod::kImplicit
                     || recommenedAuthOption == RecommendedAuthenticationMethod::kPlain)) {
