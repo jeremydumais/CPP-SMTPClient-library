@@ -54,6 +54,7 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     : mIsConnected(false),
       mIsInCleanupMode(false),
       mServerName(nullptr),
+      mHostName(nullptr),
       mPort(pPort),
       mBatchMode(false),
       mCommunicationLog(nullptr),
@@ -74,12 +75,26 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     mServerName = new char[server_name_len + 1];
     strncpy(mServerName, pServerName, server_name_len);
     mServerName[server_name_len] = '\0';
+    const char* pHostName = "localhost";
+    std::string hostname_str{ pHostName == nullptr ? "" : pHostName };
+    if (pHostName == nullptr || strcmp(pHostName, "") == 0 || StringUtils::trim(hostname_str).empty()) {
+        throw std::invalid_argument("Host name cannot be null or empty");
+    }
+    size_t host_name_len = strlen(pHostName);
+    mHostName = new char[host_name_len + 1];
+    strncpy(mHostName, pHostName, host_name_len);
+    mHostName[host_name_len] = '\0';
     generate_separator(mSeparator);
+
+
+    setHostName("localhost");
 }
 
 SMTPClientBase::~SMTPClientBase() {
     delete[] mServerName;
     mServerName = nullptr;
+    delete[] mHostName;
+    mHostName = nullptr;
     delete[] mCommunicationLog;
     mCommunicationLog = nullptr;
     delete[] mLastServerResponse;
@@ -94,6 +109,7 @@ SMTPClientBase::~SMTPClientBase() {
 SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
     : mIsConnected(false),
       mServerName(new char[strlen(other.mServerName) + 1]),
+      mHostName(new char[strlen(other.mHostName) + 1]),
       mPort(other.mPort),
       mBatchMode(other.mBatchMode),
       mCommunicationLog(other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr),
@@ -111,6 +127,9 @@ SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
     size_t server_name_len = strlen(other.mServerName);
     strncpy(mServerName, other.mServerName, server_name_len);
     mServerName[server_name_len] = '\0';
+    size_t host_name_len = strlen(other.mHostName);
+    strncpy(mHostName, other.mHostName, host_name_len);
+    mHostName[host_name_len] = '\0';
     if (mCommunicationLog != nullptr) {
         size_t communication_log_len = strlen(other.mCommunicationLog);
         strncpy(mCommunicationLog, other.mCommunicationLog, communication_log_len);
@@ -136,6 +155,11 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
         mServerName = new char[server_name_len + 1];
         strncpy(mServerName, other.mServerName, server_name_len);
         mServerName[server_name_len] = '\0';
+        delete[] mHostName;
+        size_t host_name_len = strlen(other.mHostName);
+        mHostName = new char[host_name_len + 1];
+        strncpy(mHostName, other.mHostName, server_name_len);
+        mHostName[host_name_len] = '\0';
         // mPort
         mPort = other.mPort;
         // mBatchMode
@@ -177,6 +201,7 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
 SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     : mIsConnected(other.mIsConnected),
       mServerName(other.mServerName),
+      mHostName(other.mHostName),
       mPort(other.mPort),
       mBatchMode(other.mBatchMode),
       mCommunicationLog(other.mCommunicationLog),
@@ -191,6 +216,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
       mKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands),
       sendCommandPtr(&SMTPClientBase::sendCommand),
       sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback) {
+    other.mServerName = nullptr;
     other.mServerName = nullptr;
     other.mPort = 0;
     other.mBatchMode = false;
@@ -215,12 +241,14 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
 SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
     if (this != &other) {
         delete[] mServerName;
+        delete[] mHostName;
         delete[] mCommunicationLog;
         delete[] mLastServerResponse;
         delete mAuthOptions;
         delete mCredential;
         // Copy the data pointer and its length from the source object.
         mServerName = other.mServerName;
+        mHostName = other.mHostName;
         mPort = other.mPort;
         mBatchMode = other.mBatchMode;
         mCommunicationLog = other.mCommunicationLog;
@@ -240,6 +268,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         // Release the data pointer from the source object so that
         // the destructor does not free the memory multiple times.
         other.mServerName = nullptr;
+        other.mHostName = nullptr;
         other.mPort = 0;
         other.mBatchMode = false;
         other.mCommunicationLog = nullptr;
@@ -410,6 +439,22 @@ int SMTPClientBase::sendMail(const Message &pMsg) {
     return 0;
 }
 
+
+const char* SMTPClientBase::getHostName() const {
+    return mHostName;
+}
+
+void SMTPClientBase::setHostName(const char* pHostName) {
+    std::string hostname_str{ pHostName == nullptr ? "" : pHostName };
+    if (pHostName == nullptr || strcmp(pHostName, "") == 0 || StringUtils::trim(hostname_str).empty()) {
+        throw std::invalid_argument("Host name cannot be null or empty");
+    }
+    delete[]mHostName;
+    size_t host_name_len = strlen(pHostName);
+    mHostName = new char[host_name_len + 1];
+    strncpy(mHostName, pHostName, host_name_len);
+    mHostName[host_name_len] = '\0';
+}
 
 int SMTPClientBase::initializeSession() {
     delete[] mCommunicationLog;
@@ -658,7 +703,8 @@ int SMTPClientBase::setSocketToBlocking() {
 
 int SMTPClientBase::sendServerIdentification() {
     const int EHLO_SUCCESS_CODE = 250;
-    std::string ehlo { "ehlo localhost\r\n" };
+    std::string hostname{ getHostName() };
+    std::string ehlo{ "ehlo " + hostname + "\r\n" };
     addCommunicationLogItem(ehlo.c_str());
     int command_return_code = sendCommandWithFeedback(ehlo.c_str(),
             SOCKET_INIT_CLIENT_SEND_EHLO_ERROR,

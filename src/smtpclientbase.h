@@ -168,6 +168,16 @@ class SMTPCLIENTBASE_API SMTPClientBase {
 
     int sendMail(const Message &pMsg);
 
+    /** Return the hostname name. */
+    const char* getHostName() const;
+
+    /**
+     *  @brief  Set the host name.
+     *  @param pHostName A char array pointer of the host name.
+     *  Example: smtp.domainexample.com
+     */
+    void setHostName(const char* pHostName);
+
  protected:
     bool mIsConnected;
     // The cleanup mode is use to ensure that if the Quit command fail, we don't call cleanup again.
@@ -231,6 +241,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
 
  private:
     char *mServerName;
+    char *mHostName;
     unsigned int mPort;
     bool mBatchMode;
     char *mCommunicationLog;

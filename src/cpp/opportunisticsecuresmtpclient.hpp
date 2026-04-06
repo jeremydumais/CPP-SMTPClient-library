@@ -150,6 +150,16 @@ class CPP_OPPORTUNISTICSECURESMTPCLIENT_API OpportunisticSecureSMTPClient : priv
 
     int sendMail(const jed_utils::Message &pMsg);
 
+    /** Return the hostname name. */
+    std::string getHostName() const;
+
+    /**
+     *  @brief  Set the host name.
+     *  @param pHostName A char array pointer of the host name.
+     *  Example: smtp.domainexample.com
+     */
+    void setHostName(const std::string &pHostName);
+
  protected:
     static int extractReturnCode(const std::string &pOutput);
     static jed_utils::ServerAuthOptions *extractAuthenticationOptions(const std::string &pEhloOutput);

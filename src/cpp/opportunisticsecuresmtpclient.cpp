@@ -99,3 +99,11 @@ jed_utils::ServerAuthOptions *OpportunisticSecureSMTPClient::extractAuthenticati
 int OpportunisticSecureSMTPClient::sendMail(const jed_utils::Message &pMsg) {
     return jed_utils::OpportunisticSecureSMTPClient::sendMail(pMsg);
 }
+
+std::string OpportunisticSecureSMTPClient::getHostName() const {
+    return jed_utils::OpportunisticSecureSMTPClient::getHostName();
+}
+
+void OpportunisticSecureSMTPClient::setHostName(const std::string &pHostName) {
+    jed_utils::OpportunisticSecureSMTPClient::setHostName(pHostName.c_str());
+}
