@@ -1,0 +1,31 @@
+Source: smtpclient
+Section: libs
+Priority: optional
+Maintainer: Jan Koester <jan.koester@tuxist.de>
+Build-Depends: debhelper-compat (= 13), cmake (>= 3.10),
+ libssl-dev, pkg-config
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: libsmtpclient
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: C++ SMTP client library
+ A cross-platform C++ SMTP client library supporting TLS 1.3
+ via OpenSSL. Provides three client classes for different
+ security levels: OpportunisticSecureSMTPClient (STARTTLS),
+ ForcedSecureSMTPClient (immediate SSL/TLS), and SmtpClient
+ (plain). Includes both C++ and C interfaces.
+
+Package: libsmtpclient-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: libsmtpclient (= ${binary:Version}), ${misc:Depends}, libssl-dev
+Description: C++ SMTP client library - development files
+ A cross-platform C++ SMTP client library supporting TLS 1.3
+ via OpenSSL.
+ .
+ This package contains the headers and CMake config files
+ needed for development against libsmtpclient.

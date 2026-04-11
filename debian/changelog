@@ -1,0 +1,5 @@
+smtpclient (1.1.13+1) unstable; urgency=medium
+
+  * Initial Debian packaging with libsmtpclient and libsmtpclient-dev packages
+
+ -- Jan Koester <jan.koester@tuxist.de>  Sat, 11 Apr 2026 00:00:00 +0200

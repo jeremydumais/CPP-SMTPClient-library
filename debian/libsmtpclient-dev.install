@@ -1,0 +1,3 @@
+usr/lib/*/libsmtpclient.so
+usr/lib/*/cmake/smtpclient/
+usr/include/smtpclient/
