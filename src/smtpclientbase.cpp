@@ -1210,9 +1210,9 @@ ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhl
             break;
         }
         ehlo_output.erase(0, ehlo_character_index + DELIMITER.length());
-        if (!ehlo_output.empty() && retVal == nullptr) {
-            retVal = ParseAuthenticationOptions(ehlo_output);
-        }
+    }
+    if (!ehlo_output.empty() && retVal == nullptr) {
+        retVal = ParseAuthenticationOptions(ehlo_output);
     }
     return retVal;
 }
