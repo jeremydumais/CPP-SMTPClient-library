@@ -2,9 +2,33 @@
 
 All notable changes to this project will be documented in this file
 
+## [1.1.14]
+
+### Bug fixes
+
+- Fixed an endless recursion issue in batch mode when the SMTP server connection
+  was lost during a send operation.
+  Thanks to [jandehh](https://github.com/jandehh) for reporting this.
+- Fixed a crash during authentication when no compatible authentication protocol
+  was found by the SMTP server.
+  Thanks to [jade1964](https://github.com/jade1964) for reporting this.
+- Fixed a missing `stdint.h` include that prevented the library from building on
+  musl-based Linux distributions such as Alpine Linux.
+  Thanks to [Tuxist](https://github.com/Tuxist) for reporting this.
+
+### Enhancement
+
+- Added support for configuring the domain used in the EHLO command instead of
+  always using `localhost`.
+  Some SMTP servers reject `EHLO localhost`; the library now exposes accessors and
+  mutators to configure the EHLO domain while keeping `localhost` as the default
+  value to preserve existing behavior.
+  This change has been made by [viperman1271](https://github.com/viperman1271).
+  Many thanks!
+
 ## [1.1.13]
 
-### Fixed
+### Bug fixes
 - Fixed non-transitive include paths for the OpenSSL dependency when building in
   Windows.
   The library now uses `target_include_directories()` instead of

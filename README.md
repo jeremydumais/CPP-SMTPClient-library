@@ -1,6 +1,6 @@
 # Jed# C++ SMTP Client Library
 
-![Latest version](https://img.shields.io/badge/latest_version-1.1.13-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.14-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 [![Conan Center](https://img.shields.io/conan/v/cpp-smtpclient-library)](https://conan.io/center/recipes/cpp-smtpclient-library)
 ![Vcpkg Version](https://img.shields.io/vcpkg/v/cpp-smtpclient-library)
