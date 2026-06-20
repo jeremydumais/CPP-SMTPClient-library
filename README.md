@@ -27,6 +27,41 @@ Follow these guides for platform-specific instructions: [Windows](https://github
 
 ### Windows
 
+#### v1.1.14 (x64)
+[Download v1.1.14 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.14/CPP-SMTPClient-Library.1.1.14.x64.zip)
+
+<table>
+<tr>
+<th> File </th>
+<th> SHA256 hash </th>
+</tr>
+
+<tr>
+<td>smtpclient.dll</td>
+<td>
+699dfea5e3338dbec218005220a9649b6959dc46692d210933a8231af9a84b6f
+</td>
+</tr>
+<tr>
+<td>smtpclient.lib</td>
+<td>
+641565964cb41fa3c7e8c8ec2d36e5c0af300ae7c27d6dfa433033b06a6539bd
+</td>
+</tr>
+<tr>
+<td>libcrypto-3-x64.dll</td>
+<td>
+2c00c1bac843c0e5803d48c539e2e7e411c8bc3db77ea0210cc945358fe5c90b
+</td>
+</tr>
+<tr>
+<td>libssl-3-x64.dll</td>
+<td>
+7c9c796f9590bb8e8a5c881ef697df33864847e80f8cf641028be9bbfbae0332
+</td>
+</tr>
+</table>
+
 #### v1.1.13 (x64)
 [Download v1.1.13 (x64)](https://github.com/jeremydumais/CPP-SMTPClient-library/releases/download/v1.1.13/CPP-SMTPClient-Library.1.1.13.x64.zip)
 
