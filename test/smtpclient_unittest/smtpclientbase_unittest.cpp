@@ -458,6 +458,22 @@ TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithAuthPlai
     ASSERT_FALSE(options->XOAuth);
 }
 
+TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithAuthPlainLoginEhloWithoutDashInTheMiddle_ReturnOptions) {
+    ServerAuthOptions *options = TypeParam::extractAuthenticationOptions("250-jedubuntuserver Hello [192.168.1.144]Haraka is at your service.\r\n"
+"250-PIPELINING\r\n"
+"250-8BITMIME\r\n"
+"250 AUTH PLAIN LOGIN\r\n"
+"250-SMTPUTF8\r\n"
+"250-SIZE 0");
+    ASSERT_NE(nullptr, options);
+    ASSERT_TRUE(options->Plain);
+    ASSERT_TRUE(options->Login);
+    ASSERT_FALSE(options->XOAuth2);
+    ASSERT_FALSE(options->Plain_ClientToken);
+    ASSERT_FALSE(options->OAuthBearer);
+    ASSERT_FALSE(options->XOAuth);
+}
+
 TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithAuthMultipleEhlo_ReturnOptions) {
     ServerAuthOptions *options = TypeParam::extractAuthenticationOptions("250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH\r\n");
     ASSERT_NE(nullptr, options);
