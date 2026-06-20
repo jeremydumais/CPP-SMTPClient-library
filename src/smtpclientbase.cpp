@@ -52,8 +52,10 @@ using namespace jed_utils;
 
 SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     : mIsConnected(false),
+      mIsInCleanupMode(false),
       mServerName(nullptr),
       mPort(pPort),
+      mEhloDomain(nullptr),
       mBatchMode(false),
       mCommunicationLog(nullptr),
       mLastServerResponse(nullptr),
@@ -73,12 +75,21 @@ SMTPClientBase::SMTPClientBase(const char *pServerName, unsigned int pPort)
     mServerName = new char[server_name_len + 1];
     strncpy(mServerName, pServerName, server_name_len);
     mServerName[server_name_len] = '\0';
+
+    const char* defaultEhloDomain = "localhost";
+    size_t ehlo_domain_len = strlen(defaultEhloDomain);
+    mEhloDomain = new char[ehlo_domain_len + 1];
+    strncpy(mEhloDomain, defaultEhloDomain, ehlo_domain_len);
+    mEhloDomain[ehlo_domain_len] = '\0';
+
     generate_separator(mSeparator);
 }
 
 SMTPClientBase::~SMTPClientBase() {
     delete[] mServerName;
     mServerName = nullptr;
+    delete[] mEhloDomain;
+    mEhloDomain = nullptr;
     delete[] mCommunicationLog;
     mCommunicationLog = nullptr;
     delete[] mLastServerResponse;
@@ -94,6 +105,7 @@ SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
     : mIsConnected(false),
       mServerName(new char[strlen(other.mServerName) + 1]),
       mPort(other.mPort),
+      mEhloDomain(new char[strlen(other.mEhloDomain) + 1]),
       mBatchMode(other.mBatchMode),
       mCommunicationLog(other.mCommunicationLog != nullptr ? new char[strlen(other.mCommunicationLog) + 1]: nullptr),
       mCommunicationLogSize(other.mCommunicationLogSize),
@@ -110,6 +122,11 @@ SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
     size_t server_name_len = strlen(other.mServerName);
     strncpy(mServerName, other.mServerName, server_name_len);
     mServerName[server_name_len] = '\0';
+
+    size_t ehlo_domain_len = strlen(other.mEhloDomain);
+    strncpy(mEhloDomain, other.mEhloDomain, ehlo_domain_len);
+    mEhloDomain[ehlo_domain_len] = '\0';
+
     if (mCommunicationLog != nullptr) {
         size_t communication_log_len = strlen(other.mCommunicationLog);
         strncpy(mCommunicationLog, other.mCommunicationLog, communication_log_len);
@@ -137,6 +154,12 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
         mServerName[server_name_len] = '\0';
         // mPort
         mPort = other.mPort;
+        // mEhloDomain
+        delete[] mEhloDomain;
+        size_t ehlo_domain_len = strlen(other.mEhloDomain);
+        mEhloDomain = new char[ehlo_domain_len + 1];
+        strncpy(mEhloDomain, other.mEhloDomain, ehlo_domain_len);
+        mEhloDomain[ehlo_domain_len] = '\0';
         // mBatchMode
         mBatchMode = other.mBatchMode;
         // mCommunicationLog
@@ -177,6 +200,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     : mIsConnected(other.mIsConnected),
       mServerName(other.mServerName),
       mPort(other.mPort),
+      mEhloDomain(other.mEhloDomain),
       mBatchMode(other.mBatchMode),
       mCommunicationLog(other.mCommunicationLog),
       mCommunicationLogSize(other.mCommunicationLogSize),
@@ -192,6 +216,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
       sendCommandWithFeedbackPtr(&SMTPClientBase::sendCommandWithFeedback) {
     other.mServerName = nullptr;
     other.mPort = 0;
+    other.mEhloDomain = nullptr;
     other.mBatchMode = false;
     other.mCommunicationLog = nullptr;
     other.mCommunicationLogSize = 0;
@@ -214,6 +239,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
 SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
     if (this != &other) {
         delete[] mServerName;
+        delete[] mEhloDomain;
         delete[] mCommunicationLog;
         delete[] mLastServerResponse;
         delete mAuthOptions;
@@ -221,6 +247,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         // Copy the data pointer and its length from the source object.
         mServerName = other.mServerName;
         mPort = other.mPort;
+        mEhloDomain = other.mEhloDomain;
         mBatchMode = other.mBatchMode;
         mCommunicationLog = other.mCommunicationLog;
         mCommunicationLogSize = other.mCommunicationLogSize;
@@ -240,6 +267,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         // the destructor does not free the memory multiple times.
         other.mServerName = nullptr;
         other.mPort = 0;
+        other.mEhloDomain = nullptr;
         other.mBatchMode = false;
         other.mCommunicationLog = nullptr;
         other.mCommunicationLogSize = 0;
@@ -265,6 +293,10 @@ unsigned int SMTPClientBase::getServerPort() const {
     return mPort;
 }
 
+const char* SMTPClientBase::getEhloDomain() const {
+    return mEhloDomain;
+}
+
 bool SMTPClientBase::getBatchMode() const {
     return mBatchMode;
 }
@@ -285,10 +317,6 @@ LogLevel SMTPClientBase::getLogLevel() const {
     return mLogLevel;
 }
 
-void SMTPClientBase::setServerPort(unsigned int pPort) {
-    mPort = pPort;
-}
-
 void SMTPClientBase::setServerName(const char *pServerName) {
     std::string servername_str { pServerName == nullptr ? "" : pServerName };
     if (pServerName == nullptr || strcmp(pServerName, "") == 0  || StringUtils::trim(servername_str).empty()) {
@@ -299,6 +327,22 @@ void SMTPClientBase::setServerName(const char *pServerName) {
     mServerName = new char[server_name_len + 1];
     strncpy(mServerName, pServerName, server_name_len);
     mServerName[server_name_len] = '\0';
+}
+
+void SMTPClientBase::setServerPort(unsigned int pPort) {
+    mPort = pPort;
+}
+
+void SMTPClientBase::setEhloDomain(const char* pEhloDomain) {
+    std::string ehlodomain_str{ pEhloDomain == nullptr ? "" : pEhloDomain };
+    if (pEhloDomain == nullptr || strcmp(pEhloDomain, "") == 0 || StringUtils::trim(ehlodomain_str).empty()) {
+        throw std::invalid_argument("Ehlo domain cannot be null or empty");
+    }
+    delete[]mEhloDomain;
+    size_t ehlo_domain_len = strlen(pEhloDomain);
+    mEhloDomain = new char[ehlo_domain_len + 1];
+    strncpy(mEhloDomain, pEhloDomain, ehlo_domain_len);
+    mEhloDomain[ehlo_domain_len] = '\0';
 }
 
 void SMTPClientBase::setBatchMode(bool pEnabled) {
@@ -408,7 +452,6 @@ int SMTPClientBase::sendMail(const Message &pMsg) {
     }
     return 0;
 }
-
 
 int SMTPClientBase::initializeSession() {
     delete[] mCommunicationLog;
@@ -657,7 +700,8 @@ int SMTPClientBase::setSocketToBlocking() {
 
 int SMTPClientBase::sendServerIdentification() {
     const int EHLO_SUCCESS_CODE = 250;
-    std::string ehlo { "ehlo localhost\r\n" };
+    std::string ehloDomain { getEhloDomain() };
+    std::string ehlo { "ehlo " + ehloDomain + "\r\n" };
     addCommunicationLogItem(ehlo.c_str());
     int command_return_code = sendCommandWithFeedback(ehlo.c_str(),
             SOCKET_INIT_CLIENT_SEND_EHLO_ERROR,
@@ -715,7 +759,9 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode) {
 #endif
     if (send(mSock, pCommand, commandSize, 0) == -1) {
         setLastSocketErrNo(errno);
-        cleanup();
+        if (!mIsInCleanupMode) {
+            cleanup();
+        }
         return pErrorCode;
     }
     return 0;
@@ -798,6 +844,9 @@ void SMTPClientBase::setLastServerResponse(const char *pResponse) {
 int SMTPClientBase::authenticateClient() {
     if (mCredential != nullptr) {
         auto recommenedAuthOption = mCredential->getRecommendedAuthOption();
+        if (mAuthOptions == nullptr) {
+            return CLIENT_AUTHENTICATION_METHOD_NOTSUPPORTED;
+        }
         if (mAuthOptions->Plain
             && (recommenedAuthOption == RecommendedAuthenticationMethod::kImplicit
                     || recommenedAuthOption == RecommendedAuthenticationMethod::kPlain)) {
@@ -1210,9 +1259,10 @@ ServerAuthOptions *SMTPClientBase::extractAuthenticationOptions(const char *pEhl
             break;
         }
         ehlo_output.erase(0, ehlo_character_index + DELIMITER.length());
-        if (!ehlo_output.empty() && retVal == nullptr) {
-            retVal = ParseAuthenticationOptions(ehlo_output);
-        }
+    }
+    // Check the final line for authentication options if none were found in previous lines.
+    if (!ehlo_output.empty() && retVal == nullptr) {
+        retVal = ParseAuthenticationOptions(ehlo_output);
     }
     return retVal;
 }

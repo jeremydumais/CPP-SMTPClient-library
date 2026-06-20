@@ -15,6 +15,10 @@ unsigned int OpportunisticSecureSMTPClient::getServerPort() const {
     return jed_utils::OpportunisticSecureSMTPClient::getServerPort();
 }
 
+std::string OpportunisticSecureSMTPClient::getEhloDomain() const {
+    return jed_utils::OpportunisticSecureSMTPClient::getEhloDomain();
+}
+
 bool OpportunisticSecureSMTPClient::getBatchMode() const {
     return jed_utils::OpportunisticSecureSMTPClient::getBatchMode();
 }
@@ -45,6 +49,10 @@ void OpportunisticSecureSMTPClient::setServerName(const std::string &pServerName
 
 void OpportunisticSecureSMTPClient::setServerPort(unsigned int pPort) {
     jed_utils::OpportunisticSecureSMTPClient::setServerPort(pPort);
+}
+
+void OpportunisticSecureSMTPClient::setEhloDomain(const std::string &pEhloDomain) {
+    jed_utils::OpportunisticSecureSMTPClient::setEhloDomain(pEhloDomain.c_str());
 }
 
 void OpportunisticSecureSMTPClient::setBatchMode(bool pEnabled) {
@@ -98,4 +106,12 @@ jed_utils::ServerAuthOptions *OpportunisticSecureSMTPClient::extractAuthenticati
 
 int OpportunisticSecureSMTPClient::sendMail(const jed_utils::Message &pMsg) {
     return jed_utils::OpportunisticSecureSMTPClient::sendMail(pMsg);
+}
+
+std::string OpportunisticSecureSMTPClient::getHostName() const {
+    return jed_utils::OpportunisticSecureSMTPClient::getEhloDomain();
+}
+
+void OpportunisticSecureSMTPClient::setHostName(const std::string &pHostName) {
+    jed_utils::OpportunisticSecureSMTPClient::setEhloDomain(pHostName.c_str());
 }

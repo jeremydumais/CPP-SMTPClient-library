@@ -45,6 +45,7 @@ SmtpClient& SmtpClient::operator=(SmtpClient &&other) noexcept {
 }
 
 void SmtpClient::cleanup() {
+    mIsInCleanupMode = true;
     if (getBatchMode() && mIsConnected) {
         sendQuitCommand();
     }
@@ -69,6 +70,7 @@ void SmtpClient::cleanup() {
     }
     setWSAStopped();
 #endif
+    mIsInCleanupMode = false;
 }
 
 int SmtpClient::establishConnectionWithServer() {

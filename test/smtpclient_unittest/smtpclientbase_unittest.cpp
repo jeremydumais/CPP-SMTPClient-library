@@ -168,6 +168,7 @@ TYPED_TEST(MultiSmtpClientBaseFixture, Constructor_WithValidArgs_ReturnSuccess) 
     TypeParam client1("test", 587);
     ASSERT_EQ("test", std::string(client1.getServerName()));
     ASSERT_EQ(587, client1.getServerPort());
+    ASSERT_EQ("localhost", std::string(client1.getEhloDomain()));
     ASSERT_FALSE(client1.getBatchMode());
     ASSERT_EQ(LogLevel::ExcludeAttachmentsBytes, client1.getLogLevel());
 }
@@ -177,6 +178,7 @@ TYPED_TEST(MultiSmtpClientBaseFixture, CopyConstructorValid) {
     TypeParam client2(client1);
     ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
+    ASSERT_EQ("localhost", std::string(client2.getEhloDomain()));
     ASSERT_EQ(LogLevel::ExcludeAttachmentsBytes, client2.getLogLevel());
 }
 
@@ -186,6 +188,7 @@ TYPED_TEST(MultiSmtpClientBaseFixture, CopyAssignmentValid) {
     client2 = client1;
     ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
+    ASSERT_EQ("localhost", std::string(client2.getEhloDomain()));
     ASSERT_EQ(LogLevel::ExcludeAttachmentsBytes, client2.getLogLevel());
 }
 
@@ -194,6 +197,7 @@ TYPED_TEST(MultiSmtpClientBaseFixture, MoveConstructorValid) {
     TypeParam client2(std::move(client1));
     ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
+    ASSERT_EQ("localhost", std::string(client2.getEhloDomain()));
     ASSERT_EQ(LogLevel::ExcludeAttachmentsBytes, client2.getLogLevel());
 }
 
@@ -203,6 +207,7 @@ TYPED_TEST(MultiSmtpClientBaseFixture, MoveAssignmentValid) {
     client2 = std::move(client1);
     ASSERT_EQ("test", std::string(client2.getServerName()));
     ASSERT_EQ(587, client2.getServerPort());
+    ASSERT_EQ("localhost", std::string(client2.getEhloDomain()));
     ASSERT_EQ(LogLevel::ExcludeAttachmentsBytes, client2.getLogLevel());
 }
 
@@ -256,6 +261,49 @@ TYPED_TEST(MultiSmtpClientBaseFixture, setServerPort_WithPort465ReturnSuccess) {
 
 TYPED_TEST(MultiSmtpClientBaseFixture, getServerPort_ReturnValidServerPort) {
     ASSERT_EQ(587, this->client.getServerPort());
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, setEhloDomain_ValidName_ReturnSuccess) {
+    TypeParam client1("test", 587);
+    client1.setEhloDomain("myDomain");
+    ASSERT_EQ("myDomain", std::string(client1.getEhloDomain()));
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, setEhloDomain_NullEhloDomain_ThrowInvalidArgument) {
+    TypeParam client1("test", 587);
+    try {
+        client1.setEhloDomain(client1.getNullChar());
+        FAIL();
+    }
+    catch(std::invalid_argument &err) {
+        ASSERT_STREQ("Ehlo domain cannot be null or empty", err.what());
+    }
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, setEhloDomain_EmptyEhloDomain_ThrowInvalidArgument) {
+    TypeParam client1("test", 587);
+    try {
+        client1.setEhloDomain("");
+        FAIL();
+    }
+    catch(std::invalid_argument &err) {
+        ASSERT_STREQ("Ehlo domain cannot be null or empty", err.what());
+    }
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, setEhloDomain_OnlySpacesEhloDomain_ThrowInvalidArgument) {
+    TypeParam client1("test", 587);
+    try {
+        client1.setEhloDomain("    ");
+        FAIL();
+    }
+    catch(std::invalid_argument &err) {
+        ASSERT_STREQ("Ehlo domain cannot be null or empty", err.what());
+    }
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, getEhloDomain_ReturnValidEhloDomain) {
+    ASSERT_EQ("localhost", std::string(this->client.getEhloDomain()));
 }
 
 TYPED_TEST(MultiSmtpClientBaseFixture, setBatchMode_WithTrueReturnSuccess) {
@@ -401,6 +449,22 @@ TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithAuthPlai
 "250-SMTPUTF8\r\n"
 "250-SIZE 0\r\n"
 "250 AUTH PLAIN LOGIN");
+    ASSERT_NE(nullptr, options);
+    ASSERT_TRUE(options->Plain);
+    ASSERT_TRUE(options->Login);
+    ASSERT_FALSE(options->XOAuth2);
+    ASSERT_FALSE(options->Plain_ClientToken);
+    ASSERT_FALSE(options->OAuthBearer);
+    ASSERT_FALSE(options->XOAuth);
+}
+
+TYPED_TEST(MultiSmtpClientBaseFixture, extractAuthenticationOptions_WithAuthPlainLoginEhloWithoutDashInTheMiddle_ReturnOptions) {
+    ServerAuthOptions *options = TypeParam::extractAuthenticationOptions("250-jedubuntuserver Hello [192.168.1.144]Haraka is at your service.\r\n"
+"250-PIPELINING\r\n"
+"250-8BITMIME\r\n"
+"250 AUTH PLAIN LOGIN\r\n"
+"250-SMTPUTF8\r\n"
+"250-SIZE 0");
     ASSERT_NE(nullptr, options);
     ASSERT_TRUE(options->Plain);
     ASSERT_TRUE(options->Login);
