@@ -1,6 +1,7 @@
 #ifndef SMTPCLIENTBASE_H
 #define SMTPCLIENTBASE_H
 
+#include <stdint.h>
 #include <ctime>
 #include <memory>
 #include <string>
