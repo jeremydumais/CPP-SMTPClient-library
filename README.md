@@ -115,6 +115,28 @@ for previous versions.
 
 ## 📰 What's new
 
+- Version 1.1.14:
+    - Fixed an endless recursion issue in batch mode when the SMTP server connection
+      was lost during a send operation.
+      Thanks to [jandehh](https://github.com/jandehh) for reporting this.
+    - Fixed a crash during authentication when no compatible authentication protocol
+      was found by the SMTP server.
+      Thanks to [jade1964](https://github.com/jade1964) for reporting this.
+    - Fixed a missing `stdint.h` include that prevented the library from building on
+      musl-based Linux distributions such as Alpine Linux.
+      Thanks to [Tuxist](https://github.com/Tuxist) for reporting this.
+    - Fixed a small memory leak in `SMTPClientBase::extractAuthenticationOptions()`
+      that could occur while parsing SMTP server authentication capabilities from
+      the EHLO response.
+      Thanks to [danhook-esg](https://github.com/danhook-esg) for reporting the issue
+      and providing a fix.
+    - Added support for configuring the domain used in the EHLO command instead of
+      always using `localhost`.
+      Some SMTP servers reject `EHLO localhost`; the library now exposes accessors and
+      mutators to configure the EHLO domain while keeping `localhost` as the default
+      value to preserve existing behavior.
+      This change has been made by [viperman1271](https://github.com/viperman1271).
+      Many thanks!
 - Version 1.1.13:
     - Fixed non-transitive include paths for the OpenSSL dependency when building in
     Windows.
@@ -136,22 +158,6 @@ for previous versions.
     - Add a Message-ID generated header when sending a message.
     See [RFC 5322 section 3.6.4](https://datatracker.ietf.org/doc/html/rfc5322).
     Thanks to [PowerTAMX](https://github.com/PowerTAMX) for reporthing this.
-- Version 1.1.11:
-    - Fix the error 554 5.0.0 ("failed to create parser: unexpected EOF") when
-    sending multipart messages via ProtonMail Bridge due to missing closing MIME
-    boundary (--sep--).
-    - Prevented catastrophic backtracking in isEmailAddressValid() regex that
-    caused crashes when validating complex email addresses (e.g., from
-    mailersend.com). Updated regex to avoid unescaped dots and added a more robust
-    pattern.
-    - Adjust the line length of the MIME attachments to 76 (excluding CRLF) to
-    comply with RFC 2045.
-    - Add a log level to the multiple clients. The log level is for the level of
-    details of the communication log between the client and the server. Choices
-    are : None, ExcludeAttachmentsBytes and Full. Default is
-    ExcludeAttachmentsBytes.
-    - Add the Date header field in outgoing emails to comply with RFC 2822.
-    This is a required field and it was missing in the previous versions.
 
 
 ## ⚡️ Quickstart - The 3 client classes

@@ -15,6 +15,11 @@ All notable changes to this project will be documented in this file
 - Fixed a missing `stdint.h` include that prevented the library from building on
   musl-based Linux distributions such as Alpine Linux.
   Thanks to [Tuxist](https://github.com/Tuxist) for reporting this.
+- Fixed a small memory leak in `SMTPClientBase::extractAuthenticationOptions()`
+  that could occur while parsing SMTP server authentication capabilities from
+  the EHLO response.
+  Thanks to [danhook-esg](https://github.com/danhook-esg) for reporting the issue
+  and providing a fix.
 
 ### Enhancement
 
