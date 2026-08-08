@@ -197,6 +197,11 @@ TEST(ErrorResolver_getErrorMessage, WithCLIENT_AUTHENTICATION_METHOD_NOTSUPPORTE
     ASSERT_EQ("The authentication method selected is not supported by the server"s, errorResolver.getErrorMessage());
 }
 
+TEST(ErrorResolver_getErrorMessage, WithCLIENT_AUTHENTICATION_METHOD_EMPTY_ReturnValidMessage) {
+    ErrorResolver errorResolver(CLIENT_AUTHENTICATION_METHOD_EMPTY);
+    ASSERT_EQ("The server did not advertise any authentication method"s, errorResolver.getErrorMessage());
+}
+
 TEST(ErrorResolver_getErrorMessage, WithCLIENT_SENDMAIL_MAILFROM_ERROR_ReturnValidMessage) {
     ErrorResolver errorResolver(CLIENT_SENDMAIL_MAILFROM_ERROR);
     ASSERT_EQ("The MAIL FROM command return an error"s, errorResolver.getErrorMessage());

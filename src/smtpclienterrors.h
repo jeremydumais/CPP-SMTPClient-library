@@ -2,10 +2,13 @@
 #define SMTPCLIENTERRORS_H
 
 // Authenticate error codes
+// New codes take the next free value at the end of the list so that the
+// existing ones keep their value.
 const int CLIENT_AUTHENTICATE_ERROR = -81;
 const int CLIENT_AUTHENTICATE_TIMEOUT = -82;
 const int CLIENT_AUTHENTICATE_NONEED = -83;
 const int CLIENT_AUTHENTICATION_METHOD_NOTSUPPORTED = -84;
+const int CLIENT_AUTHENTICATION_METHOD_EMPTY = -102;
 
 // Send Mail error codes
 const int CLIENT_SENDMAIL_MAILFROM_ERROR = -85;

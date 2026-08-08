@@ -99,6 +99,9 @@ ErrorResolver::ErrorResolver(int pErrorCode)
         case CLIENT_AUTHENTICATION_METHOD_NOTSUPPORTED:
             errorMessage = "The authentication method selected is not supported by the server";
             break;
+        case CLIENT_AUTHENTICATION_METHOD_EMPTY:
+            errorMessage = "The server did not advertise any authentication method";
+            break;
         case CLIENT_SENDMAIL_MAILFROM_ERROR:
             errorMessage = "The MAIL FROM command return an error";
             break;

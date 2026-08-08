@@ -845,8 +845,7 @@ int SMTPClientBase::authenticateClient() {
     if (mCredential != nullptr) {
         auto recommenedAuthOption = mCredential->getRecommendedAuthOption();
         if (mAuthOptions == nullptr) {
-            addCommunicationLogItem("The server did not advertise any authentication method\r\n");
-            return CLIENT_AUTHENTICATION_METHOD_NOTSUPPORTED;
+            return CLIENT_AUTHENTICATION_METHOD_EMPTY;
         }
         if (mAuthOptions->Plain
             && (recommenedAuthOption == RecommendedAuthenticationMethod::kImplicit
