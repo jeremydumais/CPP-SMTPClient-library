@@ -20,7 +20,7 @@
 
 namespace jed_utils {
 namespace cpp {
-/** @brief The Attachment class represent a file attachment in a
+/** @brief The Attachment class represents a file attachment in a
  *  message. It can be a picture, a document, a text file etc.
  */
 class CPP_ATTACHMENT_API Attachment : private jed_utils::Attachment {

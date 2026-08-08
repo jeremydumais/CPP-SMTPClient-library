@@ -283,7 +283,7 @@ Message::Message(Message &&other) noexcept
     other.mAttachmentCount = 0;
 }
 
-// Move assignement
+// Move assignment
 Message& Message::operator=(Message &&other) noexcept {
     if (this != &other) {
         delete[] mSubject;

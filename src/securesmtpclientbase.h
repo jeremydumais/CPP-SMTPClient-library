@@ -17,7 +17,7 @@
 #endif
 
 namespace jed_utils {
-/** @brief The SecureSMTPClientBase represents the base class for SMTP client
+/** @brief The SecureSMTPClientBase represents the base class for SMTP clients
  *  that will use encryption for communication.
  */
 class SECURESMTPCLIENTBASE_API SecureSMTPClientBase : public SMTPClientBase {

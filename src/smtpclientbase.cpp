@@ -235,7 +235,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     other.mSeparator[0] = '\0';
 }
 
-// Move assignement operator
+// Move assignment operator
 SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
     if (this != &other) {
         delete[] mServerName;
@@ -845,6 +845,7 @@ int SMTPClientBase::authenticateClient() {
     if (mCredential != nullptr) {
         auto recommenedAuthOption = mCredential->getRecommendedAuthOption();
         if (mAuthOptions == nullptr) {
+            addCommunicationLogItem("The server did not advertise any authentication method\r\n");
             return CLIENT_AUTHENTICATION_METHOD_NOTSUPPORTED;
         }
         if (mAuthOptions->Plain
@@ -945,7 +946,7 @@ int SMTPClientBase::setMailRecipients(const Message &pMsg) {
             return mail_from_ret_code;
         }
     }
-    // If no compatible format were found
+    // If no compatible format was found
     if (mail_from_ret_code != SENDER_OK) {
         return mail_from_ret_code;
     }
@@ -1065,7 +1066,7 @@ int SMTPClientBase::setMailBody(const Message &pMsg) {
     std::string body_real = body_ss.str();
     LogLevel logLevel = getLogLevel();
 
-    // If there's attachments, prepare the attachments text content
+    // If there are attachments, prepare the attachments text content
     Attachment** arr_attachment = pMsg.getAttachments();
 
     std::vector<Attachment*> vect_attachment(arr_attachment, arr_attachment + pMsg.getAttachmentsCount());
@@ -1209,11 +1210,11 @@ ServerAuthOptions *ParseAuthenticationOptions(const std::string &authLine) {
     const std::string AUTH_LINE_PREFIX = "250-AUTH";
     const std::string AUTH_LINE_PREFIX_ALTERNATE = "250 AUTH";
     std::string line = authLine;
-    // Find the line that begin with 250-AUTH or 250 AUTH
+    // Find the line that begins with 250-AUTH or 250 AUTH
     if (line.substr(0, AUTH_LINE_PREFIX.length()) == AUTH_LINE_PREFIX ||
         line.substr(0, AUTH_LINE_PREFIX_ALTERNATE.length()) == AUTH_LINE_PREFIX_ALTERNATE) {
         retval = new ServerAuthOptions();
-        // Find each options
+        // Find each option
         std::vector<std::string> options;
         size_t line_character_index { 0 };
         while ((line_character_index = line.find(' ')) != std::string::npos) {

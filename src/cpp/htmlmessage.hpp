@@ -22,11 +22,11 @@
 
 namespace jed_utils {
 namespace cpp {
-/** @brief The Message class represents the base class of an email message. */
+/** @brief The HTMLMessage class represents an email message in HTML format. */
 class CPP_HTMLMESSAGE_API HTMLMessage : public Message {
  public:
     /**
-     *  @brief  Construct a new single recipient HTMLMessage class.
+     *  @brief  Construct a new HTMLMessage.
      *  @param pFrom The sender email address of the message.
      *  @param pTo The recipient email addresses of the message.
      *  @param pSubject The subject of the message.
@@ -43,7 +43,7 @@ class CPP_HTMLMESSAGE_API HTMLMessage : public Message {
             const std::vector<MessageAddress> &pBcc = {},
             const std::vector<Attachment> &pAttachments = {});
 
-    /** The destructor of the Message */
+    /** The destructor of the HTMLMessage */
     virtual ~HTMLMessage() = default;
 
     /** Return the string MIME type of the message (Pure virtual function). */

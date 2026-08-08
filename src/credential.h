@@ -51,7 +51,7 @@ class CREDENTIAL_API Credential {
             const char *pPassword,
             RecommendedAuthenticationMethod authOption);
 
-    /** The destructor og Credential */
+    /** The destructor of Credential */
     virtual ~Credential();
 
     /** Credential copy constructor */

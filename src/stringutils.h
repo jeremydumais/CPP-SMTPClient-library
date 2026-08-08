@@ -16,7 +16,7 @@
 #endif
 
 namespace jed_utils {
-/** @brief The StringUtils class provides string utility fonctions
+/** @brief The StringUtils class provides string utility functions
 */
 class STRINGUTILS_API StringUtils {
  public:

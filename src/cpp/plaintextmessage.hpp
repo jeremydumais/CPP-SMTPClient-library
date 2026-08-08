@@ -22,11 +22,11 @@
 
 namespace jed_utils {
 namespace cpp {
-/** @brief The Message class represents the base class of an email message. */
+/** @brief The PlaintextMessage class represents an email message in plain text format. */
 class CPP_PLAINTEXTMESSAGE_API PlaintextMessage : public Message {
  public:
     /**
-     *  @brief  Construct a new single recipient PlaintextMessage class.
+     *  @brief  Construct a new PlaintextMessage.
      *  @param pFrom The sender email address of the message.
      *  @param pTo The recipient email addresses of the message.
      *  @param pSubject The subject of the message.
@@ -43,7 +43,7 @@ class CPP_PLAINTEXTMESSAGE_API PlaintextMessage : public Message {
             const std::vector<MessageAddress> &pBcc = {},
             const std::vector<Attachment> &pAttachments = {});
 
-    /** The destructor of the Message */
+    /** The destructor of the PlaintextMessage */
     virtual ~PlaintextMessage() = default;
 
     /** Return the string MIME type of the message (Pure virtual function). */

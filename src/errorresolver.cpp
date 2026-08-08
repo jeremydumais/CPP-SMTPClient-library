@@ -209,7 +209,7 @@ ErrorResolver::ErrorResolver(ErrorResolver&& other) noexcept
     other.mErrorMessage = nullptr;
 }
 
-// Move assignement operator
+// Move assignment operator
 ErrorResolver& ErrorResolver::operator=(ErrorResolver&& other) noexcept {
     if (this != &other) {
         mErrorCode = other.mErrorCode;

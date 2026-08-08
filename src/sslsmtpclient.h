@@ -1,7 +1,7 @@
 #ifndef SSLSMTPCLIENT_H
 #define SSLSMTPCLIENT_H
 
-// This header file has been kept for compatiblity purposes
+// This header file has been kept for compatibility purposes
 
 #include "opportunisticsecuresmtpclient.h"
 
