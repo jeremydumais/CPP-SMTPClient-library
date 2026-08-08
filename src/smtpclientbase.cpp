@@ -103,6 +103,7 @@ SMTPClientBase::~SMTPClientBase() {
 // Copy constructor
 SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
     : mIsConnected(false),
+      mIsInCleanupMode(false),
       mServerName(new char[strlen(other.mServerName) + 1]),
       mPort(other.mPort),
       mEhloDomain(new char[strlen(other.mEhloDomain) + 1]),
@@ -185,6 +186,7 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
         // mCredential
         mCredential = other.mCredential != nullptr ? new Credential(*other.mCredential) : nullptr;
         mIsConnected = false;
+        mIsInCleanupMode = false;
         mSock = 0;
         mLogLevel = other.mLogLevel;
         setKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands);
@@ -198,6 +200,7 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
 // Move constructor
 SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     : mIsConnected(other.mIsConnected),
+      mIsInCleanupMode(other.mIsInCleanupMode),
       mServerName(other.mServerName),
       mPort(other.mPort),
       mEhloDomain(other.mEhloDomain),
@@ -226,6 +229,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     other.mAuthOptions = nullptr;
     other.mCredential = nullptr;
     other.mIsConnected = false;
+    other.mIsInCleanupMode = false;
     other.mSock = 0;
     other.mLogLevel = LogLevel::ExcludeAttachmentsBytes;
     other.mKeepUsingBaseSendCommands = false;
@@ -257,6 +261,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         mAuthOptions = other.mAuthOptions;
         mCredential = other.mCredential;
         mIsConnected = other.mIsConnected;
+        mIsInCleanupMode = other.mIsInCleanupMode;
         mSock = other.mSock;
         mLogLevel = other.mLogLevel;
         mKeepUsingBaseSendCommands = other.mKeepUsingBaseSendCommands;
@@ -277,6 +282,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         other.mAuthOptions = nullptr;
         other.mCredential = nullptr;
         other.mIsConnected = false;
+        other.mIsInCleanupMode = false;
         other.mSock = 0;
         other.mLogLevel = LogLevel::ExcludeAttachmentsBytes;
         other.mKeepUsingBaseSendCommands = false;
