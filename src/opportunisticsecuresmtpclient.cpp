@@ -40,7 +40,7 @@ OpportunisticSecureSMTPClient::OpportunisticSecureSMTPClient(OpportunisticSecure
     : SecureSMTPClientBase(std::move(other)) {
 }
 
-// Move assignement operator
+// Move assignment operator
 OpportunisticSecureSMTPClient& OpportunisticSecureSMTPClient::operator=(OpportunisticSecureSMTPClient&& other) noexcept {
     if (this != &other) {
         SecureSMTPClientBase::operator=(std::move(other));
@@ -110,9 +110,8 @@ bool OpportunisticSecureSMTPClient::isStartTLSSupported(const char *pServerRespo
     }
 
     const std::string STARTTLS_LINE { "250-STARTTLS" };
-    // See RFC 5321 - Last line has a space instead of an hyphen
+    // See RFC 5321 - Last line has a space instead of a hyphen
     const std::string STARTTLS_LAST_LINE { "250 STARTTLS" };
     return serverResponse.find(STARTTLS_LINE) != std::string::npos ||
         serverResponse.find(STARTTLS_LAST_LINE) != std::string::npos;
 }
-

@@ -2,10 +2,13 @@
 #define SMTPCLIENTERRORS_H
 
 // Authenticate error codes
+// New codes take the next free value at the end of the list so that the
+// existing ones keep their value.
 const int CLIENT_AUTHENTICATE_ERROR = -81;
 const int CLIENT_AUTHENTICATE_TIMEOUT = -82;
 const int CLIENT_AUTHENTICATE_NONEED = -83;
 const int CLIENT_AUTHENTICATION_METHOD_NOTSUPPORTED = -84;
+const int CLIENT_AUTHENTICATION_METHOD_EMPTY = -102;
 
 // Send Mail error codes
 const int CLIENT_SENDMAIL_MAILFROM_ERROR = -85;
@@ -32,7 +35,7 @@ const int SMTPSERVER_AUTHENTICATIONTOOWEAK_ERROR = 534;
 const int SMTPSERVER_CREDENTIALSINVALID_ERROR = 535;
 const int SMTPSERVER_ENCRYPTIONREQUIREDFORAUTH_ERROR = 538;
 
-// SMTP non standard error code
+// SMTP non-standard error code
 const int SMTPSERVER_AUTHENTICATION_UNSUCCESSFUL_GMAIL_ERROR = 334;
 
 #endif

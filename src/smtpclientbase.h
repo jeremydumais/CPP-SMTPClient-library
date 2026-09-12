@@ -32,7 +32,7 @@
 
 namespace jed_utils {
 /**
- * @brief The LogLevel contains all possible logging level of the communication
+ * @brief The LogLevel contains all possible logging levels of the communication
  * between the client and the server.
  */
 enum LogLevel {
@@ -156,7 +156,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
 
     /**
      *  @brief  Indicate if the class will keep using base send command even
-     *  if a child class as overriden the sendCommand and sendCommandWithFeedback.
+     *  if a child class has overridden the sendCommand and sendCommandWithFeedback.
      *
      *  This is used for example if you are using a secure client class but
      *  the STARTTLS feature is not available. The communication will then
@@ -166,24 +166,24 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     void setKeepUsingBaseSendCommands(bool pValue);
 
     /**
-     *  @brief  Retreive the error message string that correspond to
+     *  @brief  Retrieve the error message string that corresponds to
      *  the error code provided.
-     *  @return A pointer to an allocated char array that pointed to the
-     *  error message. The user is responsible to delete this pointer after
+     *  @return A pointer to an allocated char array that points to the
+     *  error message. The user is responsible for deleting this pointer after
      *  usage.
      */
     static char *getErrorMessage(int errorCode);
 
     /**
      *  @brief  This is the reentrant version of the getErrorMessage method
-     *  @param  errorCode  The error code return by the SMTP client.
+     *  @param  errorCode  The error code returned by the SMTP client.
      *  @param  errorMessagePtr  A pointer to an allocated char array
      *  @param  maxLength  The size of the allocated char array.
      *  @return Return 0 for success, -1 if an error occurred and a positive
      *  number representing the number of characters copied to errorMessagePtr
-     *  if the message was longer than that allocated char array.
+     *  if the message was longer than the allocated char array.
      *
-     *  Retreive the error message string that correspond to the error code
+     *  Retrieve the error message string that corresponds to the error code
      *  provided.
      */
     static int getErrorMessage_r(int errorCode,
@@ -192,7 +192,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
 
     /**
      *  @brief  Set the log level of the communication log.
-     *  @param level Indicate if the logging level.
+     *  @param level Indicate the logging level.
      *  Example: None, ExcludeAttachmentsBytes, Full
      */
     void setLogLevel(LogLevel level);
@@ -201,7 +201,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
 
  protected:
     bool mIsConnected;
-    // The cleanup mode is use to ensure that if the Quit command fail, we don't call cleanup again.
+    // The cleanup mode is used to ensure that if the Quit command fails, we don't call cleanup again.
     bool mIsInCleanupMode;
     virtual void cleanup() = 0;
     int getSocketFileDescriptor() const;
@@ -279,8 +279,8 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     bool mWSAStarted = false;
     #endif
 
-    // This field indicate the class will keep using base send command even if a child class
-    // as overriden the sendCommand and sendCommandWithFeedback.
+    // This field indicates the class will keep using base send command even if a child class
+    // has overridden the sendCommand and sendCommandWithFeedback.
     // This is used for example if you are using a secure client class but the STARTTLS
     // feature is not available. The communication will then remain unsecured.
     bool mKeepUsingBaseSendCommands;

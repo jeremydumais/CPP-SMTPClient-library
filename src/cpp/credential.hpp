@@ -38,7 +38,7 @@ class CPP_CREDENTIAL_API Credential : private jed_utils::Credential {
     Credential(const std::string &pUsername, const std::string &pPassword,
       RecommendedAuthenticationMethod authOption);
 
-    /** The destructor og Credential */
+    /** The destructor of Credential */
     ~Credential() override = default;
 
     /** Credential copy constructor */

@@ -15,7 +15,7 @@
 
 namespace jed_utils {
 /** @brief The ErrorResolver class is used to translate an error code
- * return be the sendMail method of the differents SMTP client classes
+ * returned by the sendMail method of the different SMTP client classes
  * to a string representation of the error message.
  */
 class ERRORRESOLVER_API ErrorResolver {
@@ -45,7 +45,7 @@ class ERRORRESOLVER_API ErrorResolver {
     /** Return the error code configured. */
     int getErrorCode() const;
 
-    /** Return the error message corresponding of the currently set
+    /** Return the error message corresponding to the currently set
      *  error code.
      */
     const char *getErrorMessage() const;

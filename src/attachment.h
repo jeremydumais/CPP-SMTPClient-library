@@ -17,7 +17,7 @@
 #endif
 
 namespace jed_utils {
-/** @brief The Attachment class represent a file attachment in a
+/** @brief The Attachment class represents a file attachment in a
  *  message. It can be a picture, a document, a text file etc.
  */
 class ATTACHMENT_API Attachment {

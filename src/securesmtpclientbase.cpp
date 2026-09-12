@@ -74,7 +74,7 @@ SecureSMTPClientBase::SecureSMTPClientBase(SecureSMTPClientBase&& other) noexcep
     other.mAcceptSelfSignedCert = false;
 }
 
-// Move assignement operator
+// Move assignment operator
 SecureSMTPClientBase& SecureSMTPClientBase::operator=(SecureSMTPClientBase&& other) noexcept {
     if (this != &other) {
         // Copy the data pointer and its length from the source object.
@@ -305,7 +305,7 @@ int SecureSMTPClientBase::sendCommand(const char *pCommand, int pErrorCode) {
 }
 
 int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErrorCode, int pTimeoutCode) {
-    // Check if we are in the TLS mode of before it
+    // Check if we are in the TLS mode or before it
     if (mBIO == nullptr) {
         return sendRawCommand(pCommand, pErrorCode, pTimeoutCode);
     }

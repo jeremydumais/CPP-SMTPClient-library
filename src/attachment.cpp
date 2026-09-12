@@ -95,7 +95,7 @@ Attachment::Attachment(Attachment&& other) noexcept
     other.mContentId = nullptr;
 }
 
-// Move assignement operator
+// Move assignment operator
 Attachment& Attachment::operator=(Attachment&& other) noexcept {
     if (this != &other) {
         delete[] mName;
@@ -145,7 +145,7 @@ const char *Attachment::getBase64EncodedFile() const {
             in.read(&contents[0], static_cast<std::streamsize>(contents.size()));
             in.close();
             std::string base64_result = Base64::Encode(reinterpret_cast<const unsigned char*>(contents.c_str()), contents.length());
-            // Make sure that the line length are limited to 76 chars (RFC5322)
+            // Make sure that the line length is limited to 76 chars (RFC5322)
             std::string base64Wrapped = wrap_rfc5322(base64_result);
             auto *base64_file = new char[base64Wrapped.length() + 1];
             strncpy(base64_file, base64Wrapped.c_str(), base64Wrapped.length() + 1);

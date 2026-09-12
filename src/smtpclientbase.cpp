@@ -103,6 +103,7 @@ SMTPClientBase::~SMTPClientBase() {
 // Copy constructor
 SMTPClientBase::SMTPClientBase(const SMTPClientBase& other)
     : mIsConnected(false),
+      mIsInCleanupMode(false),
       mServerName(new char[strlen(other.mServerName) + 1]),
       mPort(other.mPort),
       mEhloDomain(new char[strlen(other.mEhloDomain) + 1]),
@@ -185,6 +186,7 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
         // mCredential
         mCredential = other.mCredential != nullptr ? new Credential(*other.mCredential) : nullptr;
         mIsConnected = false;
+        mIsInCleanupMode = false;
         mSock = 0;
         mLogLevel = other.mLogLevel;
         setKeepUsingBaseSendCommands(other.mKeepUsingBaseSendCommands);
@@ -198,6 +200,7 @@ SMTPClientBase& SMTPClientBase::operator=(const SMTPClientBase& other) {
 // Move constructor
 SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     : mIsConnected(other.mIsConnected),
+      mIsInCleanupMode(other.mIsInCleanupMode),
       mServerName(other.mServerName),
       mPort(other.mPort),
       mEhloDomain(other.mEhloDomain),
@@ -226,6 +229,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     other.mAuthOptions = nullptr;
     other.mCredential = nullptr;
     other.mIsConnected = false;
+    other.mIsInCleanupMode = false;
     other.mSock = 0;
     other.mLogLevel = LogLevel::ExcludeAttachmentsBytes;
     other.mKeepUsingBaseSendCommands = false;
@@ -235,7 +239,7 @@ SMTPClientBase::SMTPClientBase(SMTPClientBase&& other) noexcept
     other.mSeparator[0] = '\0';
 }
 
-// Move assignement operator
+// Move assignment operator
 SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
     if (this != &other) {
         delete[] mServerName;
@@ -257,6 +261,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         mAuthOptions = other.mAuthOptions;
         mCredential = other.mCredential;
         mIsConnected = other.mIsConnected;
+        mIsInCleanupMode = other.mIsInCleanupMode;
         mSock = other.mSock;
         mLogLevel = other.mLogLevel;
         mKeepUsingBaseSendCommands = other.mKeepUsingBaseSendCommands;
@@ -277,6 +282,7 @@ SMTPClientBase& SMTPClientBase::operator=(SMTPClientBase&& other) noexcept {
         other.mAuthOptions = nullptr;
         other.mCredential = nullptr;
         other.mIsConnected = false;
+        other.mIsInCleanupMode = false;
         other.mSock = 0;
         other.mLogLevel = LogLevel::ExcludeAttachmentsBytes;
         other.mKeepUsingBaseSendCommands = false;
@@ -845,7 +851,7 @@ int SMTPClientBase::authenticateClient() {
     if (mCredential != nullptr) {
         auto recommenedAuthOption = mCredential->getRecommendedAuthOption();
         if (mAuthOptions == nullptr) {
-            return CLIENT_AUTHENTICATION_METHOD_NOTSUPPORTED;
+            return CLIENT_AUTHENTICATION_METHOD_EMPTY;
         }
         if (mAuthOptions->Plain
             && (recommenedAuthOption == RecommendedAuthenticationMethod::kImplicit
@@ -945,7 +951,7 @@ int SMTPClientBase::setMailRecipients(const Message &pMsg) {
             return mail_from_ret_code;
         }
     }
-    // If no compatible format were found
+    // If no compatible format was found
     if (mail_from_ret_code != SENDER_OK) {
         return mail_from_ret_code;
     }
@@ -1065,7 +1071,7 @@ int SMTPClientBase::setMailBody(const Message &pMsg) {
     std::string body_real = body_ss.str();
     LogLevel logLevel = getLogLevel();
 
-    // If there's attachments, prepare the attachments text content
+    // If there are attachments, prepare the attachments text content
     Attachment** arr_attachment = pMsg.getAttachments();
 
     std::vector<Attachment*> vect_attachment(arr_attachment, arr_attachment + pMsg.getAttachmentsCount());
@@ -1209,11 +1215,11 @@ ServerAuthOptions *ParseAuthenticationOptions(const std::string &authLine) {
     const std::string AUTH_LINE_PREFIX = "250-AUTH";
     const std::string AUTH_LINE_PREFIX_ALTERNATE = "250 AUTH";
     std::string line = authLine;
-    // Find the line that begin with 250-AUTH or 250 AUTH
+    // Find the line that begins with 250-AUTH or 250 AUTH
     if (line.substr(0, AUTH_LINE_PREFIX.length()) == AUTH_LINE_PREFIX ||
         line.substr(0, AUTH_LINE_PREFIX_ALTERNATE.length()) == AUTH_LINE_PREFIX_ALTERNATE) {
         retval = new ServerAuthOptions();
-        // Find each options
+        // Find each option
         std::vector<std::string> options;
         size_t line_character_index { 0 };
         while ((line_character_index = line.find(' ')) != std::string::npos) {

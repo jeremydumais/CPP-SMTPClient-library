@@ -36,7 +36,7 @@ SmtpClient::SmtpClient(SmtpClient &&other) noexcept
     : SMTPClientBase(std::move(other)) {
 }
 
-// Move assignement
+// Move assignment
 SmtpClient& SmtpClient::operator=(SmtpClient &&other) noexcept {
     if (this != &other) {
         SMTPClientBase::operator=(std::move(other));

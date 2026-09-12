@@ -40,7 +40,7 @@ ForcedSecureSMTPClient::ForcedSecureSMTPClient(ForcedSecureSMTPClient&& other) n
     : SecureSMTPClientBase(std::move(other)) {
 }
 
-// Move assignement operator
+// Move assignment operator
 ForcedSecureSMTPClient& ForcedSecureSMTPClient::operator=(ForcedSecureSMTPClient&& other) noexcept {
     if (this != &other) {
         SecureSMTPClientBase::operator=(std::move(other));

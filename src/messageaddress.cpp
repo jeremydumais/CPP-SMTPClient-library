@@ -15,7 +15,7 @@ MessageAddress::MessageAddress(const char *pEmailAddress, const char *pDisplayNa
     if (email_address.length() == 0 || StringUtils::trim(email_address).empty()) {
         throw std::invalid_argument("pEmailAddress");
     }
-    // Check is the email address is valid
+    // Check if the email address is valid
     if (!isEmailAddressValid(email_address)) {
         throw std::invalid_argument("pEmailAddress");
     }
@@ -102,7 +102,7 @@ MessageAddress::MessageAddress(MessageAddress&& other) noexcept
     other.mDomainName = nullptr;
 }
 
-// Move assignement operator
+// Move assignment operator
 MessageAddress& MessageAddress::operator=(MessageAddress&& other) noexcept {
     if (this != &other) {
         delete[] mEmailAddress;

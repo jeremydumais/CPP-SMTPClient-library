@@ -18,9 +18,9 @@
 
 namespace jed_utils {
 namespace cpp {
-/** @brief The ForcedSecureSMTPClient should be your default choice for
- *  communicating with modern SMTP servers. The communication is usually done
- *  via port 587.
+/** @brief The ForcedSecureSMTPClient is useful to communicate with legacy
+ *  systems which require that the communication be encrypted from the
+ *  initial connection. The communication is usually done via port 465.
  */
 class CPP_FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : private jed_utils::ForcedSecureSMTPClient {
  public:
@@ -145,7 +145,7 @@ class CPP_FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : private jed_utils:
 
     /**
      *  @brief  Indicate if the class will keep using base send command even
-     *  if a child class as overriden the sendCommand and sendCommandWithFeedback.
+     *  if a child class has overridden the sendCommand and sendCommandWithFeedback.
      *
      *  This is used for example if you are using a secure client class but
      *  the STARTTLS feature is not available. The communication will then
@@ -155,7 +155,7 @@ class CPP_FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : private jed_utils:
     void setKeepUsingBaseSendCommands(bool pValue);
 
     /**
-     *  @brief  Retreive the error message string that correspond to
+     *  @brief  Retrieve the error message string that corresponds to
      *  the error code provided.
      *  @return A std::string containing the error message.
      */
@@ -163,14 +163,14 @@ class CPP_FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : private jed_utils:
 
     /**
      *  @brief  This is the reentrant version of the getErrorMessage method
-     *  @param  errorCode  The error code return by the SMTP client.
+     *  @param  errorCode  The error code returned by the SMTP client.
      *  @param  errorMessagePtr  A pointer to an allocated char array
      *  @param  maxLength  The size of the allocated char array.
      *  @return Return 0 for success, -1 if an error occurred and a positive
      *  number representing the number of characters copied to errorMessagePtr
-     *  if the message was longer than that allocated char array.
+     *  if the message was longer than the allocated char array.
      *
-     *  Retreive the error message string that correspond to the error code
+     *  Retrieve the error message string that corresponds to the error code
      *  provided.
      */
     static int getErrorMessage_r(int errorCode,

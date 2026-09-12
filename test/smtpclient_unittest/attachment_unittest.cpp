@@ -28,7 +28,7 @@ TYPED_TEST(MultiAttachmentFixture, Constructor_FailEmptyFileName) {
 }
 
 TYPED_TEST(MultiAttachmentFixture, Constructor_FailWhiteSpaceFileName) {
-    // Test with empty filename
+    // Test with white spaces only filename
     try {
         TypeParam att1("   ", "");
         FAIL();

@@ -17,7 +17,7 @@
 
 namespace jed_utils {
 /** @brief The SmtpClient should be used to communicate with internal relay servers.
- *  This client doesn't provided encryption for communication.
+ *  This client doesn't provide encryption for communication.
  *  The communication is usually done via port 25.
  */
 class SMTPCLIENT_API SmtpClient : public SMTPClientBase {

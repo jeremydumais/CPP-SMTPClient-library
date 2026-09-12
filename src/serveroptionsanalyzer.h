@@ -16,14 +16,14 @@
 #endif
 
 namespace jed_utils {
-/** @brief The ServerOptionsAnalyzer class provides utility fonctions to
- * analyzer the SMTP options that are available by the server.
+/** @brief The ServerOptionsAnalyzer class provides utility functions to
+ * analyze the SMTP options that are available on the server.
 */
 class SERVEROPTIONSANALYZER_API ServerOptionsAnalyzer {
  public:
     /**
-     *  @brief Indicate if the server has returned all it's available options
-     *  or of there still a reply with other options to come.
+     *  @brief Indicate if the server has returned all its available options
+     *  or if there is still a reply with other options to come.
      *  @param optionsStr The string that contains the option list returned by
      *  the SMTP server.
      */

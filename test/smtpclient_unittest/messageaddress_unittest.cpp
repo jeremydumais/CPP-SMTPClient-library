@@ -20,7 +20,7 @@ using MyTypes = ::testing::Types<MessageAddress, cpp::MessageAddress>;
 TYPED_TEST_SUITE(MultiMessageAddressFixture, MyTypes);
 
 TYPED_TEST(MultiMessageAddressFixture, constructor_EmptyEmailAddrInvalidArgument) {
-    // Test with empty filename
+    // Test with empty email address
     try {
         TypeParam msg_add("", "");
         FAIL();
@@ -39,7 +39,7 @@ TYPED_TEST(MultiMessageAddressFixture, constructor_EmptyEmailAddressValidDNThrow
 }
 
 TYPED_TEST(MultiMessageAddressFixture, constructor_WhiteSpacesEmailAddrInvalidArgument) {
-    // Test with empty filename
+    // Test with white spaces only email address
     try {
         TypeParam msg_add(" ", "");
         FAIL();
@@ -49,7 +49,7 @@ TYPED_TEST(MultiMessageAddressFixture, constructor_WhiteSpacesEmailAddrInvalidAr
 }
 
 TYPED_TEST(MultiMessageAddressFixture, constructor_OnlyPrefixEmailAddrInvalidArgument) {
-    // Test with empty filename
+    // Test with an email address containing only a prefix
     try {
         TypeParam msg_add("test", "");
         FAIL();
@@ -59,7 +59,7 @@ TYPED_TEST(MultiMessageAddressFixture, constructor_OnlyPrefixEmailAddrInvalidArg
 }
 
 TYPED_TEST(MultiMessageAddressFixture, constructor_OnlyAtSignEmailAddrInvalidArgument) {
-    // Test with empty filename
+    // Test with an email address containing only the at sign
     try {
         TypeParam msg_add("@", "");
         FAIL();
@@ -69,7 +69,7 @@ TYPED_TEST(MultiMessageAddressFixture, constructor_OnlyAtSignEmailAddrInvalidArg
 }
 
 TYPED_TEST(MultiMessageAddressFixture, constructor_NoSuffixEmailAddrInvalidArgument) {
-    // Test with empty filename
+    // Test with an email address with no suffix
     try {
         TypeParam msg_add("test@", "");
         FAIL();

@@ -26,7 +26,7 @@ namespace cpp {
 class CPP_MESSAGE_API Message {
  public:
     /**
-     *  @brief  Construct a new single recipient Message base class.
+     *  @brief  Construct a new Message base class.
      *  @param pFrom The sender email address of the message.
      *  @param pTo The recipient email addresses of the message.
      *  @param pSubject The subject of the message.
@@ -55,7 +55,7 @@ class CPP_MESSAGE_API Message {
     /** Return the recipient MessageAddress vector of the message  */
     const std::vector<MessageAddress> &getTo() const;
 
-    /** Return the number message recipients in the vector. */
+    /** Return the number of message recipients in the vector. */
     size_t getToCount() const;
 
     /** Return the subject of the message. */

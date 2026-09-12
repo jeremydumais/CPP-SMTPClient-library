@@ -89,7 +89,7 @@ Credential::Credential(Credential&& other) noexcept
     other.mPassword = nullptr;
 }
 
-// Move assignement operator
+// Move assignment operator
 Credential& Credential::operator=(Credential&& other) noexcept {
     if (this != &other) {
         delete[] mUsername;
