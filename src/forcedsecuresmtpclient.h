@@ -16,9 +16,8 @@
 #endif
 
 namespace jed_utils {
-/** @brief The ForcedSecureSMTPClient is useful to communicate with legacy
- *  systems which require that the communication be encrypted from the
- *  initial connection. The communication is usually done via port 465.
+/** @brief The ForcedSecureSMTPClient is useful to communicate with systems which TLS encryption 
+    is required from the initial connection. The communication is usually done via port 465.
  */
 class FORCEDSECURESMTPCLIENT_API ForcedSecureSMTPClient : public SecureSMTPClientBase {
  public:

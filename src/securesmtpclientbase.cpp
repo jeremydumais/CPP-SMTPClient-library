@@ -215,18 +215,11 @@ int SecureSMTPClientBase::startTLSNegotiation() {
                 static_cast<int>(verify_flag));
     }
 
-    /* Try to connect */
-    if (BIO_do_connect(mBIO) <= 0) {
-        cleanup();
-        setLastSocketErrNo(static_cast<int>(ERR_get_error()));
-        return SSL_CLIENT_STARTTLS_BIO_CONNECT_ERROR;
-    }
-
     /* Try to do the handshake */
     addCommunicationLogItem("<Negotiate a TLS session>", "c & s");
     if (BIO_do_handshake(mBIO) <= 0) {
-        cleanup();
         setLastSocketErrNo(static_cast<int>(ERR_get_error()));
+        cleanup();
         return SSL_CLIENT_STARTTLS_BIO_HANDSHAKE_ERROR;
     }
 

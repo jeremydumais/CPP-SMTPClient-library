@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file
 
+## [1.1.15]
+
+### Bug fixes
+
+- TLS negotiation now uses a single handshake operation. Failures previously 
+reported as SSL_CLIENT_STARTTLS_BIO_CONNECT_ERROR (-55) are now reported as 
+SSL_CLIENT_STARTTLS_BIO_HANDSHAKE_ERROR (-56). The legacy constant remains 
+available for compatibility.
+
 ## [1.1.14]
 
 ### Bug fixes

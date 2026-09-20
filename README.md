@@ -1,6 +1,6 @@
 # Jed# C++ SMTP Client Library
 
-![Latest version](https://img.shields.io/badge/latest_version-1.1.14-brightgreen)
+![Latest version](https://img.shields.io/badge/latest_version-1.1.15-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-openssl-brightgreen)
 [![Conan Center](https://img.shields.io/conan/v/cpp-smtpclient-library)](https://conan.io/center/recipes/cpp-smtpclient-library)
 ![Vcpkg Version](https://img.shields.io/vcpkg/v/cpp-smtpclient-library)
@@ -215,8 +215,8 @@ This client can be used for newest SMTP servers like Google Gmail, Microsoft Off
 
 ### ForcedSecureSMTPClient
 
-The ForcedSecureSMTPClient is useful to communicate with legacy systems which
-requires that the communication be encrypted from the initial connection.
+The ForcedSecureSMTPClient is useful to communicate with systems which TLS encryption 
+is required from the initial connection.
 The communication is usually done via port 465.
 
 ### SmtpClient

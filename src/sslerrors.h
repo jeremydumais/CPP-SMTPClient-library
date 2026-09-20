@@ -5,6 +5,13 @@ const int SSL_CLIENT_STARTTLS_INITSSLCTX_ERROR = -51;
 const int SSL_CLIENT_STARTTLS_BIONEWSSLCONNECT_ERROR = -52;
 const int SSL_CLIENT_STARTTLS_WIN_CERTOPENSYSTEMSTORE_ERROR = -53;
 const int SSL_CLIENT_STARTTLS_CTX_SET_DEFAULT_VERIFY_PATHS_ERROR = -54;
+/**
+ * @brief Legacy TLS connection error, returned through version 1.1.14 and earlier.
+ *
+ * Since version 1.1.15, TLS negotiation failures return
+ * SSL_CLIENT_STARTTLS_BIO_HANDSHAKE_ERROR instead.
+ * Retained for compatibility; no longer returned by the library.
+ */
 const int SSL_CLIENT_STARTTLS_BIO_CONNECT_ERROR = -55;
 const int SSL_CLIENT_STARTTLS_BIO_HANDSHAKE_ERROR = -56;
 const int SSL_CLIENT_STARTTLS_GET_CERTIFICATE_ERROR = -57;
