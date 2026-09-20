@@ -387,10 +387,6 @@ const char *SMTPClientBase::getLastServerResponse() const {
     return mLastServerResponse;
 }
 
-void SMTPClientBase::setLastSocketErrNo(int lastError) {
-    mLastSocketErrNo = lastError;
-}
-
 void SMTPClientBase::setAuthenticationOptions(ServerAuthOptions *authOptions) {
     delete mAuthOptions;
     mAuthOptions = authOptions;
@@ -480,7 +476,6 @@ int SMTPClientBase::initializeSessionWinSock() {
     int wsa_retVal = WSAStartup(wVersionRequested, &wsaData);
     if (wsa_retVal != 0) {
         std::stringstream ssError;
-        setLastSocketErrNo(wsa_retVal);
         ssError << "WSAStartup failed with error: " << wsa_retVal;
         addCommunicationLogItem(ssError.str().c_str());
         return SOCKET_INIT_SESSION_WINSOCKET_STARTUP_ERROR;
@@ -494,8 +489,7 @@ int SMTPClientBase::initializeSessionWinSock() {
 
     wsa_retVal = getaddrinfo(getServerName(), std::to_string(getServerPort()).c_str(), &hints, &result);
     if (wsa_retVal != 0) {
-        addWSAMessageToCommunicationLog(wsa_retVal);
-        setLastSocketErrNo(wsa_retVal);
+        addWindowsErrorToCommunicationLog(wsa_retVal);
         doWSACleanup();
         return SOCKET_INIT_SESSION_WINSOCKET_GETADDRINFO_ERROR;
     }
@@ -503,8 +497,7 @@ int SMTPClientBase::initializeSessionWinSock() {
     mSock = static_cast<unsigned int>(socket(result->ai_family, result->ai_socktype, result->ai_protocol));
     if (mSock == INVALID_SOCKET) {
         int wsa_error = WSAGetLastError();
-        addWSAMessageToCommunicationLog(wsa_error);
-        setLastSocketErrNo(wsa_error);
+        addWindowsErrorToCommunicationLog(wsa_error);
         doWSACleanup();
         return SOCKET_INIT_SESSION_CREATION_ERROR;
     }
@@ -514,8 +507,7 @@ int SMTPClientBase::initializeSessionWinSock() {
     wsa_retVal = connect(mSock, result->ai_addr, static_cast<int>(result->ai_addrlen));
     if (wsa_retVal == SOCKET_ERROR) {
         int wsa_error = WSAGetLastError();
-        addWSAMessageToCommunicationLog(wsa_error);
-        setLastSocketErrNo(wsa_error);
+        addWindowsErrorToCommunicationLog(wsa_error);
         doWSACleanup();
         return SOCKET_INIT_SESSION_CONNECT_ERROR;
     }
@@ -525,9 +517,8 @@ int SMTPClientBase::initializeSessionWinSock() {
 int SMTPClientBase::setSocketToNonBlockingWinSock() {
     u_long mode = 1;  // 1 to enable non-blocking mode
     if (ioctlsocket(mSock, FIONBIO, &mode) != NO_ERROR) {
-        int err = WSAGetLastError();
-        setLastSocketErrNo(err);
-        addCommunicationLogItem(strerror(err));
+        int wsa_error = WSAGetLastError();
+        addWindowsErrorToCommunicationLog(wsa_error);
         return SOCKET_INIT_SESSION_FCNTL_SET_ERROR;
     }
     return 0;
@@ -536,9 +527,8 @@ int SMTPClientBase::setSocketToNonBlockingWinSock() {
 int SMTPClientBase::setSocketToBlockingWinSock() {
     u_long mode = 0;  // 0 to enable blocking mode
     if (ioctlsocket(mSock, FIONBIO, &mode) != NO_ERROR) {
-        int err = WSAGetLastError();
-        setLastSocketErrNo(err);
-        addCommunicationLogItem(strerror(err));
+        int wsa_error = WSAGetLastError();
+        addWindowsErrorToCommunicationLog(wsa_error);
         return SOCKET_INIT_SESSION_FCNTL_GET_ERROR;
     }
     return 0;
@@ -552,10 +542,11 @@ void SMTPClientBase::setWSAStopped() {
     mWSAStarted = false;
 }
 
-void SMTPClientBase::addWSAMessageToCommunicationLog(const int errorCode) {
+void SMTPClientBase::addWindowsErrorToCommunicationLog(const int errorCode) {
     LPTSTR formattedErrorMessage = nullptr;
     if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
             FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS |
             FORMAT_MESSAGE_MAX_WIDTH_MASK,
         nullptr,
         errorCode,
@@ -572,7 +563,6 @@ void SMTPClientBase::doWSACleanup() {
     if (WSACleanup() != 0) {
         int wsa_retVal = WSAGetLastError();
         std::stringstream ssError;
-        setLastSocketErrNo(wsa_retVal);
         ssError << "WSACleanup failed with error: " << wsa_retVal;
         addCommunicationLogItem(ssError.str().c_str());
     }
@@ -588,7 +578,6 @@ int SMTPClientBase::initializeSessionPOSIX() {
     int valopt;
     mSock = socket(AF_INET, SOCK_STREAM, 0);
     if (mSock < 0) {
-        setLastSocketErrNo(errno);
         addCommunicationLogItem(strerror(errno));
         return SOCKET_INIT_SESSION_CREATION_ERROR;
     }
@@ -620,7 +609,6 @@ int SMTPClientBase::initializeSessionPOSIX() {
                 FD_SET(mSock, &fdset);
                 res = select(mSock+1, NULL, &fdset, NULL, &tv);
                 if (res < 0 && errno != EINTR) {
-                    setLastSocketErrNo(errno);
                     addCommunicationLogItem(strerror(errno));
                     return SOCKET_INIT_SESSION_CONNECT_ERROR;
                 } else if (res > 0) {
@@ -630,13 +618,11 @@ int SMTPClientBase::initializeSessionPOSIX() {
                                    SOL_SOCKET,
                                    SO_ERROR,
                                    static_cast<void*>(&valopt), &lon) < 0) {
-                        setLastSocketErrNo(errno);
                         addCommunicationLogItem(strerror(errno));
                         return SOCKET_INIT_SESSION_GET_SOCKET_OPTIONS_ERROR;
                     }
                     // Check the value returned...
                     if (valopt) {
-                        setLastSocketErrNo(valopt);
                         addCommunicationLogItem(strerror(valopt));
                         return SOCKET_INIT_SESSION_DELAYED_CONNECTION_ERROR;
                     }
@@ -646,7 +632,6 @@ int SMTPClientBase::initializeSessionPOSIX() {
                 }
             } while (1);
         } else {
-            setLastSocketErrNo(errno);
             addCommunicationLogItem(strerror(errno));
             return SOCKET_INIT_SESSION_CONNECT_ERROR;
         }
@@ -658,12 +643,10 @@ int SMTPClientBase::initializeSessionPOSIX() {
 int SMTPClientBase::setSocketToNonBlockingPOSIX() {
     int arg;
     if ((arg = fcntl(mSock, F_GETFL, NULL)) < 0) {
-        setLastSocketErrNo(errno);
         addCommunicationLogItem(strerror(errno));
     }
     arg |= O_NONBLOCK;
     if (fcntl(mSock, F_SETFL, arg) < 0) {
-        setLastSocketErrNo(errno);
         addCommunicationLogItem(strerror(errno));
         return SOCKET_INIT_SESSION_FCNTL_SET_ERROR;
     }
@@ -673,13 +656,11 @@ int SMTPClientBase::setSocketToNonBlockingPOSIX() {
 int SMTPClientBase::setSocketToBlockingPOSIX() {
     int arg;
     if ((arg = fcntl(mSock, F_GETFL, NULL)) < 0) {
-        setLastSocketErrNo(errno);
         addCommunicationLogItem(strerror(errno));
         return SOCKET_INIT_SESSION_FCNTL_GET_ERROR;
     }
     arg &= (~O_NONBLOCK);
     if (fcntl(mSock, F_SETFL, arg) < 0) {
-        setLastSocketErrNo(errno);
         addCommunicationLogItem(strerror(errno));
         return SOCKET_INIT_SESSION_FCNTL_SET_ERROR;
     }
@@ -764,7 +745,13 @@ int SMTPClientBase::sendRawCommand(const char *pCommand, int pErrorCode) {
     size_t commandSize = strlen(pCommand);
 #endif
     if (send(mSock, pCommand, commandSize, 0) == -1) {
-        setLastSocketErrNo(errno);
+    #ifdef _WIN32
+        const int error = WSAGetLastError();
+        addWindowsErrorToCommunicationLog(error);
+    #else
+        const int error = errno;
+        addCommunicationLogItem(strerror(error));
+    #endif 
         if (!mIsInCleanupMode) {
             cleanup();
         }

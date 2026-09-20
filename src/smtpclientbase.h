@@ -207,7 +207,6 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int getSocketFileDescriptor() const;
     void clearSocketFileDescriptor();
     const char *getLastServerResponse() const;
-    void setLastSocketErrNo(int lastError);
     void setAuthenticationOptions(ServerAuthOptions *authOptions);
     // Methods used to establish the connection with server
     int initializeSession();
@@ -217,7 +216,7 @@ class SMTPCLIENTBASE_API SMTPClientBase {
     int setSocketToBlockingWinSock();
     bool isWSAStarted();
     void setWSAStopped();
-    void addWSAMessageToCommunicationLog(const int errorCode);
+    void addWindowsErrorToCommunicationLog(const int errorCode);
     void doWSACleanup();
     #else
     int initializeSessionPOSIX();

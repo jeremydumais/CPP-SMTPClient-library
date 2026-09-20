@@ -135,7 +135,6 @@ void SecureSMTPClientBase::cleanup() {
     if (isWSAStarted() && WSACleanup() != 0) {
         int wsa_retVal = WSAGetLastError();
         std::stringstream ssError;
-        setLastSocketErrNo(wsa_retVal);
         ssError << "WSACleanup failed with error: " << wsa_retVal;
         addCommunicationLogItem(ssError.str().c_str());
     }
@@ -156,7 +155,7 @@ void SecureSMTPClientBase::initializeSSLContext() {
     mCTX = SSL_CTX_new(method);
 
     if (mCTX == nullptr) {
-        setLastSocketErrNo(static_cast<int>(ERR_get_error()));
+        logOpenSSLErrors();
     }
 }
 
@@ -169,6 +168,7 @@ int SecureSMTPClientBase::startTLSNegotiation() {
 
     mBIO = BIO_new_ssl_connect(mCTX);
     if (mBIO == nullptr) {
+        logOpenSSLErrors();
         return SSL_CLIENT_STARTTLS_BIONEWSSLCONNECT_ERROR;
     }
 
@@ -189,7 +189,7 @@ int SecureSMTPClientBase::startTLSNegotiation() {
     HCERTSTORE hStore = CertOpenSystemStore(NULL, "ROOT");
 
     if (!hStore) {
-        setLastSocketErrNo(static_cast<int>(GetLastError()));
+        addWindowsErrorToCommunicationLog(GetLastError());
         return SSL_CLIENT_STARTTLS_WIN_CERTOPENSYSTEMSTORE_ERROR;
     }
 
@@ -205,11 +205,13 @@ int SecureSMTPClientBase::startTLSNegotiation() {
     }
 #else
     if (SSL_CTX_set_default_verify_paths(mCTX) == 0) {
+        logOpenSSLErrors();
         return SSL_CLIENT_STARTTLS_CTX_SET_DEFAULT_VERIFY_PATHS_ERROR;
     }
 #endif
     long verify_flag = SSL_get_verify_result(mSSL);
     if (verify_flag != X509_V_OK) {
+        logOpenSSLErrors();
         fprintf(stderr,
                 "##### Certificate verification error (%i) but continuing...\n",
                 static_cast<int>(verify_flag));
@@ -218,7 +220,7 @@ int SecureSMTPClientBase::startTLSNegotiation() {
     /* Try to do the handshake */
     addCommunicationLogItem("<Negotiate a TLS session>", "c & s");
     if (BIO_do_handshake(mBIO) <= 0) {
-        setLastSocketErrNo(static_cast<int>(ERR_get_error()));
+        logOpenSSLErrors();
         cleanup();
         return SSL_CLIENT_STARTTLS_BIO_HANDSHAKE_ERROR;
     }
@@ -231,6 +233,7 @@ int SecureSMTPClientBase::startTLSNegotiation() {
         X509_free(cert); /* Free immediately */
     }
     if (cert == nullptr) {
+        logOpenSSLErrors();
         cleanup();
         return SSL_CLIENT_STARTTLS_GET_CERTIFICATE_ERROR;
     }
@@ -242,6 +245,7 @@ int SecureSMTPClientBase::startTLSNegotiation() {
         addCommunicationLogItem("Warning: Self signed certificate", "s");
     } else {
         if (!(X509_V_OK == res)) {
+            logOpenSSLErrors();
             addCommunicationLogItem(X509_verify_cert_error_string(res), "s");
             cleanup();
             return SSL_CLIENT_STARTTLS_VERIFY_RESULT_ERROR;
@@ -288,7 +292,7 @@ int SecureSMTPClientBase::getServerSecureIdentification() {
 
 int SecureSMTPClientBase::sendCommand(const char *pCommand, int pErrorCode) {
     if (BIO_puts(mBIO, pCommand) < 0) {
-        setLastSocketErrNo(static_cast<int>(ERR_get_error()));
+        logOpenSSLErrors();
         if (!mIsInCleanupMode) {
             cleanup();
         }
@@ -303,7 +307,7 @@ int SecureSMTPClientBase::sendCommandWithFeedback(const char *pCommand, int pErr
         return sendRawCommand(pCommand, pErrorCode, pTimeoutCode);
     }
     if (BIO_puts(mBIO, pCommand) < 0) {
-        setLastSocketErrNo(static_cast<int>(ERR_get_error()));
+        logOpenSSLErrors();
         if (!mIsInCleanupMode) {
             cleanup();
         }
@@ -337,4 +341,15 @@ int SecureSMTPClientBase::getServerReply() {
         return extractReturnCode(outbuf);
     }
     return -1;
+}
+
+void SecureSMTPClientBase::logOpenSSLErrors() {
+    if (getLogLevel() == LogLevel::ExcludeAttachmentsBytes || getLogLevel() == LogLevel::Full) {
+        unsigned long code;
+        while ((code = ERR_get_error()) != 0) {
+            char message[256];
+            ERR_error_string_n(code, message, sizeof(message));
+            addCommunicationLogItem(("OpenSSL error - "s + message).c_str());
+        }
+    }
 }

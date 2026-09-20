@@ -75,6 +75,7 @@ class SECURESMTPCLIENTBASE_API SecureSMTPClientBase : public SMTPClientBase {
     SSL_CTX *mCTX;
     SSL *mSSL;
     bool mAcceptSelfSignedCert;
+    void logOpenSSLErrors();
 };
 }  // namespace jed_utils
 
